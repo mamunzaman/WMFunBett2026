@@ -4,28 +4,31 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.wmfunbett2026.ui.navigation.AppScreen
+import com.example.wmfunbett2026.ui.screens.DashboardScreen
+import com.example.wmfunbett2026.ui.screens.JackpotScreen
+import com.example.wmfunbett2026.ui.screens.RoundsScreen
+import com.example.wmfunbett2026.ui.screens.SettingsScreen
 import com.example.wmfunbett2026.ui.theme.DarkNavy
 import com.example.wmfunbett2026.ui.theme.JackpotGold
+import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.SecondaryText
 import com.example.wmfunbett2026.ui.theme.SurfaceDark
 import com.example.wmfunbett2026.ui.theme.WMFunBett2026Theme
@@ -36,131 +39,66 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             WMFunBett2026Theme {
-                DashboardScreen()
+                AppShell()
             }
         }
     }
 }
 
 @Composable
-fun DashboardScreen(modifier: Modifier = Modifier) {
+fun AppShell(modifier: Modifier = Modifier) {
+    var selectedScreen by rememberSaveable { mutableStateOf(AppScreen.Dashboard) }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = DarkNavy
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 20.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            Text(
-                text = "WM Fun Bett 2026",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            JackpotCard(
-                amount = "€0",
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+        containerColor = DarkNavy,
+        bottomBar = {
+            NavigationBar(
+                containerColor = SurfaceDark,
+                tonalElevation = 0.dp
             ) {
-                StatCard(
-                    label = "Round Count",
-                    value = "0",
-                    modifier = Modifier.weight(1f)
-                )
-                StatCard(
-                    label = "Games Count",
-                    value = "0",
-                    modifier = Modifier.weight(1f)
-                )
+                AppScreen.entries.forEach { screen ->
+                    val selected = selectedScreen == screen
+                    NavigationBarItem(
+                        selected = selected,
+                        onClick = { selectedScreen = screen },
+                        icon = {
+                            Icon(
+                                imageVector = screen.icon,
+                                contentDescription = screen.label
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = screen.label,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = JackpotGold,
+                            selectedTextColor = JackpotGold,
+                            unselectedIconColor = SecondaryText,
+                            unselectedTextColor = SecondaryText,
+                            indicatorColor = PrimaryBlue.copy(alpha = 0.25f)
+                        )
+                    )
+                }
             }
         }
-    }
-}
-
-@Composable
-private fun JackpotCard(
-    amount: String,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = SurfaceDark
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Current Jackpot",
-                style = MaterialTheme.typography.titleMedium,
-                color = SecondaryText
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = amount,
-                style = MaterialTheme.typography.displayMedium,
-                fontWeight = FontWeight.Bold,
-                color = JackpotGold
-            )
-        }
-    }
-}
-
-@Composable
-private fun StatCard(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = SurfaceDark
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = SecondaryText
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+    ) { innerPadding ->
+        when (selectedScreen) {
+            AppScreen.Dashboard -> DashboardScreen(Modifier.padding(innerPadding))
+            AppScreen.Rounds -> RoundsScreen(Modifier.padding(innerPadding))
+            AppScreen.Jackpot -> JackpotScreen(Modifier.padding(innerPadding))
+            AppScreen.Settings -> SettingsScreen(Modifier.padding(innerPadding))
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun DashboardPreview() {
+fun AppShellPreview() {
     WMFunBett2026Theme {
-        DashboardScreen()
+        AppShell()
     }
 }

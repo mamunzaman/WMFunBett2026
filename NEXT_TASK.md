@@ -1,9 +1,13 @@
 # Next Task
 
 ## Current Goal
-Set up app navigation (bottom nav or nav graph) to prepare for additional screens.
+Add Room database setup with entities for Round, Game, and Jackpot.
 
 ## Verify Next
-- Dashboard loads with dark navy background and gold jackpot card
-- Theme colors apply consistently across the app
+- Bottom nav switches between all four tabs
+- Active tab shows gold icon/label with blue indicator
+- Dashboard jackpot card unchanged
+- Rounds shows empty state + Create Round button
+- Jackpot shows €0 and empty state
+- Settings shows Offline only, FIFA Dark, 0.1.0
 - Build passes with `./gradlew assembleDebug`
