@@ -1,13 +1,13 @@
 # Next Task
 
 ## Current Goal
-Add Room database setup with entities for Round, Game, and Jackpot.
+Add Room database with entities matching the hierarchy (Round, Day, Game, TippGroup, Entry) and replace SampleData lookups.
 
 ## Verify Next
-- Bottom nav switches between all four tabs
-- Active tab shows gold icon/label with blue indicator
-- Dashboard jackpot card unchanged
-- Rounds shows empty state + Create Round button
-- Jackpot shows €0 and empty state
-- Settings shows Offline only, FIFA Dark, 0.1.0
+- Rounds tab → tap Bundesliga Round 1 → Saturday → Germany vs France → Correct Score → View Entries
+- Alex 2:1 €10 and John 1:1 €5 visible on Entry List
+- Back navigation works at every level
+- Breadcrumbs update on each screen
+- Bottom bar hidden on detail screens, visible on Rounds list
+- Gold FAB visible on all hierarchy screens
 - Build passes with `./gradlew assembleDebug`
