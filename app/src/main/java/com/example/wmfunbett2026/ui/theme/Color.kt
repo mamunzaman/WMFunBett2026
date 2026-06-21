@@ -39,6 +39,8 @@ val SecondaryText = TextSecondary
 
 // Match-card gradient stop
 val MatchCardMidTone = Color(0xFF17335A)
+val MatchCardActiveSurface = Color(0xFF1B3560)
+val MatchCardCompactSurface = Color(0xFF0A1525)
 val JackpotCardMidTone = Color(0xFF1D3A63)
 
 // Form sheets (dark glass)

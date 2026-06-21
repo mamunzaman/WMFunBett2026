@@ -44,6 +44,9 @@
 - [x] Main nav restructure: Matches, Leagues, + Tipps, Friends, Settings
 - [x] Matchday header filter (not a nav step), grouped match lists
 - [x] League list + league matches, Friends from entries, Tipps center sheet
+- [x] Matches header LIVE pill, calendar select sheet, search actions
+- [x] Shared screen content spacing (`screenContentPadding`, 16dp top)
+- [x] Match card redesign: active scoreline layout + compact flag cards
 
 ## In Progress
 - None
@@ -56,4 +59,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Main navigation restructure for API-friendly match center flow.
+2026-06-21 — Match card redesign (active + compact variants).

@@ -63,12 +63,7 @@ val HierarchyListContentPadding = PaddingValues(
 )
 
 fun hierarchyContentPadding(): PaddingValues {
-    return PaddingValues(
-        start = 20.dp,
-        end = 20.dp,
-        top = 12.dp,
-        bottom = MatchCenterBottomNavReservedHeight
-    )
+    return screenContentPadding()
 }
 
 @Composable

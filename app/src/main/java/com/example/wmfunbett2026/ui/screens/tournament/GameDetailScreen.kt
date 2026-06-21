@@ -210,7 +210,7 @@ private fun GameMatchOverviewCard(
     var expanded by remember { mutableStateOf(false) }
     val matchdayLabel = dayLabel ?: "Matchday"
 
-    MatchCenterMatchCardShell(modifier = modifier) {
+    MatchCenterMatchCardShell(game = game, modifier = modifier) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

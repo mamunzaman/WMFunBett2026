@@ -22,6 +22,8 @@ fun MatchesScreen(
         title = stringResource(R.string.screen_matches),
         games = games,
         onGameClick = onGameClick,
+        showLiveAction = true,
+        showQuickFilters = true,
         modifier = modifier
     )
 }

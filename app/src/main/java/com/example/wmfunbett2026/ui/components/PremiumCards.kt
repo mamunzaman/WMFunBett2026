@@ -41,28 +41,60 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Game
+import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.Round
 import com.example.wmfunbett2026.data.model.toEuroLabel
+import com.example.wmfunbett2026.ui.matchcenter.MatchCardDisplayMode
+import com.example.wmfunbett2026.ui.matchcenter.MatchCardWinnerSide
 import com.example.wmfunbett2026.ui.matchcenter.MatchCenterOutcomeBadge
 import com.example.wmfunbett2026.ui.matchcenter.centerScoreText
+import com.example.wmfunbett2026.ui.matchcenter.isMatchCardExpandedLayout
+import com.example.wmfunbett2026.ui.matchcenter.matchCardSurfaceColor
+import com.example.wmfunbett2026.ui.matchcenter.matchCardWinnerSide
 import com.example.wmfunbett2026.ui.matchcenter.primaryTippLabel
-import com.example.wmfunbett2026.ui.matchcenter.resolveOutcomeBadge
+import com.example.wmfunbett2026.ui.matchcenter.resolveMatchStatusBadge
+import com.example.wmfunbett2026.ui.matchcenter.shouldUseDetailUpcomingLayout
 import com.example.wmfunbett2026.ui.matchcenter.teamFlagEmoji
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.Divider
 import com.example.wmfunbett2026.ui.theme.GlassBorder
 import com.example.wmfunbett2026.ui.theme.JackpotCardGradient
 import com.example.wmfunbett2026.ui.theme.JackpotGold
-import com.example.wmfunbett2026.ui.theme.MatchCardGradient
+import com.example.wmfunbett2026.ui.theme.MatchCardCompactSurface
+import com.example.wmfunbett2026.ui.theme.PrimaryBlueBright
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
+import com.example.wmfunbett2026.ui.theme.TextMuted
 import com.example.wmfunbett2026.ui.theme.TextPrimary
 import com.example.wmfunbett2026.ui.theme.TextSecondary
 import com.example.wmfunbett2026.ui.theme.WinnerGreen
+import androidx.compose.foundation.layout.offset
+import androidx.compose.material3.HorizontalDivider
 
 private val PremiumCardShape = RoundedCornerShape(20.dp)
 
 @Composable
 fun MatchCardShell(
+    modifier: Modifier = Modifier,
+    game: Game? = null,
+    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.LIST,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val surfaceColor = game?.let { matchCardSurfaceColor(it, displayMode) } ?: MatchCardCompactSurface
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(elevation = 6.dp, shape = PremiumCardShape, ambientColor = Color.Black.copy(0.35f))
+            .clip(PremiumCardShape)
+            .background(surfaceColor)
+            .border(width = 1.dp, color = GlassBorder, shape = PremiumCardShape),
+        content = content
+    )
+}
+
+@Composable
+private fun MatchCardContainer(
+    game: Game,
+    onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -71,8 +103,10 @@ fun MatchCardShell(
             .fillMaxWidth()
             .shadow(elevation = 6.dp, shape = PremiumCardShape, ambientColor = Color.Black.copy(0.35f))
             .clip(PremiumCardShape)
-            .background(MatchCardGradient)
-            .border(width = 1.dp, color = GlassBorder, shape = PremiumCardShape),
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .background(matchCardSurfaceColor(game, MatchCardDisplayMode.LIST))
+            .border(width = 1.dp, color = GlassBorder, shape = PremiumCardShape)
+            .padding(16.dp),
         content = content
     )
 }
@@ -209,11 +243,10 @@ fun MatchCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    PremiumCard(
-        modifier = modifier.fillMaxWidth(),
-        gradient = MatchCardGradient,
-        borderColor = GlassBorder,
-        onClick = onClick
+    MatchCardContainer(
+        game = game,
+        onClick = onClick,
+        modifier = modifier
     ) {
         MatchCardContent(game = game, matchdayLabel = matchdayLabel)
     }
@@ -224,11 +257,115 @@ fun MatchCardContent(
     game: Game,
     matchdayLabel: String,
     modifier: Modifier = Modifier,
-    bottomMetaOverride: String? = null
+    bottomMetaOverride: String? = null,
+    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.LIST
 ) {
-    val outcomeBadge = resolveOutcomeBadge(game)
+    when {
+        shouldUseDetailUpcomingLayout(game, displayMode) -> {
+            DetailUpcomingMatchCardContent(
+                game = game,
+                matchdayLabel = matchdayLabel,
+                modifier = modifier
+            )
+        }
+        isMatchCardExpandedLayout(game) -> {
+            ExpandedActiveMatchCardContent(
+                game = game,
+                matchdayLabel = matchdayLabel,
+                modifier = modifier,
+                bottomMetaOverride = bottomMetaOverride,
+                displayMode = displayMode
+            )
+        }
+        else -> {
+            CompactMatchCardContent(
+                game = game,
+                matchdayLabel = matchdayLabel,
+                modifier = modifier
+            )
+        }
+    }
+}
+
+@Composable
+private fun DetailUpcomingMatchCardContent(
+    game: Game,
+    matchdayLabel: String,
+    modifier: Modifier = Modifier
+) {
+    val statusBadge = resolveMatchStatusBadge(game, MatchCardDisplayMode.DETAIL)
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            MatchdayBadge(label = matchdayLabel)
+            MatchStatusPill(badge = statusBadge)
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Text(
+            text = "${teamFlagEmoji(game.teamA)} ${game.teamA}  vs  ${teamFlagEmoji(game.teamB)} ${game.teamB}",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = Icons.Default.CalendarMonth,
+                contentDescription = null,
+                tint = TextSecondary,
+                modifier = Modifier
+                    .padding(end = 4.dp)
+                    .size(16.dp)
+            )
+            Text(
+                text = game.dateTimeLabel,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary
+            )
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Text(
+            text = matchdayLabel,
+            style = MaterialTheme.typography.labelSmall,
+            color = TextMuted
+        )
+
+        if (game.status == MatchStatus.FINISHED && game.hasResult) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = game.centerScoreText(),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExpandedActiveMatchCardContent(
+    game: Game,
+    matchdayLabel: String,
+    modifier: Modifier = Modifier,
+    bottomMetaOverride: String? = null,
+    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.LIST
+) {
+    val outcomeBadge = resolveMatchStatusBadge(game, displayMode)
     val tippLabel = game.primaryTippLabel()
     val amountLabel = game.totalKasse.toEuroLabel()
+    val winnerSide = game.matchCardWinnerSide()
 
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -244,28 +381,44 @@ fun MatchCardContent(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            MatchTeamSide(
-                teamName = game.teamA,
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = game.centerScoreText(),
-                modifier = Modifier.padding(horizontal = 12.dp),
-                style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary,
-                fontSize = 32.sp
-            )
-            MatchTeamSide(
-                teamName = game.teamB,
-                textAlign = TextAlign.Start,
-                modifier = Modifier.weight(1f)
-            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                ActiveTeamRow(
+                    teamName = game.teamA,
+                    highlighted = winnerSide == MatchCardWinnerSide.TEAM_A
+                )
+                ActiveTeamRow(
+                    teamName = game.teamB,
+                    highlighted = winnerSide == MatchCardWinnerSide.TEAM_B
+                )
+            }
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.match_card_scoreline),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextMuted,
+                    letterSpacing = 0.8.sp
+                )
+                Text(
+                    text = game.centerScoreText(),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+            }
         }
 
+        Spacer(modifier = Modifier.height(14.dp))
+        HorizontalDivider(color = GlassBorder, thickness = 1.dp)
         Spacer(modifier = Modifier.height(12.dp))
 
         if (bottomMetaOverride != null) {
@@ -310,7 +463,9 @@ fun MatchCardContent(
                         imageVector = Icons.Default.CalendarMonth,
                         contentDescription = null,
                         tint = TextSecondary,
-                        modifier = Modifier.padding(end = 4.dp)
+                        modifier = Modifier
+                            .padding(end = 4.dp)
+                            .size(16.dp)
                     )
                     Text(
                         text = game.dateTimeLabel,
@@ -324,34 +479,149 @@ fun MatchCardContent(
 }
 
 @Composable
-private fun MatchTeamSide(
-    teamName: String,
-    textAlign: TextAlign,
+private fun CompactMatchCardContent(
+    game: Game,
+    matchdayLabel: String,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = when (textAlign) {
-            TextAlign.End -> Alignment.End
-            else -> Alignment.Start
-        }
+    val isFinished = game.status == MatchStatus.FINISHED
+    val winnerSide = game.matchCardWinnerSide()
+    val titleColor = if (isFinished) TextPrimary else PrimaryBlueBright
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text(
-            text = teamFlagEmoji(teamName),
-            fontSize = 36.sp,
-            textAlign = textAlign,
-            modifier = Modifier.fillMaxWidth()
+        OverlappingTeamFlags(
+            teamA = game.teamA,
+            teamB = game.teamB,
+            winnerSide = if (isFinished) winnerSide else null
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = game.displayName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = titleColor,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = game.dateTimeLabel,
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary
+            )
+            if (isFinished && game.hasResult) {
+                Text(
+                    text = game.centerScoreText(),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+            }
+            Text(
+                text = matchdayLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = TextMuted
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActiveTeamRow(
+    teamName: String,
+    highlighted: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(TextPrimary.copy(alpha = 0.08f))
+                .then(
+                    if (highlighted) {
+                        Modifier.border(1.dp, WinnerGreen.copy(alpha = 0.55f), CircleShape)
+                    } else {
+                        Modifier
+                    }
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = teamFlagEmoji(teamName),
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            )
+        }
         Text(
             text = teamName,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = TextPrimary,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            textAlign = textAlign,
-            modifier = Modifier.fillMaxWidth()
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = if (highlighted) FontWeight.Bold else FontWeight.SemiBold,
+            color = if (highlighted) WinnerGreen.copy(alpha = 0.95f) else TextPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun OverlappingTeamFlags(
+    teamA: String,
+    teamB: String,
+    winnerSide: MatchCardWinnerSide?,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.size(width = 54.dp, height = 36.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        TeamFlagCircle(
+            flag = teamFlagEmoji(teamA),
+            highlighted = winnerSide == MatchCardWinnerSide.TEAM_A,
+            modifier = Modifier.align(Alignment.CenterStart)
+        )
+        TeamFlagCircle(
+            flag = teamFlagEmoji(teamB),
+            highlighted = winnerSide == MatchCardWinnerSide.TEAM_B,
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .offset(x = 22.dp)
+        )
+    }
+}
+
+@Composable
+private fun TeamFlagCircle(
+    flag: String,
+    highlighted: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(32.dp)
+            .clip(CircleShape)
+            .background(TextPrimary.copy(alpha = 0.08f))
+            .border(
+                width = if (highlighted) 1.5.dp else 1.dp,
+                color = if (highlighted) WinnerGreen.copy(alpha = 0.6f) else GlassBorder,
+                shape = CircleShape
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = flag,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center
         )
     }
 }

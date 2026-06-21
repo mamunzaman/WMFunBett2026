@@ -1,6 +1,7 @@
 package com.example.wmfunbett2026.ui.matchcenter
 
 import androidx.annotation.StringRes
+import androidx.compose.ui.graphics.Color
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
@@ -26,13 +27,28 @@ enum class MatchSection(@StringRes val titleRes: Int) {
     FINISHED(R.string.section_finished)
 }
 
-enum class MatchdayFilter(@StringRes val labelRes: Int) {
-    ALL(R.string.filter_all),
+enum class MatchSelectFilter(@StringRes val labelRes: Int) {
+    LIVE(R.string.section_live),
+    TODAY(R.string.section_today),
+    TOMORROW(R.string.section_tomorrow),
     MATCHDAY_1(R.string.matchday_1),
     MATCHDAY_2(R.string.matchday_2),
-    TODAY(R.string.today),
-    TOMORROW(R.string.tomorrow)
+    ALL_MATCHES(R.string.filter_all_matches);
+
+    companion object {
+        val sheetOptions = listOf(
+            LIVE,
+            TODAY,
+            TOMORROW,
+            MATCHDAY_1,
+            MATCHDAY_2,
+            ALL_MATCHES
+        )
+    }
 }
+
+/** @deprecated Use [MatchSelectFilter] */
+typealias MatchdayFilter = MatchSelectFilter
 
 data class LeagueSummary(
     val id: String,
@@ -87,15 +103,82 @@ fun FlatGameItem.section(): MatchSection {
     }
 }
 
-fun FlatGameItem.matchesFilter(filter: MatchdayFilter): Boolean {
+fun filterMatches(
+    items: List<FlatGameItem>,
+    liveOnlyActive: Boolean,
+    selectFilter: MatchSelectFilter
+): List<FlatGameItem> {
+    if (liveOnlyActive) {
+        return items.filter { it.game.status == MatchStatus.LIVE }
+    }
+    return items.filter { it.matchesSelectFilter(selectFilter) }
+}
+
+enum class MatchTimeQuickFilter(@StringRes val labelRes: Int) {
+    LIVE(R.string.section_live),
+    TODAY(R.string.section_today),
+    THREE_HOURS(R.string.quick_filter_3h),
+    FORTY_EIGHT_HOURS(R.string.quick_filter_48h)
+}
+
+data class MatchLeagueQuickFilter(
+    val id: String,
+    val emoji: String,
+    @StringRes val labelRes: Int
+)
+
+val matchLeagueQuickFilters = listOf(
+    MatchLeagueQuickFilter("wc2026", "🌍", R.string.quick_filter_league_wc),
+    MatchLeagueQuickFilter("bundesliga", "🇩🇪", R.string.quick_filter_league_bundesliga),
+    MatchLeagueQuickFilter("premier-league", "🏴", R.string.quick_filter_league_premier),
+    MatchLeagueQuickFilter("la-liga", "🇪🇸", R.string.quick_filter_league_laliga),
+    MatchLeagueQuickFilter("champions-league", "⭐", R.string.quick_filter_league_ucl)
+)
+
+fun applyMatchQuickFilters(
+    items: List<FlatGameItem>,
+    timeFilter: MatchTimeQuickFilter?,
+    leagueFilterId: String?
+): List<FlatGameItem> {
+    var result = items
+    timeFilter?.let { filter ->
+        result = result.filter { it.matchesTimeQuickFilter(filter) }
+    }
+    leagueFilterId?.let { leagueId ->
+        val roundId = leagueRoundId(leagueId)
+        result = if (roundId != null) {
+            result.filter { it.roundId == roundId }
+        } else {
+            emptyList()
+        }
+    }
+    return result
+}
+
+private fun FlatGameItem.matchesTimeQuickFilter(filter: MatchTimeQuickFilter): Boolean {
     return when (filter) {
-        MatchdayFilter.ALL -> true
-        MatchdayFilter.MATCHDAY_1 -> dayName.contains("matchday 1", ignoreCase = true)
-        MatchdayFilter.MATCHDAY_2 -> dayName.contains("matchday 2", ignoreCase = true)
-        MatchdayFilter.TODAY -> section() == MatchSection.TODAY
-        MatchdayFilter.TOMORROW -> section() == MatchSection.TOMORROW
+        MatchTimeQuickFilter.LIVE -> game.status == MatchStatus.LIVE
+        MatchTimeQuickFilter.TODAY -> section() == MatchSection.TODAY
+        MatchTimeQuickFilter.THREE_HOURS ->
+            section() == MatchSection.TODAY && game.status == MatchStatus.NOT_STARTED
+        MatchTimeQuickFilter.FORTY_EIGHT_HOURS ->
+            section() == MatchSection.TODAY || section() == MatchSection.TOMORROW
     }
 }
+
+fun FlatGameItem.matchesSelectFilter(filter: MatchSelectFilter): Boolean {
+    return when (filter) {
+        MatchSelectFilter.ALL_MATCHES -> true
+        MatchSelectFilter.LIVE -> game.status == MatchStatus.LIVE
+        MatchSelectFilter.MATCHDAY_1 -> dayName.contains("matchday 1", ignoreCase = true)
+        MatchSelectFilter.MATCHDAY_2 -> dayName.contains("matchday 2", ignoreCase = true)
+        MatchSelectFilter.TODAY -> section() == MatchSection.TODAY
+        MatchSelectFilter.TOMORROW -> section() == MatchSection.TOMORROW
+    }
+}
+
+/** @deprecated Use [matchesSelectFilter] */
+fun FlatGameItem.matchesFilter(filter: MatchSelectFilter): Boolean = matchesSelectFilter(filter)
 
 fun groupMatchesBySection(items: List<FlatGameItem>): Map<MatchSection, List<FlatGameItem>> {
     return MatchSection.entries.associateWith { section ->
@@ -168,6 +251,7 @@ fun loadFriendSummaries(): List<FriendSummary> {
 
 enum class MatchCenterOutcomeBadge {
     ACTIVE,
+    UPCOMING,
     NO_WINNER,
     FINISHED,
     LIVE
@@ -204,5 +288,60 @@ fun Game.centerScoreText(): String {
 
 fun Game.primaryTippLabel(): String? =
     tippGroups.firstOrNull()?.title
+
+fun isMatchCardExpandedLayout(game: Game): Boolean =
+    game.status == MatchStatus.LIVE ||
+        (game.status == MatchStatus.NOT_STARTED &&
+            game.tippGroups.any { it.entries.isNotEmpty() })
+
+enum class MatchCardDisplayMode {
+    LIST,
+    DETAIL
+}
+
+fun matchCardSurfaceColor(
+    game: Game,
+    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.LIST
+): Color {
+    if (displayMode == MatchCardDisplayMode.DETAIL) {
+        return com.example.wmfunbett2026.ui.theme.MatchCardActiveSurface
+    }
+    return if (isMatchCardExpandedLayout(game)) {
+        com.example.wmfunbett2026.ui.theme.MatchCardActiveSurface
+    } else {
+        com.example.wmfunbett2026.ui.theme.MatchCardCompactSurface
+    }
+}
+
+fun resolveMatchStatusBadge(
+    game: Game,
+    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.LIST
+): MatchCenterOutcomeBadge? {
+    if (displayMode == MatchCardDisplayMode.DETAIL &&
+        game.status == MatchStatus.NOT_STARTED &&
+        game.tippGroups.none { it.entries.isNotEmpty() }
+    ) {
+        return MatchCenterOutcomeBadge.UPCOMING
+    }
+    return resolveOutcomeBadge(game)
+}
+
+fun shouldUseDetailUpcomingLayout(
+    game: Game,
+    displayMode: MatchCardDisplayMode
+): Boolean =
+    displayMode == MatchCardDisplayMode.DETAIL && !isMatchCardExpandedLayout(game)
+
+enum class MatchCardWinnerSide { TEAM_A, TEAM_B, DRAW }
+
+fun Game.matchCardWinnerSide(): MatchCardWinnerSide? {
+    val scoreA = teamAScore ?: return null
+    val scoreB = teamBScore ?: return null
+    return when {
+        scoreA > scoreB -> MatchCardWinnerSide.TEAM_A
+        scoreB > scoreA -> MatchCardWinnerSide.TEAM_B
+        else -> MatchCardWinnerSide.DRAW
+    }
+}
 
 fun FriendSummary.totalTippedLabel(): String = totalTipped.toEuroLabel()

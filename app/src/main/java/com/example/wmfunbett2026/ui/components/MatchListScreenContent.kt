@@ -2,6 +2,7 @@ package com.example.wmfunbett2026.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,9 +22,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.matchcenter.FlatGameItem
-import com.example.wmfunbett2026.ui.matchcenter.MatchdayFilter
+import com.example.wmfunbett2026.ui.matchcenter.MatchSelectFilter
+import com.example.wmfunbett2026.ui.matchcenter.MatchTimeQuickFilter
+import com.example.wmfunbett2026.ui.matchcenter.applyMatchQuickFilters
+import com.example.wmfunbett2026.ui.matchcenter.filterMatches
 import com.example.wmfunbett2026.ui.matchcenter.groupMatchesBySection
-import com.example.wmfunbett2026.ui.matchcenter.matchesFilter
 import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 import com.example.wmfunbett2026.ui.theme.TextPrimary
 
@@ -34,18 +37,30 @@ fun MatchListScreenContent(
     onGameClick: (FlatGameItem) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: (() -> Unit)? = null,
-    emptyTitle: String = stringResource(R.string.empty_matches_title),
-    emptyMessage: String = stringResource(R.string.empty_matches_message)
+    showLiveAction: Boolean = false,
+    showQuickFilters: Boolean = false,
+    emptyTitle: String? = null,
+    emptyMessage: String? = null
 ) {
-    var filter by remember { mutableStateOf(MatchdayFilter.ALL) }
-    var filterMenuExpanded by remember { mutableStateOf(false) }
-    val filterOptions = remember { MatchdayFilter.entries.toList() }
-    val filterLabels = filterOptions.map { stringResource(it.labelRes) }
+    val defaultEmptyTitle = stringResource(R.string.empty_matches_title)
+    val defaultEmptyMessage = stringResource(R.string.empty_matches_message)
+    val resolvedEmptyTitle = emptyTitle ?: defaultEmptyTitle
+    val resolvedEmptyMessage = emptyMessage ?: defaultEmptyMessage
 
-    val filtered = remember(games, filter) {
-        games.filter { it.matchesFilter(filter) }
+    var liveOnlyActive by remember { mutableStateOf(false) }
+    var selectFilter by remember { mutableStateOf(MatchSelectFilter.ALL_MATCHES) }
+    var showSelectSheet by remember { mutableStateOf(false) }
+    var timeQuickFilter by remember { mutableStateOf<MatchTimeQuickFilter?>(null) }
+    var leagueQuickFilterId by remember { mutableStateOf<String?>(null) }
+
+    val headerFiltered = remember(games, liveOnlyActive, selectFilter) {
+        filterMatches(games, liveOnlyActive, selectFilter)
+    }
+    val filtered = remember(headerFiltered, timeQuickFilter, leagueQuickFilterId) {
+        applyMatchQuickFilters(headerFiltered, timeQuickFilter, leagueQuickFilterId)
     }
     val grouped = remember(filtered) { groupMatchesBySection(filtered) }
+    val calendarFilterActive = !liveOnlyActive && selectFilter != MatchSelectFilter.ALL_MATCHES
 
     Column(
         modifier = modifier
@@ -55,30 +70,69 @@ fun MatchListScreenContent(
         MatchCenterHeader(
             title = title,
             onBackClick = onBackClick,
-            showSearchIcon = true,
-            matchdayFilterLabel = stringResource(filter.labelRes),
-            onMatchdayFilterClick = { filterMenuExpanded = true },
-            matchdayFilterMenuExpanded = filterMenuExpanded,
-            onMatchdayFilterDismiss = { filterMenuExpanded = false },
-            matchdayFilterOptions = filterLabels,
-            onMatchdayFilterOptionSelected = { index ->
-                filter = filterOptions[index]
-                filterMenuExpanded = false
+            trailingContent = {
+                MatchesHeaderActions(
+                    liveFilterActive = liveOnlyActive,
+                    calendarFilterActive = calendarFilterActive,
+                    onLiveFilterClick = {
+                        liveOnlyActive = !liveOnlyActive
+                        if (liveOnlyActive) {
+                            selectFilter = MatchSelectFilter.ALL_MATCHES
+                        }
+                    },
+                    onCalendarClick = { showSelectSheet = true },
+                    onSearchClick = { },
+                    showLivePill = showLiveAction
+                )
             }
         )
 
-        if (filtered.isEmpty()) {
-            MatchCenterEmptyState(
-                title = emptyTitle,
-                message = emptyMessage,
+        if (showQuickFilters) {
+            MatchQuickFilterRail(
+                selectedTimeFilter = timeQuickFilter,
+                selectedLeagueFilterId = leagueQuickFilterId,
+                onTimeFilterClick = { filter ->
+                    timeQuickFilter = if (timeQuickFilter == filter) null else filter
+                },
+                onLeagueFilterClick = { leagueId ->
+                    leagueQuickFilterId = if (leagueQuickFilterId == leagueId) null else leagueId
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .padding(top = ScreenContentTopPadding, bottom = 12.dp)
+            )
+        }
+
+        if (filtered.isEmpty()) {
+            val (emptyTitleText, emptyMessageText) = when {
+                liveOnlyActive || timeQuickFilter == MatchTimeQuickFilter.LIVE ->
+                    stringResource(R.string.empty_live_title) to
+                        stringResource(R.string.empty_live_message)
+                else -> resolvedEmptyTitle to resolvedEmptyMessage
+            }
+            MatchCenterEmptyState(
+                title = emptyTitleText,
+                message = emptyMessageText,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = ScreenContentHorizontalPadding,
+                        vertical = if (showQuickFilters) 8.dp else ScreenContentTopPadding
+                    )
             )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = hierarchyContentPadding(),
+                contentPadding = if (showQuickFilters) {
+                    PaddingValues(
+                        start = ScreenContentHorizontalPadding,
+                        end = ScreenContentHorizontalPadding,
+                        top = 0.dp,
+                        bottom = MatchCenterBottomNavReservedHeight
+                    )
+                } else {
+                    screenContentPadding()
+                },
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 grouped.forEach { (section, sectionGames) ->
@@ -101,5 +155,24 @@ fun MatchListScreenContent(
                 }
             }
         }
+    }
+
+    if (showSelectSheet) {
+        MatchSelectSheet(
+            selected = if (liveOnlyActive) MatchSelectFilter.LIVE else selectFilter,
+            onSelect = { option ->
+                when (option) {
+                    MatchSelectFilter.LIVE -> {
+                        liveOnlyActive = true
+                        selectFilter = MatchSelectFilter.ALL_MATCHES
+                    }
+                    else -> {
+                        liveOnlyActive = false
+                        selectFilter = option
+                    }
+                }
+            },
+            onDismiss = { showSelectSheet = false }
+        )
     }
 }

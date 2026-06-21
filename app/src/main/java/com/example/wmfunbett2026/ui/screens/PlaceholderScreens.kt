@@ -12,8 +12,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.components.MatchCenterEmptyState
-import com.example.wmfunbett2026.ui.components.MatchCenterBottomNavReservedHeight
 import com.example.wmfunbett2026.ui.components.MatchCenterHeader
+import com.example.wmfunbett2026.ui.components.screenContentPadding
 import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 
 @Composable
@@ -29,12 +29,7 @@ fun HistoryScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(
-                        start = 20.dp,
-                        end = 20.dp,
-                        top = 20.dp,
-                        bottom = MatchCenterBottomNavReservedHeight
-                    )
+                    .padding(screenContentPadding())
             ) {
                 MatchCenterEmptyState(
                     title = stringResource(R.string.history_empty_title),
@@ -58,12 +53,7 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .padding(
-                        start = 20.dp,
-                        end = 20.dp,
-                        top = 20.dp,
-                        bottom = MatchCenterBottomNavReservedHeight
-                    )
+                    .padding(screenContentPadding())
             ) {
                 MatchCenterEmptyState(
                     title = stringResource(R.string.settings_empty_title),

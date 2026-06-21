@@ -27,6 +27,19 @@
     <string name="section_tomorrow">Tomorrow</string>
     <string name="section_finished">Finished</string>
     <string name="filter_all">All</string>
+    <string name="filter_all_matches">All Matches</string>
+    <string name="header_live">LIVE</string>
+    <string name="select_matches">Select Matches</string>
+    <string name="search">Search</string>
+    <string name="empty_live_title">No live matches</string>
+    <string name="empty_live_message">There are no live matches right now. Check back when kick-off starts.</string>
+    <string name="quick_filter_3h">3h</string>
+    <string name="quick_filter_48h">48h</string>
+    <string name="quick_filter_league_wc">World Cup</string>
+    <string name="quick_filter_league_bundesliga">Bundesliga</string>
+    <string name="quick_filter_league_premier">Premier League</string>
+    <string name="quick_filter_league_laliga">La Liga</string>
+    <string name="quick_filter_league_ucl">Champions League</string>
 
     <!-- Leagues -->
     <string name="league_card_stats">%1$d matches · %2$d active · %3$d tipp groups</string>
@@ -58,6 +71,7 @@
     <string name="section_matches">Matches</string>
     <string name="section_tournaments">Tournaments</string>
     <string name="badge_active">Active</string>
+    <string name="match_card_scoreline">SCORELINE</string>
     <string name="badge_no_winner">No Winner</string>
     <string name="empty_matches_title">No matches yet</string>
     <string name="empty_matches_message">Create your first game with the + button</string>
@@ -136,6 +150,7 @@
     <!-- Match status -->
     <string name="status_not_started">Not Started</string>
     <string name="status_live">Live</string>
+    <string name="status_upcoming">Upcoming</string>
     <string name="status_finished">Finished</string>
 
     <!-- Winner share -->

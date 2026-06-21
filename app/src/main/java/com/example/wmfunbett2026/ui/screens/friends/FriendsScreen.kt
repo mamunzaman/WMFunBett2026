@@ -26,8 +26,10 @@ import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.components.MatchCenterEmptyState
 import com.example.wmfunbett2026.ui.components.MatchCenterHeader
 import com.example.wmfunbett2026.ui.components.PremiumCard
+import com.example.wmfunbett2026.ui.components.ScreenContentHorizontalPadding
+import com.example.wmfunbett2026.ui.components.ScreenContentTopPadding
 import com.example.wmfunbett2026.ui.components.TippsSampleActionSheet
-import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
+import com.example.wmfunbett2026.ui.components.screenContentPadding
 import com.example.wmfunbett2026.ui.matchcenter.FriendSummary
 import com.example.wmfunbett2026.ui.matchcenter.loadFriendSummaries
 import com.example.wmfunbett2026.ui.matchcenter.totalTippedLabel
@@ -53,12 +55,15 @@ fun FriendsScreen(modifier: Modifier = Modifier) {
                 message = stringResource(R.string.friends_empty_message),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .padding(
+                        horizontal = ScreenContentHorizontalPadding,
+                        vertical = ScreenContentTopPadding
+                    )
             )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = hierarchyContentPadding(),
+                contentPadding = screenContentPadding(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 item(key = "intro") {
