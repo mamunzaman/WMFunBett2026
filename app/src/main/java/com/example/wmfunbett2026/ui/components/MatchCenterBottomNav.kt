@@ -30,18 +30,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.navigation.AppScreen
-import com.example.wmfunbett2026.ui.theme.DarkNavy
+import com.example.wmfunbett2026.ui.theme.FabGradient
+import com.example.wmfunbett2026.ui.theme.GlassBorder
+import com.example.wmfunbett2026.ui.theme.GlassSurface
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
-import com.example.wmfunbett2026.ui.theme.PrimaryText
-import com.example.wmfunbett2026.ui.theme.SecondaryText
+import com.example.wmfunbett2026.ui.theme.TextPrimary
+import com.example.wmfunbett2026.ui.theme.TextSecondary
 
 private val NavPillWidth = 300.dp
 private val NavPillHeight = 72.dp
@@ -74,17 +74,10 @@ fun MatchCenterBottomNav(
                 .width(NavPillWidth)
                 .height(NavPillHeight)
                 .clip(NavPillShape)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            DarkNavy.copy(alpha = 0.82f),
-                            DarkNavy.copy(alpha = 0.94f)
-                        )
-                    )
-                )
+                .background(GlassSurface)
                 .border(
                     width = 1.dp,
-                    color = PrimaryText.copy(alpha = 0.24f),
+                    color = GlassBorder,
                     shape = NavPillShape
                 )
         ) {
@@ -118,7 +111,7 @@ fun MatchCenterBottomNav(
                         } else {
                             FontWeight.Normal
                         },
-                        color = if (selectedScreen == AppScreen.WM2026) PrimaryBlue else SecondaryText
+                        color = if (selectedScreen == AppScreen.WM2026) PrimaryBlue else TextSecondary
                     )
                 }
                 BottomNavItem(
@@ -138,17 +131,10 @@ fun MatchCenterBottomNav(
                 .offset(y = -(NavPillHeight - FabOverlap))
                 .size(CenterFabSize)
                 .clip(CircleShape)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            PrimaryBlue,
-                            Color(0xFF0F3D8C)
-                        )
-                    )
-                )
+                .background(FabGradient)
                 .border(
                     width = 1.5.dp,
-                    color = PrimaryText.copy(alpha = 0.28f),
+                    color = GlassBorder,
                     shape = CircleShape
                 )
                 .clickable(
@@ -162,7 +148,7 @@ fun MatchCenterBottomNav(
                 imageVector = Icons.Default.Add,
                 contentDescription = stringResource(R.string.add_action),
                 modifier = Modifier.size(32.dp),
-                tint = PrimaryText
+                tint = TextPrimary
             )
         }
     }
@@ -176,7 +162,7 @@ private fun BottomNavItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val tint = if (selected) PrimaryBlue else SecondaryText
+    val tint = if (selected) PrimaryBlue else TextSecondary
     Column(
         modifier = modifier
             .clip(CircleShape)

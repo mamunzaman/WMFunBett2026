@@ -33,9 +33,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.theme.DangerRed
-import com.example.wmfunbett2026.ui.theme.PrimaryBlue
-import com.example.wmfunbett2026.ui.theme.PrimaryText
-import com.example.wmfunbett2026.ui.theme.SecondaryText
+import com.example.wmfunbett2026.ui.theme.PremiumHeaderGradient
+import com.example.wmfunbett2026.ui.theme.TextPrimary
+import com.example.wmfunbett2026.ui.theme.TextSecondary
 
 @Composable
 fun MatchCenterHeader(
@@ -56,7 +56,7 @@ fun MatchCenterHeader(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(PrimaryBlue)
+            .background(PremiumHeaderGradient)
             .statusBarsPadding()
     ) {
         Row(
@@ -72,7 +72,7 @@ fun MatchCenterHeader(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = PrimaryText
+                            tint = TextPrimary
                         )
                     }
                 }
@@ -84,7 +84,7 @@ fun MatchCenterHeader(
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = PrimaryText,
+                color = TextPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -94,7 +94,7 @@ fun MatchCenterHeader(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
-                        tint = PrimaryText
+                        tint = TextPrimary
                     )
                 }
             } else if (hasMenu) {
@@ -103,7 +103,7 @@ fun MatchCenterHeader(
                         Icon(
                             imageVector = Icons.Default.MoreVert,
                             contentDescription = "More options",
-                            tint = PrimaryText
+                            tint = TextPrimary
                         )
                     }
                     DropdownMenu(
@@ -141,7 +141,7 @@ fun MatchCenterHeader(
                                 text = {
                                     Text(
                                         text = stringResource(R.string.delete_entries_first),
-                                        color = SecondaryText
+                                        color = TextSecondary
                                     )
                                 },
                                 onClick = { showMenu = false },
@@ -167,11 +167,11 @@ fun MatchCenterBreadcrumb(
         text = breadcrumbs.joinToString("  ›  "),
         modifier = modifier
             .fillMaxWidth()
-            .background(PrimaryBlue)
+            .background(PremiumHeaderGradient)
             .padding(horizontal = 20.dp)
             .padding(bottom = 10.dp),
         style = MaterialTheme.typography.labelMedium,
-        color = PrimaryText.copy(alpha = 0.82f),
+        color = TextPrimary.copy(alpha = 0.82f),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
     )

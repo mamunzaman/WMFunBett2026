@@ -79,7 +79,7 @@ fun resolveOutcomeBadge(game: Game): MatchCenterOutcomeBadge? {
 
 fun Game.centerScoreText(): String {
     if (teamAScore != null && teamBScore != null) return "$teamAScore:$teamBScore"
-    return "--:--"
+    return "- : -"
 }
 
 fun Game.primaryTippLabel(): String? =

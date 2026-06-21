@@ -45,7 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wmfunbett2026.R
-import com.example.wmfunbett2026.ui.theme.DarkNavy
+import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
@@ -103,7 +103,7 @@ fun HierarchyScreenLayout(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(DarkNavy)
+            .background(BackgroundDeep)
     ) {
         MatchCenterHeader(
             title = title,

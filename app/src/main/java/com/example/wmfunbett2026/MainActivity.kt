@@ -26,14 +26,14 @@ import com.example.wmfunbett2026.ui.navigation.TournamentNavGraph
 import com.example.wmfunbett2026.ui.navigation.TournamentRoutes
 import com.example.wmfunbett2026.ui.screens.HomeScreen
 import com.example.wmfunbett2026.ui.screens.SettingsScreen
-import com.example.wmfunbett2026.ui.theme.DarkNavy
+import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 import com.example.wmfunbett2026.ui.theme.WMFunBett2026Theme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Color.parseColor("#174EA6")),
+            statusBarStyle = SystemBarStyle.dark(Color.parseColor("#1E56B8")),
             navigationBarStyle = SystemBarStyle.dark(Color.parseColor("#081220"))
         )
         setContent {
@@ -53,7 +53,7 @@ fun AppShell(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(DarkNavy)
+            .background(BackgroundDeep)
     ) {
         Box(
             modifier = Modifier

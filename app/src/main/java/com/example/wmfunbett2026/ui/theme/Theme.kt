@@ -6,25 +6,25 @@ import androidx.compose.runtime.Composable
 
 private val FunBettDarkColorScheme = darkColorScheme(
     primary = PrimaryBlue,
-    onPrimary = PrimaryText,
-    primaryContainer = PrimaryBlue,
-    onPrimaryContainer = PrimaryText,
+    onPrimary = TextPrimary,
+    primaryContainer = PrimaryBlueBright,
+    onPrimaryContainer = TextPrimary,
     secondary = JackpotGold,
     onSecondary = DarkNavy,
-    secondaryContainer = SurfaceDark,
-    onSecondaryContainer = PrimaryText,
-    tertiary = WinnerGreen,
-    onTertiary = PrimaryText,
-    background = DarkNavy,
-    onBackground = PrimaryText,
-    surface = SurfaceDark,
-    onSurface = PrimaryText,
-    surfaceVariant = SurfaceDark,
-    onSurfaceVariant = SecondaryText,
+    secondaryContainer = SurfaceVariant,
+    onSecondaryContainer = TextPrimary,
+    tertiary = AccentPurpleLight,
+    onTertiary = TextPrimary,
+    background = BackgroundDeep,
+    onBackground = TextPrimary,
+    surface = Surface,
+    onSurface = TextPrimary,
+    surfaceVariant = SurfaceVariant,
+    onSurfaceVariant = TextSecondary,
     error = DangerRed,
-    onError = PrimaryText,
-    outline = SecondaryText,
-    outlineVariant = SurfaceDark
+    onError = TextPrimary,
+    outline = Divider,
+    outlineVariant = GlassBorder
 )
 
 @Composable
