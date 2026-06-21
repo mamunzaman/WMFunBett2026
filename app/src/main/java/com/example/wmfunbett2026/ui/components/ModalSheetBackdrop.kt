@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -32,12 +33,28 @@ object ModalSheetBackdropState {
 }
 
 private val BackdropBlurRadius = 28.dp
+private val NavBackdropBlurRadius = 20.dp
 
 @Composable
 fun Modifier.modalSheetBackdropBlur(active: Boolean): Modifier {
     if (!active) return this
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        blur(BackdropBlurRadius)
+        blur(
+            radius = BackdropBlurRadius,
+            edgeTreatment = BlurredEdgeTreatment.Unbounded
+        )
+    } else {
+        this
+    }
+}
+
+@Composable
+fun Modifier.bottomNavBackdropBlur(): Modifier {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        blur(
+            radius = NavBackdropBlurRadius,
+            edgeTreatment = BlurredEdgeTreatment.Unbounded
+        )
     } else {
         this
     }

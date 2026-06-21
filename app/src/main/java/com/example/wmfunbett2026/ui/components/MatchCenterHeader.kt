@@ -57,11 +57,11 @@ fun MatchCenterHeader(
         modifier = modifier
             .fillMaxWidth()
             .background(PremiumHeaderGradient)
-            .statusBarsPadding()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .statusBarsPadding()
                 .height(64.dp)
                 .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically

@@ -9,17 +9,27 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.wmfunbett2026.ui.components.MatchCenterAddAction
 import com.example.wmfunbett2026.ui.components.MatchCenterBottomNav
 import com.example.wmfunbett2026.ui.components.ModalSheetBackdropOverlay
 import com.example.wmfunbett2026.ui.components.ModalSheetBackdropState
+import com.example.wmfunbett2026.ui.components.bottomNavBackdropBlur
 import com.example.wmfunbett2026.ui.components.modalSheetBackdropBlur
 import com.example.wmfunbett2026.ui.navigation.AppScreen
 import com.example.wmfunbett2026.ui.navigation.TournamentNavGraph
@@ -27,13 +37,14 @@ import com.example.wmfunbett2026.ui.navigation.TournamentRoutes
 import com.example.wmfunbett2026.ui.screens.HomeScreen
 import com.example.wmfunbett2026.ui.screens.SettingsScreen
 import com.example.wmfunbett2026.ui.theme.BackgroundDeep
+import com.example.wmfunbett2026.ui.theme.DarkNavy
 import com.example.wmfunbett2026.ui.theme.WMFunBett2026Theme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(Color.parseColor("#1E56B8")),
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(Color.parseColor("#081220"))
         )
         setContent {
@@ -72,8 +83,14 @@ fun AppShell(modifier: Modifier = Modifier) {
 
         ModalSheetBackdropOverlay(active = sheetBackdropActive)
 
+        if (!sheetBackdropActive) {
+            BottomNavContentDimLayer(
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+
         MatchCenterBottomNav(
-            modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter),
+            modifier = Modifier.align(Alignment.BottomCenter),
             selectedScreen = selectedScreen,
             onScreenSelected = { selectedScreen = it },
             onCenterAddClick = {
@@ -89,4 +106,28 @@ fun AppShell(modifier: Modifier = Modifier) {
             }
         )
     }
+}
+
+private val BottomNavDimWidth = 336.dp
+private val BottomNavDimHeight = 132.dp
+
+@Composable
+private fun BottomNavContentDimLayer(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .navigationBarsPadding()
+            .padding(bottom = 16.dp)
+            .width(BottomNavDimWidth)
+            .height(BottomNavDimHeight)
+            .clip(RoundedCornerShape(44.dp))
+            .bottomNavBackdropBlur()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        DarkNavy.copy(alpha = 0.72f),
+                        DarkNavy.copy(alpha = 0.94f)
+                    )
+                )
+            )
+    )
 }

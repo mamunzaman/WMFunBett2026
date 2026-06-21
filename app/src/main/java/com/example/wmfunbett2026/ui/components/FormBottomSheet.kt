@@ -1,7 +1,7 @@
 package com.example.wmfunbett2026.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,20 +28,18 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
-import com.example.wmfunbett2026.ui.theme.DarkNavy
 import com.example.wmfunbett2026.ui.theme.FormSheetTheme
+import com.example.wmfunbett2026.ui.theme.GlassBorder
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
-import com.example.wmfunbett2026.ui.theme.PrimaryText
-import com.example.wmfunbett2026.ui.theme.SecondaryText
 import com.example.wmfunbett2026.ui.theme.SheetOnSurfaceVariant
 import com.example.wmfunbett2026.ui.theme.SheetSurface
-import com.example.wmfunbett2026.ui.theme.SurfaceDark
+import com.example.wmfunbett2026.ui.theme.TextPrimary
+import com.example.wmfunbett2026.ui.theme.TextSecondary
 
 private val AppSheetShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
 
@@ -72,126 +70,87 @@ fun FormBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = SheetSurface,
-        contentColor = PrimaryText,
+        contentColor = TextPrimary,
         scrimColor = ModalSheetScrimColor,
         shape = AppSheetShape,
-        dragHandle = {
-            AppModalSheetDragHandle()
-        }
+        tonalElevation = 0.dp,
+        dragHandle = { SheetDragHandle() }
     ) {
-        AppModalSheetSurface(title = title, maxScrollHeight = maxScrollHeight) {
-            content()
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = onPrimaryAction,
-                enabled = primaryActionEnabled,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryBlue,
-                    contentColor = PrimaryText,
-                    disabledContainerColor = PrimaryBlue.copy(alpha = 0.38f),
-                    disabledContentColor = PrimaryText.copy(alpha = 0.6f)
-                )
-            ) {
-                Text(primaryActionLabel)
-            }
-            if (showCancel) {
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 4.dp),
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = SheetOnSurfaceVariant
-                    )
-                ) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AppModalSheetDragHandle() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(AppSheetShape)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        SurfaceDark.copy(alpha = 0.98f),
-                        DarkNavy.copy(alpha = 0.96f)
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        PrimaryText.copy(alpha = 0.22f),
-                        PrimaryText.copy(alpha = 0.06f)
-                    )
-                ),
-                shape = AppSheetShape
-            )
-            .padding(top = 12.dp, bottom = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        BottomSheetDefaults.DragHandle(color = SecondaryText.copy(alpha = 0.55f))
-    }
-}
-
-@Composable
-private fun AppModalSheetSurface(
-    title: String,
-    maxScrollHeight: androidx.compose.ui.unit.Dp,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    FormSheetTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(AppSheetShape)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            SurfaceDark.copy(alpha = 0.97f),
-                            DarkNavy.copy(alpha = 0.99f)
-                        )
-                    )
-                )
-                .border(
-                    width = 1.dp,
-                    color = PrimaryBlue.copy(alpha = 0.28f),
-                    shape = AppSheetShape
-                )
-                .navigationBarsPadding()
-                .imePadding()
-        ) {
-            Text(
-                text = title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 8.dp),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryText
-            )
+        FormSheetTheme {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = maxScrollHeight)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
-                content = content
-            )
+                    .navigationBarsPadding()
+                    .imePadding()
+            ) {
+                Text(
+                    text = title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(top = 4.dp, bottom = 8.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = maxScrollHeight)
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    content = content
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = onPrimaryAction,
+                    enabled = primaryActionEnabled,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PrimaryBlue,
+                        contentColor = TextPrimary,
+                        disabledContainerColor = PrimaryBlue.copy(alpha = 0.38f),
+                        disabledContentColor = TextPrimary.copy(alpha = 0.6f)
+                    )
+                ) {
+                    Text(primaryActionLabel)
+                }
+                if (showCancel) {
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp, vertical = 4.dp),
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = SheetOnSurfaceVariant
+                        )
+                    ) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
+    }
+}
+
+@Composable
+private fun SheetDragHandle() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp, bottom = 8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .width(40.dp)
+                .height(4.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(TextSecondary.copy(alpha = 0.42f))
+        )
     }
 }

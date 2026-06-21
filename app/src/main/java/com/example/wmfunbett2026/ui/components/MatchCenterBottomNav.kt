@@ -30,15 +30,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.navigation.AppScreen
+import com.example.wmfunbett2026.ui.theme.DarkNavy
 import com.example.wmfunbett2026.ui.theme.FabGradient
 import com.example.wmfunbett2026.ui.theme.GlassBorder
-import com.example.wmfunbett2026.ui.theme.GlassSurface
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.TextPrimary
 import com.example.wmfunbett2026.ui.theme.TextSecondary
@@ -74,7 +75,7 @@ fun MatchCenterBottomNav(
                 .width(NavPillWidth)
                 .height(NavPillHeight)
                 .clip(NavPillShape)
-                .background(GlassSurface)
+                .background(NavPillGlassBrush())
                 .border(
                     width = 1.dp,
                     color = GlassBorder,
@@ -152,6 +153,16 @@ fun MatchCenterBottomNav(
             )
         }
     }
+}
+
+@Composable
+private fun NavPillGlassBrush(): Brush {
+    return Brush.verticalGradient(
+        colors = listOf(
+            DarkNavy.copy(alpha = 0.94f),
+            DarkNavy.copy(alpha = 0.98f)
+        )
+    )
 }
 
 @Composable

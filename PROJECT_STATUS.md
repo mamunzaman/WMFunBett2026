@@ -38,6 +38,7 @@
 - [x] Modal bottom sheet blurred glass backdrop (app shell + FormBottomSheet)
 - [x] Premium match-center color system: palette tokens, gradients, reusable card components
 - [x] Tipps dashboard polish: JackpotSummaryCard, MatchCard, TournamentCard, glass nav
+- [x] Sheet blur polish, edge-to-edge header, nav glass readability layer
 
 ## In Progress
 - None
@@ -50,4 +51,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Premium match-center color palette, gradient cards, and Tipps screen polish.
+2026-06-21 — Sheet blur/header insets/nav glass readability fixes.
