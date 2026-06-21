@@ -39,6 +39,7 @@
 - [x] Premium match-center color system: palette tokens, gradients, reusable card components
 - [x] Tipps dashboard polish: JackpotSummaryCard, MatchCard, TournamentCard, glass nav
 - [x] Sheet blur polish, edge-to-edge header, nav glass readability layer
+- [x] Clipped blur glass on bottom nav pill only (no dim overlay block)
 
 ## In Progress
 - None
@@ -51,4 +52,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Sheet blur/header insets/nav glass readability fixes.
+2026-06-21 — Bottom nav uses clipped in-pill blur glass; removed dim overlay block.

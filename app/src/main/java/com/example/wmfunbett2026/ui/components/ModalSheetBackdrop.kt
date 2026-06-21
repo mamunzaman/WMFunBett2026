@@ -33,7 +33,6 @@ object ModalSheetBackdropState {
 }
 
 private val BackdropBlurRadius = 28.dp
-private val NavBackdropBlurRadius = 20.dp
 
 @Composable
 fun Modifier.modalSheetBackdropBlur(active: Boolean): Modifier {
@@ -41,18 +40,6 @@ fun Modifier.modalSheetBackdropBlur(active: Boolean): Modifier {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         blur(
             radius = BackdropBlurRadius,
-            edgeTreatment = BlurredEdgeTreatment.Unbounded
-        )
-    } else {
-        this
-    }
-}
-
-@Composable
-fun Modifier.bottomNavBackdropBlur(): Modifier {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        blur(
-            radius = NavBackdropBlurRadius,
             edgeTreatment = BlurredEdgeTreatment.Unbounded
         )
     } else {

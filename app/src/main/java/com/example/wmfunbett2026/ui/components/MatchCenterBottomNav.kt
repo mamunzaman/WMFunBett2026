@@ -1,5 +1,6 @@
 package com.example.wmfunbett2026.ui.components
 
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,8 +30,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,6 +52,9 @@ private val NavPillRadius = 36.dp
 private val NavPillShape = RoundedCornerShape(NavPillRadius)
 private val CenterFabSize = 68.dp
 private val FabOverlap = 34.dp
+private val NavPillBlurRadius = 24.dp
+private val NavPillTintAlpha = 0.58f
+private val NavPillFallbackAlpha = 0.72f
 
 /** Space to reserve in scroll content so items clear the floating nav. */
 val MatchCenterBottomNavReservedHeight = 148.dp
@@ -75,13 +80,13 @@ fun MatchCenterBottomNav(
                 .width(NavPillWidth)
                 .height(NavPillHeight)
                 .clip(NavPillShape)
-                .background(NavPillGlassBrush())
                 .border(
                     width = 1.dp,
                     color = GlassBorder,
                     shape = NavPillShape
                 )
         ) {
+            NavGlassPillBackground(modifier = Modifier.fillMaxSize())
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -156,13 +161,28 @@ fun MatchCenterBottomNav(
 }
 
 @Composable
-private fun NavPillGlassBrush(): Brush {
-    return Brush.verticalGradient(
-        colors = listOf(
-            DarkNavy.copy(alpha = 0.94f),
-            DarkNavy.copy(alpha = 0.98f)
+private fun NavGlassPillBackground(modifier: Modifier = Modifier) {
+    val glassModifier = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        Modifier.blur(
+            radius = NavPillBlurRadius,
+            edgeTreatment = BlurredEdgeTreatment.Rectangle
         )
+    } else {
+        Modifier
+    }
+    Box(
+        modifier = modifier
+            .then(glassModifier)
+            .background(DarkNavy.copy(alpha = navGlassAlpha()))
     )
+}
+
+private fun navGlassAlpha(): Float {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        NavPillTintAlpha
+    } else {
+        NavPillFallbackAlpha
+    }
 }
 
 @Composable
