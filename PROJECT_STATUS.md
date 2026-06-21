@@ -10,7 +10,7 @@
 - [x] Shared card components (JackpotCard, StatCard, PlaceholderCard)
 - [x] Round → Day → Game → Tipp Group → Entry navigation flow
 - [x] In-memory data models and FunBettRepository (offline hierarchy)
-- [x] Game screen: teams, result placeholder, game kasse, tipp groups
+- [x] Game screen: teams, result display, match status, game kasse, tipp groups
 - [x] Tipp Group screen: entries with name, prediction, amount, note, group total
 - [x] Add Entry dialog with score UI and in-memory save
 - [x] Hierarchy screens with top app bar, breadcrumbs, FAB add, 3-dot delete
@@ -23,6 +23,7 @@
 - [x] Add Tipp Group crash fix: safe empty-scope handling
 - [x] Add Game crash fix: Column/Row chip layout (no FlowRow)
 - [x] Stability audit: immutable repo reads, scoped lookups, dialog reset on nav, not-found screens
+- [x] Game result management: scores, MatchStatus, Set Result dialog (no winner calc yet)
 
 ## In Progress
 - None
@@ -35,4 +36,4 @@
 - [ ] Winner and scoring logic
 
 ## Last Update
-2026-06-21 — In-memory stability audit: repo safety, nav guards, crash prevention.
+2026-06-21 — Game result management: scores, status badge, Set Result in memory.

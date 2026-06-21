@@ -1,9 +1,9 @@
 # Next Task
 
 ## Current Goal
-Add edit actions for hierarchy items, or persist data with Room database.
+Winner calculation per tipp group, or Room persistence.
 
 ## Verify Next
-- Full manual flow: add/delete all hierarchy levels
-- Rotate emulator during open dialog → no stale crash
-- Invalid deep-link ids → not-found screen, no crash
+- Set Result: Finished 2-1 → shows on game detail + tournament card
+- Live without scores → validation error
+- Not Started → scores optional

@@ -68,10 +68,12 @@ fun HierarchyScreenLayout(
     modifier: Modifier = Modifier,
     onFabClick: (() -> Unit)? = null,
     fabContentDescription: String = "Add",
+    onSetResultClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
     content: @Composable (Modifier) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    val hasMenu = onSetResultClick != null || onDeleteClick != null
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -96,7 +98,7 @@ fun HierarchyScreenLayout(
                     }
                 },
                 actions = {
-                    if (onDeleteClick != null) {
+                    if (hasMenu) {
                         Box {
                             IconButton(onClick = { showMenu = true }) {
                                 Icon(
@@ -108,13 +110,24 @@ fun HierarchyScreenLayout(
                                 expanded = showMenu,
                                 onDismissRequest = { showMenu = false }
                             ) {
-                                DropdownMenuItem(
-                                    text = { Text("Delete", color = DangerRed) },
-                                    onClick = {
-                                        showMenu = false
-                                        onDeleteClick()
-                                    }
-                                )
+                                if (onSetResultClick != null) {
+                                    DropdownMenuItem(
+                                        text = { Text("Set Result") },
+                                        onClick = {
+                                            showMenu = false
+                                            onSetResultClick()
+                                        }
+                                    )
+                                }
+                                if (onDeleteClick != null) {
+                                    DropdownMenuItem(
+                                        text = { Text("Delete", color = DangerRed) },
+                                        onClick = {
+                                            showMenu = false
+                                            onDeleteClick()
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

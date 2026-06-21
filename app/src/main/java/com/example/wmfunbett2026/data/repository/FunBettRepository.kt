@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import com.example.wmfunbett2026.data.model.Day
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
+import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.Round
 import com.example.wmfunbett2026.data.model.TimeScope
 import com.example.wmfunbett2026.data.model.TippGroup
@@ -88,7 +89,6 @@ object FunBettRepository {
             teamA = teamA.trim(),
             teamB = teamB.trim(),
             dateTimeLabel = buildDateTimeLabel(dateLabel, timeLabel),
-            resultPlaceholder = "—",
             tippGroups = emptyList()
         )
         val normalizedDayLabel = dayLabel.trim()
@@ -193,6 +193,34 @@ object FunBettRepository {
         }
         notifyChanged()
         return newEntry
+    }
+
+    fun updateGameResult(
+        gameId: String,
+        teamAScore: Int?,
+        teamBScore: Int?,
+        status: MatchStatus
+    ): Boolean {
+        if (gameId.isBlank() || getGame(gameId) == null) return false
+
+        roundsInternal = roundsInternal.map { round ->
+            round.copy(
+                days = round.days.map { day ->
+                    day.copy(
+                        games = day.games.map { game ->
+                            if (game.id != gameId) return@map game
+                            game.copy(
+                                teamAScore = teamAScore,
+                                teamBScore = teamBScore,
+                                status = status
+                            )
+                        }
+                    )
+                }
+            )
+        }
+        notifyChanged()
+        return true
     }
 
     fun deleteRound(roundId: String): Boolean {
@@ -313,7 +341,6 @@ object FunBettRepository {
             teamA = "Germany",
             teamB = "France",
             dateTimeLabel = "Sat 21 Jun · 20:00",
-            resultPlaceholder = "—",
             tippGroups = listOf(correctScoreGroup)
         )
 
@@ -329,7 +356,6 @@ object FunBettRepository {
             teamA = "Brazil",
             teamB = "Spain",
             dateTimeLabel = "Sat 21 Jun · 17:00",
-            resultPlaceholder = "—",
             tippGroups = listOf(brazilSpainGroup)
         )
 

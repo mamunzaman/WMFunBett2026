@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,8 +38,10 @@ import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
+import com.example.wmfunbett2026.ui.components.MatchStatusBadge
 import com.example.wmfunbett2026.ui.components.NavListCard
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
+import com.example.wmfunbett2026.ui.components.SetResultDialog
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
 import com.example.wmfunbett2026.ui.theme.JackpotGold
@@ -61,12 +64,14 @@ fun GameDetailScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var showNoScopeDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showSetResultDialog by remember { mutableStateOf(false) }
     var availableScopesForDialog by remember { mutableStateOf<List<TimeScope>>(emptyList()) }
 
     LaunchedEffect(gameId) {
         showAddDialog = false
         showNoScopeDialog = false
         showDeleteDialog = false
+        showSetResultDialog = false
         availableScopesForDialog = emptyList()
     }
 
@@ -99,6 +104,7 @@ fun GameDetailScreen(
         onBackClick = onBackClick,
         onFabClick = if (game != null) {{ onAddTippGroupClick() }} else null,
         fabContentDescription = "Add tipp group",
+        onSetResultClick = if (game != null) {{ showSetResultDialog = true }} else null,
         onDeleteClick = if (game != null) {{ showDeleteDialog = true }} else null,
         modifier = modifier
     ) { contentModifier ->
@@ -192,6 +198,17 @@ fun GameDetailScreen(
         )
     }
 
+    if (showSetResultDialog && game != null) {
+        SetResultDialog(
+            game = game,
+            onDismiss = { showSetResultDialog = false },
+            onSave = { teamAScore, teamBScore, status ->
+                FunBettRepository.updateGameResult(gameId, teamAScore, teamBScore, status)
+                showSetResultDialog = false
+            }
+        )
+    }
+
     if (showDeleteDialog) {
         DeleteConfirmDialog(
             onDismiss = { showDeleteDialog = false },
@@ -234,26 +251,35 @@ private fun GameInfoCard(
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = "${game.teamA}  vs  ${game.teamB}",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryText
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${game.teamA}  vs  ${game.teamB}",
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryText
+                )
+                MatchStatusBadge(status = game.status)
+            }
             Text(
                 text = scheduleLabel,
                 style = MaterialTheme.typography.bodyMedium,
                 color = SecondaryText
             )
+            Text(
+                text = game.resultDisplayText(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = if (game.hasResult) PrimaryText else SecondaryText
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.End
             ) {
-                Text(
-                    text = "Result: ${game.resultPlaceholder}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = SecondaryText
-                )
                 Text(
                     text = "Game Kasse: ${game.totalKasse.toEuroLabel()}",
                     style = MaterialTheme.typography.titleMedium,

@@ -1,10 +1,17 @@
 package com.example.wmfunbett2026.ui.screens.tournament
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,7 +20,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.data.model.Day
@@ -25,11 +34,12 @@ import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
-import com.example.wmfunbett2026.ui.components.NavListCard
+import com.example.wmfunbett2026.ui.components.MatchStatusBadge
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
 import com.example.wmfunbett2026.ui.theme.SecondaryText
+import com.example.wmfunbett2026.ui.theme.SurfaceDark
 import com.example.wmfunbett2026.ui.theme.WMFunBett2026Theme
 
 @Composable
@@ -147,18 +157,50 @@ private fun DayGroupHeader(day: Day, modifier: Modifier = Modifier) {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GameCard(
     game: Game,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    NavListCard(
-        title = game.displayName,
-        subtitle = "${game.dateTimeLabel} · Kasse ${game.totalKasse.toEuroLabel()}",
+    val subtitleParts = buildList {
+        add(game.dateTimeLabel)
+        if (game.hasResult) add(game.resultDisplayText())
+        add("Kasse ${game.totalKasse.toEuroLabel()}")
+    }
+
+    Card(
         onClick = onClick,
-        modifier = modifier
-    )
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = game.displayName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = subtitleParts.joinToString(" · "),
+                    modifier = Modifier.padding(top = 4.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SecondaryText
+                )
+            }
+            MatchStatusBadge(status = game.status)
+        }
+    }
 }
 
 @Preview(showBackground = true)
