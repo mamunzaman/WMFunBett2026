@@ -55,9 +55,9 @@ private val NavPillRadius = 36.dp
 private val NavPillShape = RoundedCornerShape(NavPillRadius)
 private val CenterFabSize = 68.dp
 private val FabOverlap = 34.dp
-private val NavPillBlurRadius = 24.dp
-private val NavPillTintAlpha = 0.58f
-private val NavPillFallbackAlpha = 0.72f
+private val NavPillBlurRadius = 28.dp
+private val NavPillTintAlpha = 0.82f
+private val NavPillFallbackAlpha = 0.86f
 
 /** Space to reserve in scroll content so items clear the floating nav. */
 val MatchCenterBottomNavReservedHeight = 148.dp
