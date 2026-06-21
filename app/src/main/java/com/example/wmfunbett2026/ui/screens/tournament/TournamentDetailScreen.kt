@@ -22,7 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import com.example.wmfunbett2026.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.data.model.Day
@@ -34,7 +36,8 @@ import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
-import com.example.wmfunbett2026.ui.components.MatchStatusBadge
+import com.example.wmfunbett2026.ui.components.MatchCenterCard
+import com.example.wmfunbett2026.ui.components.MatchCenterEmptyState
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
@@ -91,7 +94,7 @@ fun TournamentDetailScreen(
 
         LazyColumn(
             modifier = contentModifier.fillMaxSize(),
-            contentPadding = hierarchyContentPadding(withFab = true),
+            contentPadding = hierarchyContentPadding(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item(key = "notice") { SampleDataNotice() }
@@ -99,10 +102,9 @@ fun TournamentDetailScreen(
 
             if (!hasGames) {
                 item(key = "empty") {
-                    Text(
-                        text = "No games yet — tap + to add one",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = SecondaryText
+                    MatchCenterEmptyState(
+                        title = stringResource(R.string.empty_matches_title),
+                        message = stringResource(R.string.empty_matches_message)
                     )
                 }
             } else {
@@ -115,8 +117,9 @@ fun TournamentDetailScreen(
                             items = day.games,
                             key = { game -> "${day.id}-${game.id}" }
                         ) { game ->
-                            GameCard(
+                            MatchCenterCard(
                                 game = game,
+                                matchdayLabel = day.name,
                                 onClick = { onGameClick(day.id, game.id) }
                             )
                         }
@@ -155,52 +158,6 @@ private fun DayGroupHeader(day: Day, modifier: Modifier = Modifier) {
         title = day.name,
         modifier = modifier.fillMaxWidth()
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun GameCard(
-    game: Game,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val subtitleParts = buildList {
-        add(game.dateTimeLabel)
-        if (game.hasResult) add(game.resultDisplayText())
-        add("Kasse ${game.totalKasse.toEuroLabel()}")
-    }
-
-    Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = game.displayName,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = subtitleParts.joinToString(" · "),
-                    modifier = Modifier.padding(top = 4.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = SecondaryText
-                )
-            }
-            MatchStatusBadge(status = game.status)
-        }
-    }
 }
 
 @Preview(showBackground = true)

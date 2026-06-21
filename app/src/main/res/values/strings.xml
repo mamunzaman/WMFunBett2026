@@ -5,11 +5,34 @@
     <string name="nav_home">Home</string>
     <string name="nav_tipps">Tipps</string>
     <string name="nav_kasse">Kasse</string>
+    <string name="nav_history">History</string>
+    <string name="nav_settings">Settings</string>
+    <string name="add_action">Add</string>
 
     <!-- Screen titles -->
     <string name="screen_home">Home</string>
     <string name="screen_kasse">Kasse</string>
     <string name="screen_tipps">Tipps</string>
+
+    <!-- Match center -->
+    <string name="total_jackpot">Total Jackpot</string>
+    <string name="open_rounds_pill">%1$d open rounds</string>
+    <string name="active_games_pill">%1$d active games</string>
+    <string name="section_matches">Matches</string>
+    <string name="section_tournaments">Tournaments</string>
+    <string name="badge_active">Active</string>
+    <string name="badge_no_winner">No Winner</string>
+    <string name="empty_matches_title">No matches yet</string>
+    <string name="empty_matches_message">Create your first game with the + button</string>
+    <string name="empty_tournaments_title">No tournaments yet</string>
+    <string name="empty_tournaments_message">Add a tournament to get started</string>
+    <string name="tournament_card_hint">Tap to view games</string>
+    <string name="delete_entries_first">Delete entries first</string>
+    <string name="history_empty_title">No history yet</string>
+    <string name="history_empty_message">Finished rounds and payouts will appear here</string>
+    <string name="settings_empty_title">Settings</string>
+    <string name="settings_empty_message">App settings coming soon</string>
+    <string name="kasse_placeholder">Calculation coming later · %1$d entries loaded</string>
 
     <!-- Form sheet titles -->
     <string name="add_tournament">Add Tournament</string>

@@ -2,12 +2,11 @@ package com.example.wmfunbett2026.ui.screens.tournament
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,9 +36,13 @@ import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.components.AddTournamentDialog
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
-import com.example.wmfunbett2026.ui.components.SampleDataNotice
+import com.example.wmfunbett2026.ui.components.MatchCenterCard
+import com.example.wmfunbett2026.ui.components.MatchCenterDashboard
+import com.example.wmfunbett2026.ui.components.MatchCenterEmptyState
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
-import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
+import com.example.wmfunbett2026.ui.matchcenter.countActiveGames
+import com.example.wmfunbett2026.ui.matchcenter.countOpenRounds
+import com.example.wmfunbett2026.ui.matchcenter.flattenAllGames
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SecondaryText
@@ -49,45 +52,78 @@ import com.example.wmfunbett2026.ui.theme.WMFunBett2026Theme
 @Composable
 fun TournamentScreen(
     onTournamentClick: (String) -> Unit,
+    onGameClick: (roundId: String, dayId: String, gameId: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     FunBettRepository.dataVersion.intValue
     var showAddDialog by remember { mutableStateOf(false) }
 
     val rounds = FunBettRepository.getRounds()
-    val gameCount = FunBettRepository.getTotalGameCount()
+    val flatGames = remember(rounds) { flattenAllGames(rounds) }
     val kassePreview = FunBettRepository.getTotalKassePreview().toEuroLabel()
+    val openRounds = remember(rounds) { countOpenRounds(rounds) }
+    val activeGames = remember(rounds) { countActiveGames(rounds) }
 
     HierarchyScreenLayout(
-        title = stringResource(R.string.screen_tipps),
-        breadcrumbs = HierarchyLabels.forTournamentList(),
+        title = stringResource(R.string.app_name),
+        breadcrumbs = emptyList(),
         onBackClick = null,
         onFabClick = { showAddDialog = true },
-        fabContentDescription = "Add tournament",
+        showSearchIcon = true,
         modifier = modifier
     ) { contentModifier ->
         LazyColumn(
             modifier = contentModifier.fillMaxSize(),
-            contentPadding = hierarchyContentPadding(withFab = true),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = hierarchyContentPadding(),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            item(key = "notice") { SampleDataNotice() }
-            item(key = "stats") {
-                TournamentStatsRow(
-                    tournamentCount = rounds.size,
-                    gameCount = gameCount,
-                    kassePreview = kassePreview
-                )
-            }
-            item(key = "section") {
-                HierarchySectionHeader(title = "Your Tournaments")
-            }
-            if (rounds.isEmpty()) {
-                item(key = "empty") {
+            item(key = "dashboard") {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = "No tournaments yet — tap + to add one",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = SecondaryText
+                        text = stringResource(R.string.screen_tipps),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryText
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    MatchCenterDashboard(
+                        jackpotAmount = kassePreview,
+                        openRoundsCount = openRounds,
+                        activeGamesCount = activeGames
+                    )
+                }
+            }
+
+            item(key = "matches_header") {
+                HierarchySectionHeader(title = stringResource(R.string.section_matches))
+            }
+
+            if (flatGames.isEmpty()) {
+                item(key = "empty_matches") {
+                    MatchCenterEmptyState(
+                        title = stringResource(R.string.empty_matches_title),
+                        message = stringResource(R.string.empty_matches_message)
+                    )
+                }
+            } else {
+                items(flatGames, key = { "${it.roundId}-${it.dayId}-${it.game.id}" }) { item ->
+                    MatchCenterCard(
+                        game = item.game,
+                        matchdayLabel = item.dayName,
+                        onClick = { onGameClick(item.roundId, item.dayId, item.game.id) }
+                    )
+                }
+            }
+
+            item(key = "tournaments_header") {
+                HierarchySectionHeader(title = stringResource(R.string.section_tournaments))
+            }
+
+            if (rounds.isEmpty()) {
+                item(key = "empty_tournaments") {
+                    MatchCenterEmptyState(
+                        title = stringResource(R.string.empty_tournaments_title),
+                        message = stringResource(R.string.empty_tournaments_message)
                     )
                 }
             } else {
@@ -112,57 +148,6 @@ fun TournamentScreen(
     }
 }
 
-@Composable
-private fun TournamentStatsRow(
-    tournamentCount: Int,
-    gameCount: Int,
-    kassePreview: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        TournamentMiniStatCard(label = "Tournaments", value = tournamentCount.toString(), modifier = Modifier.weight(1f))
-        TournamentMiniStatCard(label = "Games", value = gameCount.toString(), modifier = Modifier.weight(1f))
-        TournamentMiniStatCard(label = stringResource(R.string.nav_kasse), value = kassePreview, modifier = Modifier.weight(1f))
-    }
-}
-
-@Composable
-private fun TournamentMiniStatCard(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = SecondaryText
-            )
-            Text(
-                text = value,
-                modifier = Modifier.padding(top = 4.dp),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = PrimaryText
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TournamentCard(
@@ -175,12 +160,12 @@ private fun TournamentCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
+        androidx.compose.foundation.layout.Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 18.dp, end = 16.dp, top = 18.dp, bottom = 18.dp),
+                .padding(horizontal = 18.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
@@ -194,7 +179,7 @@ private fun TournamentCard(
                     color = PrimaryText
                 )
                 Text(
-                    text = round.note ?: "Tap to view games",
+                    text = round.note ?: stringResource(R.string.tournament_card_hint),
                     style = MaterialTheme.typography.bodyMedium,
                     color = SecondaryText
                 )
@@ -202,7 +187,7 @@ private fun TournamentCard(
             Icon(
                 imageVector = Icons.Default.EmojiEvents,
                 contentDescription = null,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.padding(start = 8.dp),
                 tint = JackpotGold
             )
         }
@@ -213,6 +198,6 @@ private fun TournamentCard(
 @Composable
 fun TournamentScreenPreview() {
     WMFunBett2026Theme {
-        TournamentScreen(onTournamentClick = {})
+        TournamentScreen(onTournamentClick = {}, onGameClick = { _, _, _ -> })
     }
 }

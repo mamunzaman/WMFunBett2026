@@ -26,6 +26,9 @@ fun TournamentNavGraph(
             TournamentScreen(
                 onTournamentClick = { roundId ->
                     navController.navigate(TournamentRoutes.tournamentDetail(roundId))
+                },
+                onGameClick = { roundId, dayId, gameId ->
+                    navController.navigate(TournamentRoutes.gameDetail(roundId, dayId, gameId))
                 }
             )
         }

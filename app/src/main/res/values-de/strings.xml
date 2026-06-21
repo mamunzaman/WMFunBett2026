@@ -5,11 +5,34 @@
     <string name="nav_home">Start</string>
     <string name="nav_tipps">Tipps</string>
     <string name="nav_kasse">Kasse</string>
+    <string name="nav_history">Verlauf</string>
+    <string name="nav_settings">Einstellungen</string>
+    <string name="add_action">Hinzufügen</string>
 
     <!-- Screen titles -->
     <string name="screen_home">Start</string>
     <string name="screen_kasse">Kasse</string>
     <string name="screen_tipps">Tipps</string>
+
+    <!-- Match center -->
+    <string name="total_jackpot">Gesamt-Jackpot</string>
+    <string name="open_rounds_pill">%1$d offene Runden</string>
+    <string name="active_games_pill">%1$d aktive Spiele</string>
+    <string name="section_matches">Spiele</string>
+    <string name="section_tournaments">Turniere</string>
+    <string name="badge_active">Aktiv</string>
+    <string name="badge_no_winner">Kein Gewinner</string>
+    <string name="empty_matches_title">Noch keine Spiele</string>
+    <string name="empty_matches_message">Erstelle dein erstes Spiel mit dem + Button</string>
+    <string name="empty_tournaments_title">Noch keine Turniere</string>
+    <string name="empty_tournaments_message">Füge ein Turnier hinzu, um zu starten</string>
+    <string name="tournament_card_hint">Tippen für Spiele</string>
+    <string name="delete_entries_first">Zuerst Tipps löschen</string>
+    <string name="history_empty_title">Noch kein Verlauf</string>
+    <string name="history_empty_message">Abgeschlossene Runden und Auszahlungen erscheinen hier</string>
+    <string name="settings_empty_title">Einstellungen</string>
+    <string name="settings_empty_message">App-Einstellungen folgen bald</string>
+    <string name="kasse_placeholder">Berechnung folgt · %1$d Tipps geladen</string>
 
     <!-- Form sheet titles -->
     <string name="add_tournament">Turnier hinzufügen</string>

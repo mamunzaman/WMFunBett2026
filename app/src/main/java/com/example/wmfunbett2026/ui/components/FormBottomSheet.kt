@@ -1,5 +1,6 @@
 package com.example.wmfunbett2026.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.theme.FormSheetTheme
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
+import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SheetOnSurface
 import com.example.wmfunbett2026.ui.theme.SheetOnSurfaceVariant
 import com.example.wmfunbett2026.ui.theme.SheetSurface
@@ -54,9 +56,7 @@ fun FormBottomSheet(
         containerColor = SheetSurface,
         contentColor = SheetOnSurface,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
-        dragHandle = {
-            BottomSheetDefaults.DragHandle(color = SheetOnSurfaceVariant.copy(alpha = 0.4f))
-        }
+        dragHandle = null
     ) {
         FormSheetTheme {
             Column(
@@ -64,24 +64,32 @@ fun FormBottomSheet(
                     .fillMaxWidth()
                     .navigationBarsPadding()
                     .imePadding()
-                    .padding(bottom = 16.dp)
             ) {
-                Text(
-                    text = title,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(PrimaryBlue)
+                        .padding(top = 12.dp, bottom = 16.dp),
+                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                ) {
+                    BottomSheetDefaults.DragHandle(color = PrimaryText.copy(alpha = 0.5f))
+                    Text(
+                        text = title,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryText
+                    )
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = maxScrollHeight)
                         .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 24.dp),
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
                     content = content
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = onPrimaryAction,
                     enabled = primaryActionEnabled,
@@ -103,7 +111,7 @@ fun FormBottomSheet(
                         onClick = onDismiss,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 24.dp),
+                            .padding(horizontal = 24.dp, vertical = 4.dp),
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -111,6 +119,7 @@ fun FormBottomSheet(
                         Text(stringResource(R.string.cancel))
                     }
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }

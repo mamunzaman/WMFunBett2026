@@ -2,6 +2,16 @@ package com.example.wmfunbett2026.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,20 +23,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,9 +43,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.ui.theme.DarkNavy
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.JackpotGold
-import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SecondaryText
 import com.example.wmfunbett2026.ui.theme.SurfaceDark
@@ -53,17 +59,27 @@ val HierarchyListContentPadding = PaddingValues(
     bottom = 24.dp
 )
 
-fun hierarchyContentPadding(withFab: Boolean): PaddingValues {
-    if (!withFab) return HierarchyListContentPadding
+fun hierarchyContentPadding(withFab: Boolean = false): PaddingValues {
     return PaddingValues(
         start = 20.dp,
         end = 20.dp,
-        top = 8.dp,
-        bottom = 88.dp
+        top = 12.dp,
+        bottom = 24.dp
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RegisterMatchCenterAddAction(action: (() -> Unit)?) {
+    DisposableEffect(action) {
+        MatchCenterAddAction.handler = action
+        onDispose {
+            if (MatchCenterAddAction.handler === action) {
+                MatchCenterAddAction.handler = null
+            }
+        }
+    }
+}
+
 @Composable
 fun HierarchyScreenLayout(
     title: String,
@@ -72,121 +88,31 @@ fun HierarchyScreenLayout(
     modifier: Modifier = Modifier,
     onFabClick: (() -> Unit)? = null,
     fabContentDescription: String = "Add",
+    showSearchIcon: Boolean = false,
     onSetResultClick: (() -> Unit)? = null,
     onWinnerShareSettingsClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
     deleteEnabled: Boolean = true,
     content: @Composable (Modifier) -> Unit
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-    val hasMenu = onSetResultClick != null ||
-        onWinnerShareSettingsClick != null ||
-        onDeleteClick != null
+    RegisterMatchCenterAddAction(onFabClick)
 
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                },
-                navigationIcon = {
-                    if (onBackClick != null) {
-                        IconButton(onClick = onBackClick) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
-                            )
-                        }
-                    }
-                },
-                actions = {
-                    if (hasMenu) {
-                        Box {
-                            IconButton(onClick = { showMenu = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = "More options"
-                                )
-                            }
-                            DropdownMenu(
-                                expanded = showMenu,
-                                onDismissRequest = { showMenu = false }
-                            ) {
-                                if (onWinnerShareSettingsClick != null) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.winner_share_settings)) },
-                                        onClick = {
-                                            showMenu = false
-                                            onWinnerShareSettingsClick()
-                                        }
-                                    )
-                                }
-                                if (onSetResultClick != null) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.set_result)) },
-                                        onClick = {
-                                            showMenu = false
-                                            onSetResultClick()
-                                        }
-                                    )
-                                }
-                                if (onDeleteClick != null && deleteEnabled) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.delete), color = DangerRed) },
-                                        onClick = {
-                                            showMenu = false
-                                            onDeleteClick()
-                                        }
-                                    )
-                                } else if (onDeleteClick != null) {
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = "Delete entries first",
-                                                color = SecondaryText
-                                            )
-                                        },
-                                        onClick = { showMenu = false },
-                                        enabled = false
-                                    )
-                                }
-                            }
-                        }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = SurfaceDark,
-                    titleContentColor = PrimaryText,
-                    navigationIconContentColor = PrimaryText,
-                    actionIconContentColor = PrimaryText
-                )
-            )
-            HierarchyBreadcrumb(breadcrumbs = breadcrumbs)
-            content(Modifier.fillMaxSize())
-        }
-
-        if (onFabClick != null) {
-            FloatingActionButton(
-                onClick = onFabClick,
-                modifier = Modifier
-                    .align(androidx.compose.ui.Alignment.BottomEnd)
-                    .padding(end = 20.dp, bottom = 16.dp),
-                containerColor = PrimaryBlue,
-                contentColor = PrimaryText
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = fabContentDescription,
-                    tint = JackpotGold
-                )
-            }
-        }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(DarkNavy)
+    ) {
+        MatchCenterHeader(
+            title = title,
+            onBackClick = onBackClick,
+            showSearchIcon = showSearchIcon,
+            onSetResultClick = onSetResultClick,
+            onWinnerShareSettingsClick = onWinnerShareSettingsClick,
+            onDeleteClick = onDeleteClick,
+            deleteEnabled = deleteEnabled
+        )
+        MatchCenterBreadcrumb(breadcrumbs = breadcrumbs)
+        content(Modifier.fillMaxSize())
     }
 }
 
@@ -212,8 +138,8 @@ fun HierarchySectionHeader(
         modifier = modifier
             .fillMaxWidth()
             .padding(top = 8.dp, bottom = 4.dp),
-        style = MaterialTheme.typography.titleSmall,
-        fontWeight = FontWeight.SemiBold,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
         color = PrimaryText
     )
 }
@@ -274,81 +200,121 @@ fun <T> HierarchyListContent(
     }
 }
 
+@Composable
+fun DetailInlineAddButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(10.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = JackpotGold.copy(alpha = 0.18f),
+            contentColor = JackpotGold
+        ),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Add,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+fun DetailStatusChip(
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = label,
+        modifier = modifier
+            .background(
+                color = SecondaryText.copy(alpha = 0.16f),
+                shape = RoundedCornerShape(8.dp)
+            )
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Medium,
+        color = PrimaryText
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TippGroupListCard(
     title: String,
-    subtitle: String,
+    scopeLabel: String,
+    peopleCount: Int,
+    entryAmountLabel: String,
+    totalAmountLabel: String,
+    winnerStatusLabel: String,
     onClick: () -> Unit,
-    canDelete: Boolean,
-    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-
-    androidx.compose.material3.Card(
+    Card(
+        onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = SurfaceDark),
-        elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, end = 4.dp, top = 16.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(onClick = onClick)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
                 Text(
                     text = title,
+                    modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+                DetailStatusChip(label = winnerStatusLabel)
+            }
+            Text(
+                text = scopeLabel,
+                style = MaterialTheme.typography.bodyMedium,
+                color = SecondaryText
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
-                    text = subtitle,
-                    modifier = Modifier.padding(top = 4.dp),
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = "$peopleCount people",
+                    style = MaterialTheme.typography.bodySmall,
                     color = SecondaryText
                 )
-            }
-            Box {
-                IconButton(onClick = { showMenu = true }) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Tipp group options"
-                    )
-                }
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false }
-                ) {
-                    if (canDelete) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.delete), color = DangerRed) },
-                            onClick = {
-                                showMenu = false
-                                onDelete()
-                            }
-                        )
-                    } else {
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "Delete entries first",
-                                    color = SecondaryText
-                                )
-                            },
-                            onClick = { showMenu = false },
-                            enabled = false
-                        )
-                    }
-                }
+                Text(
+                    text = "Entry $entryAmountLabel",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SecondaryText
+                )
+                Text(
+                    text = totalAmountLabel,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = JackpotGold
+                )
             }
         }
     }
@@ -392,104 +358,132 @@ fun NavListCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntryListCard(
     name: String,
     prediction: String,
     amount: String,
+    statusLabel: String,
     note: String? = null,
     roundStakeLabel: String? = null,
     isWinner: Boolean = false,
-    onDelete: (() -> Unit)? = null,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    var showMenu by remember { mutableStateOf(false) }
+    val cardColors = CardDefaults.cardColors(
+        containerColor = if (isWinner) JackpotGold.copy(alpha = 0.12f) else SurfaceDark
+    )
+    val cardModifier = modifier
+        .fillMaxWidth()
+        .then(
+            if (isWinner) {
+                Modifier.border(
+                    width = 1.5.dp,
+                    color = JackpotGold.copy(alpha = 0.85f),
+                    shape = RoundedCornerShape(16.dp)
+                )
+            } else {
+                Modifier
+            }
+        )
 
-    androidx.compose.material3.Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(
-                if (isWinner) {
-                    Modifier.border(
-                        width = 1.5.dp,
-                        color = JackpotGold.copy(alpha = 0.85f),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
-                    )
-                } else {
-                    Modifier
-                }
-            ),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        colors = androidx.compose.material3.CardDefaults.cardColors(
-            containerColor = if (isWinner) JackpotGold.copy(alpha = 0.12f) else SurfaceDark
-        ),
-        elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, end = 8.dp, top = 16.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+    if (onClick != null) {
+        Card(
+            onClick = onClick,
+            modifier = cardModifier,
+            shape = RoundedCornerShape(16.dp),
+            colors = cardColors,
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            EntryListCardContent(
+                name = name,
+                prediction = prediction,
+                amount = amount,
+                statusLabel = statusLabel,
+                note = note,
+                roundStakeLabel = roundStakeLabel
+            )
+        }
+    } else {
+        Card(
+            modifier = cardModifier,
+            shape = RoundedCornerShape(16.dp),
+            colors = cardColors,
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            EntryListCardContent(
+                name = name,
+                prediction = prediction,
+                amount = amount,
+                statusLabel = statusLabel,
+                note = note,
+                roundStakeLabel = roundStakeLabel
+            )
+        }
+    }
+}
+
+@Composable
+private fun EntryListCardContent(
+    name: String,
+    prediction: String,
+    amount: String,
+    statusLabel: String,
+    note: String?,
+    roundStakeLabel: String?
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = androidx.compose.ui.Alignment.Top
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
                 Text(
                     text = name,
+                    modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    text = prediction,
-                    modifier = Modifier.padding(top = 4.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = SecondaryText
-                )
-                if (roundStakeLabel != null) {
-                    Text(
-                        text = roundStakeLabel,
-                        modifier = Modifier.padding(top = 4.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = SecondaryText
-                    )
-                }
-                if (!note.isNullOrBlank()) {
-                    Text(
-                        text = note,
-                        modifier = Modifier.padding(top = 4.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = SecondaryText
-                    )
-                }
+                DetailStatusChip(label = statusLabel)
             }
             Text(
-                text = amount,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = JackpotGold
+                text = prediction,
+                modifier = Modifier.padding(top = 6.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = SecondaryText
             )
-            if (onDelete != null) {
-                Box {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "Entry options"
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.delete), color = DangerRed) },
-                            onClick = {
-                                showMenu = false
-                                onDelete()
-                            }
-                        )
-                    }
-                }
+            if (roundStakeLabel != null) {
+                Text(
+                    text = roundStakeLabel,
+                    modifier = Modifier.padding(top = 4.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SecondaryText
+                )
+            }
+            if (!note.isNullOrBlank()) {
+                Text(
+                    text = note,
+                    modifier = Modifier.padding(top = 4.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SecondaryText
+                )
             }
         }
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = amount,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = JackpotGold
+        )
     }
 }
