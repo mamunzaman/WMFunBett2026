@@ -36,6 +36,8 @@
 - [x] Bottom sheet scrim polish, tipp overview mini cards, tipp detail stat chips
 - [x] Tipp detail glass UI, dark premium sheets, equal sample entry amounts
 - [x] Modal bottom sheet blurred glass backdrop (app shell + FormBottomSheet)
+- [x] Premium match-center color system: palette tokens, gradients, reusable card components
+- [x] Tipps dashboard polish: JackpotSummaryCard, MatchCard, TournamentCard, glass nav
 
 ## In Progress
 - None
@@ -48,4 +50,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Modal sheet blurred backdrop via app shell + shared FormBottomSheet wrapper.
+2026-06-21 — Premium match-center color palette, gradient cards, and Tipps screen polish.
