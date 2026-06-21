@@ -41,6 +41,9 @@
 - [x] Sheet blur polish, edge-to-edge header, nav glass readability layer
 - [x] Clipped blur glass on bottom nav pill only (no dim overlay block)
 - [x] Web match-center preview (`web/preview/`) with GSAP intro timeline + ScrollTrigger batch reveal
+- [x] Main nav restructure: Matches, Leagues, + Tipps, Friends, Settings
+- [x] Matchday header filter (not a nav step), grouped match lists
+- [x] League list + league matches, Friends from entries, Tipps center sheet
 
 ## In Progress
 - None
