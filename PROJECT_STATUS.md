@@ -35,6 +35,7 @@
 - [x] Match card polish: shared card with flags, status pills, glass bottom nav, Add Game form sections
 - [x] Bottom sheet scrim polish, tipp overview mini cards, tipp detail stat chips
 - [x] Tipp detail glass UI, dark premium sheets, equal sample entry amounts
+- [x] Modal bottom sheet blurred glass backdrop (app shell + FormBottomSheet)
 
 ## In Progress
 - None
