@@ -56,6 +56,7 @@
     <string name="note_optional">Notiz (optional)</string>
     <string name="team_a">Team A</string>
     <string name="team_b">Team B</string>
+    <string name="teams">Teams</string>
     <string name="matchday">Spieltag</string>
     <string name="date">Datum</string>
     <string name="date_optional">Datum (optional)</string>
@@ -85,7 +86,14 @@
     <string name="today">Heute</string>
     <string name="tomorrow">Morgen</string>
     <string name="custom_matchday">Eigener Spieltag</string>
+    <string name="other_matchday">Anderer Spieltag</string>
+    <string name="matchday_name">Spieltag-Name</string>
     <string name="custom_date">Eigenes Datum</string>
+    <string name="other_date">Anderes Datum</string>
+    <string name="selected_date">Ausgewählt: %1$s</string>
+    <string name="selected_time">Anstoß: %1$s</string>
+    <string name="date_pick_hint">Heute, morgen oder ein anderes Datum wählen.</string>
+    <string name="time_pick_hint">Anstoßzeit wählen oder eigene Uhrzeit eingeben.</string>
     <string name="custom_time">Eigene Uhrzeit</string>
 
     <!-- Match status -->

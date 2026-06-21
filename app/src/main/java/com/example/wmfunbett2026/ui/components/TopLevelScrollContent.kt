@@ -15,7 +15,12 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun TopLevelScrollContent(
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+    contentPadding: PaddingValues = PaddingValues(
+        start = 20.dp,
+        end = 20.dp,
+        top = 24.dp,
+        bottom = MatchCenterBottomNavReservedHeight
+    ),
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(24.dp),
     content: @Composable ColumnScope.() -> Unit
 ) {

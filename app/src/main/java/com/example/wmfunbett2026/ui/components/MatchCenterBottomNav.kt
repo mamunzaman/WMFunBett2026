@@ -51,8 +51,8 @@ private val NavPillShape = RoundedCornerShape(NavPillRadius)
 private val CenterFabSize = 68.dp
 private val FabOverlap = 34.dp
 
-/** Space to reserve above the system nav so content is not hidden. */
-val MatchCenterBottomNavReservedHeight = 128.dp
+/** Space to reserve in scroll content so items clear the floating nav. */
+val MatchCenterBottomNavReservedHeight = 148.dp
 
 @Composable
 fun MatchCenterBottomNav(
@@ -67,25 +67,49 @@ fun MatchCenterBottomNav(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(bottom = 20.dp)
-            .height(MatchCenterBottomNavReservedHeight - 20.dp),
+            .padding(bottom = 16.dp)
+            .height(MatchCenterBottomNavReservedHeight - 16.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .offset(y = -(NavPillHeight - FabOverlap + 8.dp))
+                .fillMaxWidth()
+                .height(48.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            DarkNavy.copy(alpha = 0.35f),
+                            DarkNavy.copy(alpha = 0.72f)
+                        )
+                    )
+                )
+        )
+
         Box(
             modifier = Modifier
                 .width(NavPillWidth)
                 .height(NavPillHeight)
                 .shadow(
-                    elevation = 20.dp,
+                    elevation = 24.dp,
                     shape = NavPillShape,
-                    ambientColor = Color.Black.copy(alpha = 0.4f),
-                    spotColor = Color.Black.copy(alpha = 0.55f)
+                    ambientColor = Color.Black.copy(alpha = 0.35f),
+                    spotColor = Color.Black.copy(alpha = 0.5f)
                 )
                 .clip(NavPillShape)
-                .background(DarkNavy.copy(alpha = 0.88f))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            DarkNavy.copy(alpha = 0.78f),
+                            DarkNavy.copy(alpha = 0.92f)
+                        )
+                    )
+                )
                 .border(
                     width = 1.dp,
-                    color = PrimaryText.copy(alpha = 0.16f),
+                    color = PrimaryText.copy(alpha = 0.22f),
                     shape = NavPillShape
                 )
         ) {

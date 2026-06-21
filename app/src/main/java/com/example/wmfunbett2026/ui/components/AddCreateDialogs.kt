@@ -1,12 +1,12 @@
 package com.example.wmfunbett2026.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenuItem
@@ -47,9 +47,9 @@ private enum class DateChoice { NONE, TODAY, TOMORROW, CUSTOM }
 
 private enum class TimeChoice(val storedLabel: String) {
     NONE(""),
-    T1400("14:00"),
-    T1700("17:00"),
+    T1800("18:00"),
     T2000("20:00"),
+    T2100("21:00"),
     CUSTOM("")
 }
 
@@ -162,85 +162,102 @@ fun AddGameDialog(
                 .focusRequester(blockInitialFocus)
                 .focusable()
         )
-        FormOutlinedTextField(
-            value = teamA,
-            onValueChange = {
-                teamA = it
-                errorMessage = null
-            },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.team_a)) }
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        FormOutlinedTextField(
-            value = teamB,
-            onValueChange = {
-                teamB = it
-                errorMessage = null
-            },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.team_b)) }
-        )
-        Spacer(modifier = Modifier.height(14.dp))
-        FormSectionLabel(text = stringResource(R.string.matchday))
-        Spacer(modifier = Modifier.height(6.dp))
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FormFilterChip(
+
+        FormSectionCard(title = stringResource(R.string.matchday)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FormMatchdaySelectCard(
                     label = stringResource(R.string.matchday_1),
-                    selected = matchdayChoice == MatchdayChoice.MD1
-                ) {
-                    matchdayChoice = MatchdayChoice.MD1
-                    errorMessage = null
-                }
-                FormFilterChip(
+                    selected = matchdayChoice == MatchdayChoice.MD1,
+                    onClick = {
+                        matchdayChoice = MatchdayChoice.MD1
+                        errorMessage = null
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                FormMatchdaySelectCard(
                     label = stringResource(R.string.matchday_2),
-                    selected = matchdayChoice == MatchdayChoice.MD2
-                ) {
-                    matchdayChoice = MatchdayChoice.MD2
-                    errorMessage = null
-                }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FormFilterChip(
+                    selected = matchdayChoice == MatchdayChoice.MD2,
+                    onClick = {
+                        matchdayChoice = MatchdayChoice.MD2
+                        errorMessage = null
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                FormMatchdaySelectCard(
                     label = stringResource(R.string.matchday_3),
-                    selected = matchdayChoice == MatchdayChoice.MD3
-                ) {
-                    matchdayChoice = MatchdayChoice.MD3
-                    errorMessage = null
-                }
-                FormFilterChip(
-                    label = stringResource(R.string.custom),
-                    selected = matchdayChoice == MatchdayChoice.CUSTOM
-                ) {
-                    matchdayChoice = MatchdayChoice.CUSTOM
-                    errorMessage = null
-                }
+                    selected = matchdayChoice == MatchdayChoice.MD3,
+                    onClick = {
+                        matchdayChoice = MatchdayChoice.MD3
+                        errorMessage = null
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            FormFilterChip(
+                label = stringResource(R.string.other_matchday),
+                selected = matchdayChoice == MatchdayChoice.CUSTOM
+            ) {
+                matchdayChoice = MatchdayChoice.CUSTOM
+                errorMessage = null
+            }
+            if (matchdayChoice == MatchdayChoice.CUSTOM) {
+                FormOutlinedTextField(
+                    value = customMatchdayLabel,
+                    onValueChange = {
+                        customMatchdayLabel = it
+                        errorMessage = null
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.matchday_name)) },
+                    placeholder = { Text("Round of 16") }
+                )
             }
         }
-        if (matchdayChoice == MatchdayChoice.CUSTOM) {
-            Spacer(modifier = Modifier.height(8.dp))
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        FormSectionCard(title = stringResource(R.string.teams)) {
             FormOutlinedTextField(
-                value = customMatchdayLabel,
+                value = teamA,
                 onValueChange = {
-                    customMatchdayLabel = it
+                    teamA = it
                     errorMessage = null
                 },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.custom_matchday)) },
-                placeholder = { Text("Round of 16") }
+                label = { Text(stringResource(R.string.team_a)) }
+            )
+            FormOutlinedTextField(
+                value = teamB,
+                onValueChange = {
+                    teamB = it
+                    errorMessage = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.team_b)) }
             )
         }
-        Spacer(modifier = Modifier.height(14.dp))
-        FormSectionLabel(text = stringResource(R.string.date_optional))
-        Spacer(modifier = Modifier.height(6.dp))
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        FormSectionCard(title = stringResource(R.string.date)) {
+            val resolvedPreview = resolveDateLabel(dateChoice, customDateLabel)
+            if (resolvedPreview != null) {
+                Text(
+                    text = stringResource(R.string.selected_date, resolvedPreview),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.date_pick_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FormFilterChip(
                     label = stringResource(R.string.today),
@@ -256,54 +273,54 @@ fun AddGameDialog(
                     dateChoice = DateChoice.TOMORROW
                     errorMessage = null
                 }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FormFilterChip(
-                    label = stringResource(R.string.custom),
+                    label = stringResource(R.string.other_date),
                     selected = dateChoice == DateChoice.CUSTOM
                 ) {
                     dateChoice = DateChoice.CUSTOM
                     errorMessage = null
                 }
             }
+            if (dateChoice == DateChoice.CUSTOM) {
+                FormOutlinedTextField(
+                    value = customDateLabel,
+                    onValueChange = {
+                        customDateLabel = it
+                        errorMessage = null
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.other_date)) },
+                    placeholder = { Text("Sat 21 Jun") }
+                )
+            }
         }
-        if (dateChoice == DateChoice.CUSTOM) {
-            Spacer(modifier = Modifier.height(8.dp))
-            FormOutlinedTextField(
-                value = customDateLabel,
-                onValueChange = {
-                    customDateLabel = it
-                    errorMessage = null
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.custom_date)) },
-                placeholder = { Text("Sat 21 Jun") }
-            )
-        }
-        Spacer(modifier = Modifier.height(14.dp))
-        FormSectionLabel(text = stringResource(R.string.time_optional))
-        Spacer(modifier = Modifier.height(6.dp))
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FormFilterChip(
-                    label = "14:00",
-                    selected = timeChoice == TimeChoice.T1400
-                ) {
-                    timeChoice = TimeChoice.T1400
-                    errorMessage = null
-                }
-                FormFilterChip(
-                    label = "17:00",
-                    selected = timeChoice == TimeChoice.T1700
-                ) {
-                    timeChoice = TimeChoice.T1700
-                    errorMessage = null
-                }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        FormSectionCard(title = stringResource(R.string.time)) {
+            val resolvedTime = resolveTimeLabel(timeChoice, customTimeLabel)
+            if (resolvedTime != null) {
+                Text(
+                    text = stringResource(R.string.selected_time, resolvedTime),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.time_pick_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FormFilterChip(
+                    label = "18:00",
+                    selected = timeChoice == TimeChoice.T1800
+                ) {
+                    timeChoice = TimeChoice.T1800
+                    errorMessage = null
+                }
                 FormFilterChip(
                     label = "20:00",
                     selected = timeChoice == TimeChoice.T2000
@@ -312,41 +329,35 @@ fun AddGameDialog(
                     errorMessage = null
                 }
                 FormFilterChip(
-                    label = stringResource(R.string.custom),
-                    selected = timeChoice == TimeChoice.CUSTOM
+                    label = "21:00",
+                    selected = timeChoice == TimeChoice.T2100
                 ) {
-                    timeChoice = TimeChoice.CUSTOM
+                    timeChoice = TimeChoice.T2100
                     errorMessage = null
                 }
             }
+            FormFilterChip(
+                label = stringResource(R.string.custom_time),
+                selected = timeChoice == TimeChoice.CUSTOM
+            ) {
+                timeChoice = TimeChoice.CUSTOM
+                errorMessage = null
+            }
+            if (timeChoice == TimeChoice.CUSTOM) {
+                FormOutlinedTextField(
+                    value = customTimeLabel,
+                    onValueChange = {
+                        customTimeLabel = it
+                        errorMessage = null
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.custom_time)) },
+                    placeholder = { Text("20:00") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+            }
         }
-        if (timeChoice == TimeChoice.CUSTOM) {
-            Spacer(modifier = Modifier.height(8.dp))
-            FormOutlinedTextField(
-                value = customTimeLabel,
-                onValueChange = {
-                    customTimeLabel = it
-                    errorMessage = null
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.custom_time)) },
-                placeholder = { Text("20:00") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-        }
-        val previewDate = resolveDateLabel(dateChoice, customDateLabel)
-        val previewTime = resolveTimeLabel(timeChoice, customTimeLabel)
-        if (previewDate != null || previewTime != null) {
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(
-                text = stringResource(
-                    R.string.schedule_preview,
-                    listOfNotNull(previewDate, previewTime).joinToString(" · ")
-                ),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+
         if (errorMessage != null) {
             Spacer(modifier = Modifier.height(10.dp))
             FormErrorText(text = errorMessage.orEmpty())
@@ -463,7 +474,7 @@ private fun resolveDateLabel(choice: DateChoice, customLabel: String): String? {
 private fun resolveTimeLabel(choice: TimeChoice, customLabel: String): String? {
     return when (choice) {
         TimeChoice.NONE -> null
-        TimeChoice.T1400, TimeChoice.T1700, TimeChoice.T2000 -> choice.storedLabel
+        TimeChoice.T1800, TimeChoice.T2000, TimeChoice.T2100 -> choice.storedLabel
         TimeChoice.CUSTOM -> customLabel.trim().takeIf { it.isNotEmpty() }
     }
 }

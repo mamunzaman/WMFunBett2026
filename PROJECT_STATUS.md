@@ -32,6 +32,7 @@
 - [x] Light Material 3 form sheets + EN/DE string resources
 - [x] Match-center UI redesign: blue header, match cards, 5-tab nav, dashboard
 - [x] Game/Tipp detail match-center cards: expandable game overview, rich tipp/entry cards, person-in-game sheet
+- [x] Match card polish: shared card with flags, status pills, glass bottom nav, Add Game form sections
 
 ## In Progress
 - None
@@ -44,4 +45,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Game/Tipp detail overview cards with inline Add Tipp/Add Person (sample) and person drill-down per game.
+2026-06-21 — Match card polish, glass bottom nav scroll padding, Add Game form section cards.

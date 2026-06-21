@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -45,7 +43,8 @@ import com.example.wmfunbett2026.ui.components.FormBottomSheet
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
-import com.example.wmfunbett2026.ui.components.MatchStatusBadge
+import com.example.wmfunbett2026.ui.components.MatchCenterMatchCardBody
+import com.example.wmfunbett2026.ui.components.MatchCenterMatchCardShell
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
 import com.example.wmfunbett2026.ui.components.SetResultDialog
 import com.example.wmfunbett2026.ui.components.TippGroupListCard
@@ -54,7 +53,6 @@ import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SecondaryText
-import com.example.wmfunbett2026.ui.theme.SurfaceDark
 import com.example.wmfunbett2026.ui.theme.WMFunBett2026Theme
 
 @Composable
@@ -196,7 +194,6 @@ fun GameDetailScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GameMatchOverviewCard(
     game: Game,
@@ -210,125 +207,95 @@ private fun GameMatchOverviewCard(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val scheduleLabel = listOfNotNull(dayLabel, game.dateTimeLabel).joinToString(" · ")
+    val matchdayLabel = dayLabel ?: "Matchday"
+    val bottomMeta = buildString {
+        append("$tippGroupCount tipps · $totalPeople people · $totalMoneyLabel")
+        if (carryLabel != null) {
+            append(" · ")
+            append(carryLabel)
+        }
+    }
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { expanded = !expanded },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-    ) {
+    MatchCenterMatchCardShell(modifier = modifier) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .clickable { expanded = !expanded }
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            MatchCenterMatchCardBody(
+                game = game,
+                matchdayLabel = matchdayLabel,
+                bottomMetaOverride = bottomMeta
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp)
+                    .padding(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = "${game.teamA}  vs  ${game.teamB}",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = PrimaryText
-                    )
-                    Text(
-                        text = scheduleLabel,
-                        modifier = Modifier.padding(top = 4.dp),
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = if (expanded) "Hide overview" else "Tap for overview",
+                        style = MaterialTheme.typography.labelLarge,
                         color = SecondaryText
                     )
-                }
-                MatchStatusBadge(status = game.status)
-            }
-            Text(
-                text = game.resultDisplayText(),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = if (game.hasResult) PrimaryText else SecondaryText
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                OverviewStat(label = "Tipps", value = tippGroupCount.toString())
-                OverviewStat(label = "People", value = totalPeople.toString())
-                OverviewStat(label = "Total", value = totalMoneyLabel, highlight = true)
-            }
-            if (carryLabel != null) {
-                Text(
-                    text = carryLabel,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = JackpotGold.copy(alpha = 0.9f)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (expanded) "Hide overview" else "Tap for overview",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = SecondaryText
-                )
-                DetailInlineAddButton(
-                    label = "Add Tipp",
-                    onClick = onAddTippClick
-                )
-            }
-            AnimatedVisibility(
-                visible = expanded,
-                enter = expandVertically(),
-                exit = shrinkVertically()
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    HorizontalDivider(color = SecondaryText.copy(alpha = 0.2f))
-                    Text(
-                        text = "Overview",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = PrimaryText
+                    DetailInlineAddButton(
+                        label = "Add Tipp",
+                        onClick = onAddTippClick
                     )
-                    Row(
+                }
+                AnimatedVisibility(
+                    visible = expanded,
+                    enter = expandVertically(),
+                    exit = shrinkVertically()
+                ) {
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        OverviewStat(label = "Tipp Groups", value = tippGroupCount.toString())
-                        OverviewStat(label = "Entries", value = totalPeople.toString())
-                        OverviewStat(label = "Collected", value = totalMoneyLabel, highlight = true)
-                    }
-                    if (tippGroups.isNotEmpty()) {
+                        HorizontalDivider(color = SecondaryText.copy(alpha = 0.2f))
                         Text(
-                            text = "Per Tipp Group",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = SecondaryText
+                            text = "Overview",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = PrimaryText
                         )
-                        tippGroups.forEach { group ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = group.title,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = PrimaryText,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    text = "${group.entries.size} · ${group.totalAmount.toEuroLabel()}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = SecondaryText
-                                )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            OverviewStat(label = "Tipp Groups", value = tippGroupCount.toString())
+                            OverviewStat(label = "Entries", value = totalPeople.toString())
+                            OverviewStat(label = "Collected", value = totalMoneyLabel, highlight = true)
+                        }
+                        if (tippGroups.isNotEmpty()) {
+                            Text(
+                                text = "Per Tipp Group",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = SecondaryText
+                            )
+                            tippGroups.forEach { group ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = group.title,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = PrimaryText,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        text = "${group.entries.size} · ${group.totalAmount.toEuroLabel()}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = SecondaryText
+                                    )
+                                }
                             }
                         }
                     }

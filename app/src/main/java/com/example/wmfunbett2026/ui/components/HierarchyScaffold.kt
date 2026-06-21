@@ -56,15 +56,15 @@ val HierarchyListContentPadding = PaddingValues(
     start = 20.dp,
     end = 20.dp,
     top = 8.dp,
-    bottom = 24.dp
+    bottom = MatchCenterBottomNavReservedHeight
 )
 
-fun hierarchyContentPadding(withFab: Boolean = false): PaddingValues {
+fun hierarchyContentPadding(): PaddingValues {
     return PaddingValues(
         start = 20.dp,
         end = 20.dp,
         top = 12.dp,
-        bottom = 24.dp
+        bottom = MatchCenterBottomNavReservedHeight
     )
 }
 

@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.wmfunbett2026.ui.components.MatchCenterAddAction
 import com.example.wmfunbett2026.ui.components.MatchCenterBottomNav
-import com.example.wmfunbett2026.ui.components.MatchCenterBottomNavReservedHeight
 import com.example.wmfunbett2026.ui.navigation.AppScreen
 import com.example.wmfunbett2026.ui.navigation.TournamentNavGraph
 import com.example.wmfunbett2026.ui.navigation.TournamentRoutes
@@ -54,9 +53,7 @@ fun AppShell(modifier: Modifier = Modifier) {
             .background(DarkNavy)
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = MatchCenterBottomNavReservedHeight)
+            modifier = Modifier.fillMaxSize()
         ) {
             when (selectedScreen) {
                 AppScreen.Home -> HomeScreen(Modifier.fillMaxSize())
