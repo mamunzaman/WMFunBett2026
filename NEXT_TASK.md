@@ -4,6 +4,6 @@
 Wire real Add Tipp / Add Person / Add Game actions, or Room persistence.
 
 ## Verify Next
-- Tipp detail: glass header + entry cards, Alex/John both €10
-- Bottom sheets: dark navy glass, soft scrim (not white Android)
-- Unequal entry amounts show carry-over notice when sample differs
+- Open any form sheet: background blurs + navy overlay (API 31+)
+- Bottom nav stays sharp above overlay when sheet open
+- Add Tournament/Game/Tipp/Person all use same backdrop

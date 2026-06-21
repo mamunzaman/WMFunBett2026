@@ -47,4 +47,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Tipp detail glass UI, dark form sheets, equal sample entry amounts (€10).
+2026-06-21 — Modal sheet blurred backdrop via app shell + shared FormBottomSheet wrapper.

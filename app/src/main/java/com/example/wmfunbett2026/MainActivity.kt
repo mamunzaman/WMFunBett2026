@@ -9,7 +9,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.wmfunbett2026.ui.components.MatchCenterAddAction
 import com.example.wmfunbett2026.ui.components.MatchCenterBottomNav
+import com.example.wmfunbett2026.ui.components.ModalSheetBackdropOverlay
+import com.example.wmfunbett2026.ui.components.ModalSheetBackdropState
+import com.example.wmfunbett2026.ui.components.modalSheetBackdropBlur
 import com.example.wmfunbett2026.ui.navigation.AppScreen
 import com.example.wmfunbett2026.ui.navigation.TournamentNavGraph
 import com.example.wmfunbett2026.ui.navigation.TournamentRoutes
@@ -46,6 +48,7 @@ class MainActivity : ComponentActivity() {
 fun AppShell(modifier: Modifier = Modifier) {
     var selectedScreen by rememberSaveable { mutableStateOf(AppScreen.WM2026) }
     val tournamentNavController = rememberNavController()
+    val sheetBackdropActive = ModalSheetBackdropState.isActive
 
     Box(
         modifier = modifier
@@ -53,7 +56,9 @@ fun AppShell(modifier: Modifier = Modifier) {
             .background(DarkNavy)
     ) {
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .modalSheetBackdropBlur(sheetBackdropActive)
         ) {
             when (selectedScreen) {
                 AppScreen.Home -> HomeScreen(Modifier.fillMaxSize())
@@ -64,6 +69,8 @@ fun AppShell(modifier: Modifier = Modifier) {
                 AppScreen.Settings -> SettingsScreen(Modifier.fillMaxSize())
             }
         }
+
+        ModalSheetBackdropOverlay(active = sheetBackdropActive)
 
         MatchCenterBottomNav(
             modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter),
