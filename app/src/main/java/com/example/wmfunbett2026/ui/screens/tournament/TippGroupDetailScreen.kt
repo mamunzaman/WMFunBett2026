@@ -23,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
+import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import com.example.wmfunbett2026.ui.components.AddEntryDialog
 import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.EntryListCard
@@ -30,6 +31,8 @@ import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
+import com.example.wmfunbett2026.ui.components.TippGroupWinnerSummaryCard
+import com.example.wmfunbett2026.ui.components.WinnerShareSettingsDialog
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
 import com.example.wmfunbett2026.ui.theme.JackpotGold
@@ -51,17 +54,26 @@ fun TippGroupDetailScreen(
     FunBettRepository.dataVersion.intValue
     var showAddEntryDialog by remember { mutableStateOf(false) }
     var showDeleteGroupDialog by remember { mutableStateOf(false) }
+    var showWinnerShareDialog by remember { mutableStateOf(false) }
     var entryToDelete by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(tippGroupId, gameId) {
         showAddEntryDialog = false
         showDeleteGroupDialog = false
+        showWinnerShareDialog = false
         entryToDelete = null
     }
 
     val game = FunBettRepository.getGameInDay(dayId, gameId)
     val tippGroup = FunBettRepository.getTippGroupInGame(gameId, tippGroupId)
     val entries = tippGroup?.entries.orEmpty()
+    val winnerOutcome = remember(game, tippGroup, FunBettRepository.dataVersion.intValue) {
+        if (game != null && tippGroup != null) {
+            TippGroupWinnerEngine.calculate(game, tippGroup)
+        } else {
+            null
+        }
+    }
 
     HierarchyScreenLayout(
         title = tippGroup?.title ?: "Tipp Group",
@@ -69,7 +81,9 @@ fun TippGroupDetailScreen(
         onBackClick = onBackClick,
         onFabClick = if (tippGroup != null) {{ showAddEntryDialog = true }} else null,
         fabContentDescription = "Add entry",
+        onWinnerShareSettingsClick = if (tippGroup != null) {{ showWinnerShareDialog = true }} else null,
         onDeleteClick = if (tippGroup != null) {{ showDeleteGroupDialog = true }} else null,
+        deleteEnabled = entries.isEmpty(),
         modifier = modifier
     ) { contentModifier ->
         if (tippGroup == null) {
@@ -103,6 +117,11 @@ fun TippGroupDetailScreen(
                     entryCount = entries.size
                 )
             }
+            if (winnerOutcome != null) {
+                item(key = "winner") {
+                    TippGroupWinnerSummaryCard(outcome = winnerOutcome)
+                }
+            }
             item(key = "section") { HierarchySectionHeader(title = "Entries") }
             if (entries.isEmpty()) {
                 item(key = "empty") {
@@ -119,6 +138,9 @@ fun TippGroupDetailScreen(
                         prediction = entry.prediction,
                         amount = entry.amount.toEuroLabel(),
                         note = entry.note,
+                        isWinner = winnerOutcome?.let { outcome ->
+                            TippGroupWinnerEngine.isWinningEntry(outcome, entry.id)
+                        } == true,
                         onDelete = { entryToDelete = entry.id }
                     )
                 }
@@ -136,6 +158,10 @@ fun TippGroupDetailScreen(
                 showAddEntryDialog = false
             }
         )
+    }
+
+    if (showWinnerShareDialog) {
+        WinnerShareSettingsDialog(onDismiss = { showWinnerShareDialog = false })
     }
 
     if (showDeleteGroupDialog) {

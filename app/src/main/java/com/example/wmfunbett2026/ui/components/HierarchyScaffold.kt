@@ -1,5 +1,7 @@
 package com.example.wmfunbett2026.ui.components
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -69,11 +71,15 @@ fun HierarchyScreenLayout(
     onFabClick: (() -> Unit)? = null,
     fabContentDescription: String = "Add",
     onSetResultClick: (() -> Unit)? = null,
+    onWinnerShareSettingsClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
+    deleteEnabled: Boolean = true,
     content: @Composable (Modifier) -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    val hasMenu = onSetResultClick != null || onDeleteClick != null
+    val hasMenu = onSetResultClick != null ||
+        onWinnerShareSettingsClick != null ||
+        onDeleteClick != null
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -110,6 +116,15 @@ fun HierarchyScreenLayout(
                                 expanded = showMenu,
                                 onDismissRequest = { showMenu = false }
                             ) {
+                                if (onWinnerShareSettingsClick != null) {
+                                    DropdownMenuItem(
+                                        text = { Text("Winner Share Settings") },
+                                        onClick = {
+                                            showMenu = false
+                                            onWinnerShareSettingsClick()
+                                        }
+                                    )
+                                }
                                 if (onSetResultClick != null) {
                                     DropdownMenuItem(
                                         text = { Text("Set Result") },
@@ -119,13 +134,24 @@ fun HierarchyScreenLayout(
                                         }
                                     )
                                 }
-                                if (onDeleteClick != null) {
+                                if (onDeleteClick != null && deleteEnabled) {
                                     DropdownMenuItem(
                                         text = { Text("Delete", color = DangerRed) },
                                         onClick = {
                                             showMenu = false
                                             onDeleteClick()
                                         }
+                                    )
+                                } else if (onDeleteClick != null) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = "Delete entries first",
+                                                color = SecondaryText
+                                            )
+                                        },
+                                        onClick = { showMenu = false },
+                                        enabled = false
                                     )
                                 }
                             }
@@ -248,6 +274,86 @@ fun <T> HierarchyListContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+fun TippGroupListCard(
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    canDelete: Boolean,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    androidx.compose.material3.Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = SurfaceDark),
+        elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, end = 4.dp, top = 16.dp, bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onClick)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = subtitle,
+                    modifier = Modifier.padding(top = 4.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SecondaryText
+                )
+            }
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Tipp group options"
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    if (canDelete) {
+                        DropdownMenuItem(
+                            text = { Text("Delete", color = DangerRed) },
+                            onClick = {
+                                showMenu = false
+                                onDelete()
+                            }
+                        )
+                    } else {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = "Delete entries first",
+                                    color = SecondaryText
+                                )
+                            },
+                            onClick = { showMenu = false },
+                            enabled = false
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun NavListCard(
     title: String,
     subtitle: String? = null,
@@ -290,15 +396,30 @@ fun EntryListCard(
     prediction: String,
     amount: String,
     note: String? = null,
+    isWinner: Boolean = false,
     onDelete: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
     androidx.compose.material3.Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (isWinner) {
+                    Modifier.border(
+                        width = 1.5.dp,
+                        color = JackpotGold.copy(alpha = 0.85f),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                    )
+                } else {
+                    Modifier
+                }
+            ),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = SurfaceDark),
+        colors = androidx.compose.material3.CardDefaults.cardColors(
+            containerColor = if (isWinner) JackpotGold.copy(alpha = 0.12f) else SurfaceDark
+        ),
         elevation = androidx.compose.material3.CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(

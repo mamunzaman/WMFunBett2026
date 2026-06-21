@@ -29,19 +29,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.TimeScope
-import com.example.wmfunbett2026.data.model.TippGroup
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.data.tipp.TippScopeAvailability
+import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import com.example.wmfunbett2026.ui.components.AddTippGroupDialog
 import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
 import com.example.wmfunbett2026.ui.components.MatchStatusBadge
-import com.example.wmfunbett2026.ui.components.NavListCard
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
 import com.example.wmfunbett2026.ui.components.SetResultDialog
+import com.example.wmfunbett2026.ui.components.TippGroupListCard
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
 import com.example.wmfunbett2026.ui.theme.JackpotGold
@@ -66,6 +66,7 @@ fun GameDetailScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showSetResultDialog by remember { mutableStateOf(false) }
     var availableScopesForDialog by remember { mutableStateOf<List<TimeScope>>(emptyList()) }
+    var tippGroupToDelete by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(gameId) {
         showAddDialog = false
@@ -73,6 +74,7 @@ fun GameDetailScreen(
         showDeleteDialog = false
         showSetResultDialog = false
         availableScopesForDialog = emptyList()
+        tippGroupToDelete = null
     }
 
     val game = FunBettRepository.getGameInDay(dayId, gameId)
@@ -160,9 +162,22 @@ fun GameDetailScreen(
                 }
             } else {
                 items(tippGroups, key = { it.id }) { tippGroup ->
-                    TippGroupNavCard(
-                        tippGroup = tippGroup,
-                        onClick = { onTippGroupClick(tippGroup.id) }
+                    val outcome = TippGroupWinnerEngine.calculate(game, tippGroup)
+                    val winnerLabel = TippGroupWinnerEngine.compactLabel(outcome)
+                    TippGroupListCard(
+                        title = tippGroup.title,
+                        subtitle = buildString {
+                            append(tippGroup.timeScope.label)
+                            append(" · ")
+                            append(tippGroup.entries.size)
+                            append(" entries · ")
+                            append(tippGroup.totalAmount.toEuroLabel())
+                            append(" · ")
+                            append(winnerLabel)
+                        },
+                        onClick = { onTippGroupClick(tippGroup.id) },
+                        canDelete = tippGroup.entries.isEmpty(),
+                        onDelete = { tippGroupToDelete = tippGroup.id }
                     )
                 }
             }
@@ -217,6 +232,16 @@ fun GameDetailScreen(
                 if (FunBettRepository.deleteGame(gameId)) {
                     onDeleted()
                 }
+            }
+        )
+    }
+
+    tippGroupToDelete?.let { groupId ->
+        DeleteConfirmDialog(
+            onDismiss = { tippGroupToDelete = null },
+            onConfirm = {
+                FunBettRepository.deleteTippGroup(groupId)
+                tippGroupToDelete = null
             }
         )
     }
@@ -289,21 +314,6 @@ private fun GameInfoCard(
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TippGroupNavCard(
-    tippGroup: TippGroup,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    NavListCard(
-        title = tippGroup.title,
-        subtitle = "${tippGroup.timeScope.label} · ${tippGroup.entries.size} entries · ${tippGroup.totalAmount.toEuroLabel()}",
-        onClick = onClick,
-        modifier = modifier
-    )
 }
 
 @Preview(showBackground = true)

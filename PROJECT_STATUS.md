@@ -24,6 +24,8 @@
 - [x] Add Game crash fix: Column/Row chip layout (no FlowRow)
 - [x] Stability audit: immutable repo reads, scoped lookups, dialog reset on nav, not-found screens
 - [x] Game result management: scores, MatchStatus, Set Result dialog (no winner calc yet)
+- [x] Winner Engine V1: per tipp group, equal split, UI summary + entry highlight
+- [x] Tipp group menus: card delete guard, Winner Share Settings placeholder
 
 ## In Progress
 - None
@@ -33,7 +35,7 @@
 - [ ] ViewModels and repositories
 - [ ] Edit actions
 - [ ] Jackpot management business logic
-- [ ] Winner and scoring logic
+- [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Game result management: scores, status badge, Set Result in memory.
+2026-06-21 — Winner Engine V1: per-group split, summary cards, entry highlight.
