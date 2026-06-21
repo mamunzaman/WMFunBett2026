@@ -1,8 +1,11 @@
 package com.example.wmfunbett2026.ui.screens.tournament
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -195,6 +199,11 @@ fun GameDetailScreen(
     }
 }
 
+private const val TippsOverviewSizeDurationMs = 280
+private const val TippsOverviewFadeInDelayMs = 120
+private const val TippsOverviewFadeInDurationMs = 180
+private const val TippsOverviewFadeOutDurationMs = 80
+
 @Composable
 private fun GameMatchOverviewCard(
     game: Game,
@@ -214,6 +223,13 @@ private fun GameMatchOverviewCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .clipToBounds()
+                .animateContentSize(
+                    animationSpec = tween(
+                        durationMillis = TippsOverviewSizeDurationMs,
+                        easing = FastOutSlowInEasing
+                    )
+                )
                 .clickable { expanded = !expanded }
         ) {
             MatchCenterMatchCardBody(
@@ -244,45 +260,76 @@ private fun GameMatchOverviewCard(
                 }
                 AnimatedVisibility(
                     visible = expanded,
-                    enter = expandVertically(),
-                    exit = shrinkVertically()
+                    enter = fadeIn(
+                        animationSpec = tween(
+                            durationMillis = TippsOverviewFadeInDurationMs,
+                            delayMillis = TippsOverviewFadeInDelayMs,
+                            easing = FastOutSlowInEasing
+                        )
+                    ),
+                    exit = fadeOut(
+                        animationSpec = tween(
+                            durationMillis = TippsOverviewFadeOutDurationMs,
+                            easing = FastOutSlowInEasing
+                        )
+                    )
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        HorizontalDivider(color = SecondaryText.copy(alpha = 0.2f))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            OverviewStat(label = "Tipp Groups", value = tippGroupCount.toString())
-                            OverviewStat(label = "Entries", value = totalPeople.toString())
-                            OverviewStat(label = "Collected", value = totalMoneyLabel, highlight = true)
-                        }
-                        if (carryLabel != null) {
-                            Text(
-                                text = carryLabel,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = JackpotGold.copy(alpha = 0.9f)
-                            )
-                        }
-                        if (tippGroups.isNotEmpty()) {
-                            tippGroups.forEach { group ->
-                                val outcome = TippGroupWinnerEngine.calculate(game, group)
-                                val entryLabel = entryAmountLabel(group).takeIf { it != "—" }
-                                TippGroupOverviewMiniCard(
-                                    title = group.title,
-                                    scopeLabel = group.timeScope.label,
-                                    peopleCount = group.entries.size,
-                                    entryAmountLabel = entryLabel,
-                                    collectedLabel = group.totalAmount.toEuroLabel(),
-                                    statusLabel = winnerStatusLabel(outcome)
-                                )
-                            }
-                        }
-                    }
+                    TippsOverviewContent(
+                        game = game,
+                        tippGroupCount = tippGroupCount,
+                        totalPeople = totalPeople,
+                        totalMoneyLabel = totalMoneyLabel,
+                        carryLabel = carryLabel,
+                        tippGroups = tippGroups
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TippsOverviewContent(
+    game: Game,
+    tippGroupCount: Int,
+    totalPeople: Int,
+    totalMoneyLabel: String,
+    carryLabel: String?,
+    tippGroups: List<TippGroup>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        HorizontalDivider(color = SecondaryText.copy(alpha = 0.2f))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            OverviewStat(label = "Tipp Groups", value = tippGroupCount.toString())
+            OverviewStat(label = "Entries", value = totalPeople.toString())
+            OverviewStat(label = "Collected", value = totalMoneyLabel, highlight = true)
+        }
+        if (carryLabel != null) {
+            Text(
+                text = carryLabel,
+                style = MaterialTheme.typography.bodySmall,
+                color = JackpotGold.copy(alpha = 0.9f)
+            )
+        }
+        if (tippGroups.isNotEmpty()) {
+            tippGroups.forEach { group ->
+                val outcome = TippGroupWinnerEngine.calculate(game, group)
+                val entryLabel = entryAmountLabel(group).takeIf { it != "—" }
+                TippGroupOverviewMiniCard(
+                    title = group.title,
+                    scopeLabel = group.timeScope.label,
+                    peopleCount = group.entries.size,
+                    entryAmountLabel = entryLabel,
+                    collectedLabel = group.totalAmount.toEuroLabel(),
+                    statusLabel = winnerStatusLabel(outcome)
+                )
             }
         }
     }
