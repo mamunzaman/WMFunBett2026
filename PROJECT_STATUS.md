@@ -47,6 +47,7 @@
 - [x] Matches header LIVE pill, calendar select sheet, search actions
 - [x] Shared screen content spacing (`screenContentPadding`, 16dp top)
 - [x] Leagues screen staggered 2-column premium grid
+- [x] League grid card premium M3 press interaction (scale, elevation, glow, ripple)
 
 ## In Progress
 - None
@@ -59,4 +60,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Leagues staggered 2-column grid layout.
+2026-06-21 — League grid card press interaction (scale, elevation, border glow, ripple).

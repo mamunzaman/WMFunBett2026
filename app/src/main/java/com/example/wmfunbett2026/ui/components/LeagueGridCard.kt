@@ -1,11 +1,14 @@
 package com.example.wmfunbett2026.ui.components
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material3.ripple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -55,6 +60,13 @@ private val LeagueGridCardShape = RoundedCornerShape(24.dp)
 private const val LeagueCardEntranceDurationMs = 400
 private const val LeagueCardEntranceStaggerMs = 85
 private val LeagueCardEntranceOffset = 32.dp
+private const val LeagueCardPressDurationMs = 120
+private const val LeagueCardPressedScale = 0.97f
+private val LeagueCardRestElevation = 8.dp
+private val LeagueCardPressedElevation = 12.dp
+private val LeagueCardPressedBorderColor = PrimaryBlueBright.copy(alpha = 0.48f)
+private val LeagueCardRestSpotAlpha = 0.12f
+private val LeagueCardPressedSpotAlpha = 0.28f
 
 @Composable
 fun LeagueGridCard(
@@ -96,6 +108,35 @@ fun LeagueGridCard(
 
     val isCustom = leagueId == "custom-league"
     val visual = leagueGridVisual(leagueId)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val pressFloatSpec = tween<Float>(
+        durationMillis = LeagueCardPressDurationMs,
+        easing = FastOutSlowInEasing
+    )
+    val pressDpSpec = tween<Dp>(
+        durationMillis = LeagueCardPressDurationMs,
+        easing = FastOutSlowInEasing
+    )
+
+    val pressScale by animateFloatAsState(
+        targetValue = if (isPressed) LeagueCardPressedScale else 1f,
+        animationSpec = pressFloatSpec,
+        label = "leagueGridPressScale"
+    )
+    val elevation by animateDpAsState(
+        targetValue = if (isPressed) LeagueCardPressedElevation else LeagueCardRestElevation,
+        animationSpec = pressDpSpec,
+        label = "leagueGridPressElevation"
+    )
+    val pressGlow by animateFloatAsState(
+        targetValue = if (isPressed) 1f else 0f,
+        animationSpec = pressFloatSpec,
+        label = "leagueGridPressGlow"
+    )
+    val borderColor = lerp(GlassBorder, LeagueCardPressedBorderColor, pressGlow)
+    val spotAlpha = LeagueCardRestSpotAlpha +
+        (LeagueCardPressedSpotAlpha - LeagueCardRestSpotAlpha) * pressGlow
 
     Column(
         modifier = modifier
@@ -103,18 +144,24 @@ fun LeagueGridCard(
             .graphicsLayer {
                 this.alpha = alpha
                 translationY = offsetYPx
+                scaleX = pressScale
+                scaleY = pressScale
             }
             .height(cardHeight)
             .shadow(
-                elevation = 8.dp,
+                elevation = elevation,
                 shape = LeagueGridCardShape,
                 ambientColor = Color.Black.copy(alpha = 0.35f),
-                spotColor = PrimaryBlue.copy(alpha = 0.12f)
+                spotColor = PrimaryBlue.copy(alpha = spotAlpha)
             )
             .clip(LeagueGridCardShape)
             .background(Surface)
-            .border(1.dp, GlassBorder, LeagueGridCardShape)
-            .clickable(onClick = onClick)
+            .border(1.dp, borderColor, LeagueGridCardShape)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = ripple(color = PrimaryBlueBright.copy(alpha = 0.16f)),
+                onClick = onClick
+            )
             .padding(horizontal = 12.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)
