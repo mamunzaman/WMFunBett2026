@@ -37,17 +37,19 @@ private val FormFieldShape = RoundedCornerShape(12.dp)
 @Composable
 fun formTextFieldColors(isError: Boolean = false): TextFieldColors = OutlinedTextFieldDefaults.colors(
     focusedBorderColor = PrimaryBlue,
-    unfocusedBorderColor = SheetBorderUnfocused,
+    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
     errorBorderColor = DangerRed,
     focusedLabelColor = PrimaryBlue,
-    unfocusedLabelColor = SheetOnSurfaceVariant,
+    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
     errorLabelColor = DangerRed,
     cursorColor = PrimaryBlue,
-    focusedTextColor = SheetOnSurface,
-    unfocusedTextColor = SheetOnSurface,
-    errorTextColor = SheetOnSurface,
-    focusedPlaceholderColor = SheetOnSurfaceVariant,
-    unfocusedPlaceholderColor = SheetOnSurfaceVariant
+    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+    errorTextColor = MaterialTheme.colorScheme.onSurface,
+    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
 )
 
 @Composable
@@ -99,13 +101,13 @@ fun FormFilterChip(
         colors = FilterChipDefaults.filterChipColors(
             selectedContainerColor = PrimaryBlue,
             selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
-            containerColor = SheetChipUnselected,
-            labelColor = SheetOnSurface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            labelColor = MaterialTheme.colorScheme.onSurface
         ),
         border = FilterChipDefaults.filterChipBorder(
             enabled = true,
             selected = selected,
-            borderColor = SheetBorderUnfocused,
+            borderColor = MaterialTheme.colorScheme.outline,
             selectedBorderColor = PrimaryBlue
         )
     )
@@ -120,8 +122,11 @@ fun FormSectionCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(SheetChipUnselected.copy(alpha = 0.65f), RoundedCornerShape(14.dp))
-            .border(1.dp, SheetBorderUnfocused, RoundedCornerShape(14.dp))
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                RoundedCornerShape(14.dp)
+            )
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -129,7 +134,7 @@ fun FormSectionCard(
             text = title,
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
-            color = SheetOnSurface
+            color = MaterialTheme.colorScheme.onSurface
         )
         content()
     }
@@ -147,12 +152,12 @@ fun FormMatchdaySelectCard(
         modifier = modifier
             .clickable(onClick = onClick)
             .background(
-                color = if (selected) PrimaryBlue.copy(alpha = 0.14f) else SheetChipUnselected,
+                color = if (selected) PrimaryBlue.copy(alpha = 0.22f) else MaterialTheme.colorScheme.surfaceVariant,
                 shape = shape
             )
             .border(
                 width = if (selected) 2.dp else 1.dp,
-                color = if (selected) PrimaryBlue else SheetBorderUnfocused,
+                color = if (selected) PrimaryBlue else MaterialTheme.colorScheme.outline,
                 shape = shape
             )
             .padding(horizontal = 12.dp, vertical = 14.dp),
@@ -162,7 +167,7 @@ fun FormMatchdaySelectCard(
             text = label,
             style = MaterialTheme.typography.titleSmall,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-            color = if (selected) PrimaryBlue else SheetOnSurface
+            color = if (selected) PrimaryBlue else MaterialTheme.colorScheme.onSurface
         )
     }
 }

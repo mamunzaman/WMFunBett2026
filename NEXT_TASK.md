@@ -4,7 +4,6 @@
 Wire real Add Tipp / Add Person / Add Game actions, or Room persistence.
 
 ## Verify Next
-- Bottom nav: no dark block behind glass pill
-- Sheets: soft navy scrim, drag handle on rounded sheet
-- Game detail overview: mini cards per tipp group
-- Tipp detail: stat chips + polished entry cards
+- Tipp detail: glass header + entry cards, Alex/John both €10
+- Bottom sheets: dark navy glass, soft scrim (not white Android)
+- Unequal entry amounts show carry-over notice when sample differs

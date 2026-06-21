@@ -34,6 +34,7 @@
 - [x] Game/Tipp detail match-center cards: expandable game overview, rich tipp/entry cards, person-in-game sheet
 - [x] Match card polish: shared card with flags, status pills, glass bottom nav, Add Game form sections
 - [x] Bottom sheet scrim polish, tipp overview mini cards, tipp detail stat chips
+- [x] Tipp detail glass UI, dark premium sheets, equal sample entry amounts
 
 ## In Progress
 - None
@@ -46,4 +47,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Bottom nav shadow fix, soft sheet scrim, tipp overview mini cards, tipp detail polish.
+2026-06-21 — Tipp detail glass UI, dark form sheets, equal sample entry amounts (€10).

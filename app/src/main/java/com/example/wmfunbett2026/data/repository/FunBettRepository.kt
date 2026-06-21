@@ -334,8 +334,8 @@ object FunBettRepository {
                     id = "entry-2",
                     name = "John",
                     prediction = "1:1",
-                    amount = 5.0,
-                    currentRoundAmount = 5.0
+                    amount = 10.0,
+                    currentRoundAmount = 10.0
                 )
             )
         )

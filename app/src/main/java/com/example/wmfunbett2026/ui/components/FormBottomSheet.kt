@@ -26,17 +26,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.ui.theme.DarkNavy
 import com.example.wmfunbett2026.ui.theme.FormSheetTheme
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
+import com.example.wmfunbett2026.ui.theme.PrimaryText
+import com.example.wmfunbett2026.ui.theme.SecondaryText
 import com.example.wmfunbett2026.ui.theme.SheetOnSurface
 import com.example.wmfunbett2026.ui.theme.SheetOnSurfaceVariant
 import com.example.wmfunbett2026.ui.theme.SheetScrimColor
 import com.example.wmfunbett2026.ui.theme.SheetSurface
+import com.example.wmfunbett2026.ui.theme.SurfaceDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +56,7 @@ fun FormBottomSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val maxScrollHeight = LocalConfiguration.current.screenHeightDp.dp * 0.55f
+    val sheetShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -58,17 +64,24 @@ fun FormBottomSheet(
         containerColor = SheetSurface,
         contentColor = SheetOnSurface,
         scrimColor = SheetScrimColor,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        shape = sheetShape,
         dragHandle = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    .background(SheetSurface)
+                    .clip(sheetShape)
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                SurfaceDark.copy(alpha = 0.95f),
+                                DarkNavy.copy(alpha = 0.98f)
+                            )
+                        )
+                    )
                     .padding(top = 12.dp, bottom = 4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                BottomSheetDefaults.DragHandle(color = SheetOnSurfaceVariant.copy(alpha = 0.55f))
+                BottomSheetDefaults.DragHandle(color = SecondaryText.copy(alpha = 0.55f))
             }
         }
     ) {
@@ -76,6 +89,14 @@ fun FormBottomSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                SurfaceDark.copy(alpha = 0.96f),
+                                DarkNavy
+                            )
+                        )
+                    )
                     .navigationBarsPadding()
                     .imePadding()
             ) {
@@ -86,7 +107,7 @@ fun FormBottomSheet(
                         .padding(horizontal = 24.dp, vertical = 8.dp),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = SheetOnSurface
+                    color = PrimaryText
                 )
                 Column(
                     modifier = Modifier
@@ -106,9 +127,9 @@ fun FormBottomSheet(
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = PrimaryBlue,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        contentColor = PrimaryText,
                         disabledContainerColor = PrimaryBlue.copy(alpha = 0.38f),
-                        disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
+                        disabledContentColor = PrimaryText.copy(alpha = 0.6f)
                     )
                 ) {
                     Text(primaryActionLabel)
@@ -120,7 +141,7 @@ fun FormBottomSheet(
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp, vertical = 4.dp),
                         colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            contentColor = SheetOnSurfaceVariant
                         )
                     ) {
                         Text(stringResource(R.string.cancel))

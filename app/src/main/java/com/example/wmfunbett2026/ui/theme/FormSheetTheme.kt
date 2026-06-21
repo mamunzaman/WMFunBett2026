@@ -1,15 +1,15 @@
 package com.example.wmfunbett2026.ui.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val FormSheetLightColorScheme = lightColorScheme(
+private val FormSheetDarkColorScheme = darkColorScheme(
     primary = PrimaryBlue,
     onPrimary = Color.White,
-    primaryContainer = PrimaryBlue,
-    onPrimaryContainer = Color.White,
+    primaryContainer = PrimaryBlue.copy(alpha = 0.35f),
+    onPrimaryContainer = PrimaryText,
     surface = SheetSurface,
     onSurface = SheetOnSurface,
     onSurfaceVariant = SheetOnSurfaceVariant,
@@ -25,7 +25,7 @@ private val FormSheetLightColorScheme = lightColorScheme(
 @Composable
 fun FormSheetTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = FormSheetLightColorScheme,
+        colorScheme = FormSheetDarkColorScheme,
         typography = Typography,
         content = content
     )
