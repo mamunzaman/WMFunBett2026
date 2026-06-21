@@ -437,3 +437,78 @@ fun TournamentCard(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LeagueSummaryCard(
+    name: String,
+    matchCount: Int,
+    activeMatchCount: Int,
+    tippGroupCount: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    PremiumCard(
+        modifier = modifier.fillMaxWidth(),
+        gradient = Brush.verticalGradient(
+            colors = listOf(
+                com.example.wmfunbett2026.ui.theme.SurfaceVariant,
+                com.example.wmfunbett2026.ui.theme.SurfaceVariant.copy(alpha = 0.92f)
+            )
+        ),
+        borderColor = Divider,
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(PrimaryBlue.copy(alpha = 0.35f))
+                    .border(1.dp, PrimaryBlue.copy(alpha = 0.5f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.EmojiEvents,
+                    contentDescription = null,
+                    tint = JackpotGold.copy(alpha = 0.9f),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+                Text(
+                    text = stringResource(
+                        R.string.league_card_stats,
+                        matchCount,
+                        activeMatchCount,
+                        tippGroupCount
+                    ),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            IconButton(onClick = onClick) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = TextSecondary
+                )
+            }
+        }
+    }
+}

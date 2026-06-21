@@ -2,6 +2,9 @@
     <string name="app_name">WM Fun Bett 2026</string>
 
     <!-- Navigation -->
+    <string name="nav_matches">Matches</string>
+    <string name="nav_leagues">Leagues</string>
+    <string name="nav_friends">Friends</string>
     <string name="nav_home">Home</string>
     <string name="nav_tipps">Tipps</string>
     <string name="nav_kasse">Kasse</string>
@@ -10,9 +13,43 @@
     <string name="add_action">Add</string>
 
     <!-- Screen titles -->
+    <string name="screen_matches">Matches</string>
+    <string name="screen_leagues">Leagues</string>
+    <string name="screen_friends">Friends</string>
+    <string name="screen_settings">Settings</string>
     <string name="screen_home">Home</string>
     <string name="screen_kasse">Kasse</string>
     <string name="screen_tipps">Tipps</string>
+
+    <!-- Match sections -->
+    <string name="section_live">Live</string>
+    <string name="section_today">Today</string>
+    <string name="section_tomorrow">Tomorrow</string>
+    <string name="section_finished">Finished</string>
+    <string name="filter_all">All</string>
+
+    <!-- Leagues -->
+    <string name="league_card_stats">%1$d matches · %2$d active · %3$d tipp groups</string>
+    <string name="league_matches_empty_title">No matches in this league</string>
+    <string name="league_matches_empty_message">Sample league data will appear here when available.</string>
+
+    <!-- Friends -->
+    <string name="friends_intro">Friends overview is calculated from saved entries.</string>
+    <string name="friends_empty_title">No friends yet</string>
+    <string name="friends_empty_message">Add entries to matches to see friend stats here.</string>
+    <string name="friend_matches_count">%1$d matches</string>
+    <string name="friend_total_tipped">%1$s tipped</string>
+    <string name="friend_wins_placeholder">%1$d wins (sample)</string>
+    <string name="friend_detail_matches">Joined matches: %1$d</string>
+    <string name="friend_detail_tipped">Total tipped: %1$s</string>
+    <string name="friend_detail_wins">Wins: %1$d (sample)</string>
+
+    <!-- Tipps center -->
+    <string name="tipps_center_title">Tipps</string>
+    <string name="action_add_league">Add League</string>
+    <string name="action_add_match">Add Match</string>
+    <string name="action_add_tipp_group">Add Tipp Group</string>
+    <string name="action_add_entry">Add Entry</string>
 
     <!-- Match center -->
     <string name="total_jackpot">Total Jackpot</string>

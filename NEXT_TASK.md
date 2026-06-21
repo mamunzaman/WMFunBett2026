@@ -1,9 +1,10 @@
 # Next Task
 
 ## Current Goal
-Wire real Add Tipp / Add Person / Add Game actions, or Room persistence.
+Wire Tipps center actions to real create flows, or Room persistence.
 
 ## Verify Next
-- Scroll Tipps list: no dark block behind nav, only pill glass
-- Nav pill shows frosted blur inside rounded clip (API 31+)
-- Center + button unchanged
+- Default tab is Matches with Live/Today/Tomorrow/Finished groups
+- Leagues → World Cup 2026 → match list with matchday filter
+- Center + opens Tipps sample action sheet
+- Game detail hierarchy unchanged (Round → Game → Tipp Group → Entry)

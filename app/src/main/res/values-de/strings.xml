@@ -2,6 +2,9 @@
     <string name="app_name">WM Fun Bett 2026</string>
 
     <!-- Navigation -->
+    <string name="nav_matches">Spiele</string>
+    <string name="nav_leagues">Ligen</string>
+    <string name="nav_friends">Freunde</string>
     <string name="nav_home">Start</string>
     <string name="nav_tipps">Tipps</string>
     <string name="nav_kasse">Kasse</string>
@@ -10,9 +13,43 @@
     <string name="add_action">Hinzufügen</string>
 
     <!-- Screen titles -->
+    <string name="screen_matches">Spiele</string>
+    <string name="screen_leagues">Ligen</string>
+    <string name="screen_friends">Freunde</string>
+    <string name="screen_settings">Einstellungen</string>
     <string name="screen_home">Start</string>
     <string name="screen_kasse">Kasse</string>
     <string name="screen_tipps">Tipps</string>
+
+    <!-- Match sections -->
+    <string name="section_live">Live</string>
+    <string name="section_today">Heute</string>
+    <string name="section_tomorrow">Morgen</string>
+    <string name="section_finished">Beendet</string>
+    <string name="filter_all">Alle</string>
+
+    <!-- Leagues -->
+    <string name="league_card_stats">%1$d Spiele · %2$d aktiv · %3$d Tipp-Gruppen</string>
+    <string name="league_matches_empty_title">Keine Spiele in dieser Liga</string>
+    <string name="league_matches_empty_message">Beispieldaten erscheinen hier, sobald verfügbar.</string>
+
+    <!-- Friends -->
+    <string name="friends_intro">Freunde-Übersicht wird aus gespeicherten Einträgen berechnet.</string>
+    <string name="friends_empty_title">Noch keine Freunde</string>
+    <string name="friends_empty_message">Füge Einträge zu Spielen hinzu, um Freund-Statistiken zu sehen.</string>
+    <string name="friend_matches_count">%1$d Spiele</string>
+    <string name="friend_total_tipped">%1$s getippt</string>
+    <string name="friend_wins_placeholder">%1$d Siege (Beispiel)</string>
+    <string name="friend_detail_matches">Spiele: %1$d</string>
+    <string name="friend_detail_tipped">Gesamt getippt: %1$s</string>
+    <string name="friend_detail_wins">Siege: %1$d (Beispiel)</string>
+
+    <!-- Tipps center -->
+    <string name="tipps_center_title">Tipps</string>
+    <string name="action_add_league">Liga hinzufügen</string>
+    <string name="action_add_match">Spiel hinzufügen</string>
+    <string name="action_add_tipp_group">Tipp-Gruppe hinzufügen</string>
+    <string name="action_add_entry">Eintrag hinzufügen</string>
 
     <!-- Match center -->
     <string name="total_jackpot">Gesamt-Jackpot</string>

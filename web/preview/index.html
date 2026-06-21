@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WM Fun Bett 2026 — Match Center Preview</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <p class="hero__eyebrow">FIFA World Cup 2026</p>
+      <h1 class="hero__title">WM Fun Bett</h1>
+      <p class="hero__subtitle">Match-center preview — animated with GSAP</p>
+    </header>
+
+    <section class="jackpot" aria-label="Jackpot">
+      <div class="jackpot__card">
+        <span class="jackpot__label">Gesamt-Jackpot</span>
+        <p class="jackpot__amount" data-jackpot-value="2840">€ 0</p>
+        <div class="jackpot__stats">
+          <div class="stat-chip">
+            <span class="stat-chip__value" data-stat="rounds">0</span>
+            <span class="stat-chip__label">Offene Runden</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-chip__value" data-stat="games">0</span>
+            <span class="stat-chip__label">Aktive Spiele</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="matches" aria-label="Spiele">
+      <h2 class="matches__heading">Kommende Spiele</h2>
+      <ul class="matches__list">
+        <li class="match-card" data-status="live">
+          <div class="match-card__meta">
+            <span>Gruppe A · Spieltag 1</span>
+            <span class="pill pill--live">Live</span>
+          </div>
+          <div class="match-card__teams">
+            <span>🇩🇪 Deutschland</span>
+            <strong class="match-card__score">1 : 0</strong>
+            <span>🇫🇷 Frankreich</span>
+          </div>
+        </li>
+        <li class="match-card" data-status="active">
+          <div class="match-card__meta">
+            <span>Gruppe B · Spieltag 1</span>
+            <span class="pill pill--active">Offen</span>
+          </div>
+          <div class="match-card__teams">
+            <span>🇪🇸 Spanien</span>
+            <strong class="match-card__score">– : –</strong>
+            <span>🇮🇹 Italien</span>
+          </div>
+        </li>
+        <li class="match-card" data-status="active">
+          <div class="match-card__meta">
+            <span>Gruppe C · Spieltag 2</span>
+            <span class="pill pill--active">Offen</span>
+          </div>
+          <div class="match-card__teams">
+            <span>🇧🇷 Brasilien</span>
+            <strong class="match-card__score">– : –</strong>
+            <span>🇦🇷 Argentinien</span>
+          </div>
+        </li>
+        <li class="match-card" data-status="finished">
+          <div class="match-card__meta">
+            <span>Gruppe D · Spieltag 2</span>
+            <span class="pill pill--finished">Beendet</span>
+          </div>
+          <div class="match-card__teams">
+            <span>🇳🇱 Niederlande</span>
+            <strong class="match-card__score">2 : 2</strong>
+            <span>🇵🇹 Portugal</span>
+          </div>
+        </li>
+        <li class="match-card" data-status="active">
+          <div class="match-card__meta">
+            <span>Achtelfinale</span>
+            <span class="pill pill--active">Offen</span>
+          </div>
+          <div class="match-card__teams">
+            <span>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</span>
+            <strong class="match-card__score">– : –</strong>
+            <span>🇺🇸 USA</span>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <footer class="footer">
+      <p>Design tokens from <code>Color.kt</code> · Open this file locally to preview scroll animations.</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

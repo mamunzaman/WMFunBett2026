@@ -40,6 +40,7 @@
 - [x] Tipps dashboard polish: JackpotSummaryCard, MatchCard, TournamentCard, glass nav
 - [x] Sheet blur polish, edge-to-edge header, nav glass readability layer
 - [x] Clipped blur glass on bottom nav pill only (no dim overlay block)
+- [x] Web match-center preview (`web/preview/`) with GSAP intro timeline + ScrollTrigger batch reveal
 
 ## In Progress
 - None
@@ -52,4 +53,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Bottom nav uses clipped in-pill blur glass; removed dim overlay block.
+2026-06-21 — Added GSAP web preview for match-center jackpot + scroll-reveal match cards.

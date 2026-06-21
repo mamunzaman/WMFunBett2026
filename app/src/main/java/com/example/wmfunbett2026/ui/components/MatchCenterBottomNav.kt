@@ -21,8 +21,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.SportsSoccer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.navigation.AppScreen
@@ -46,7 +49,7 @@ import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.TextPrimary
 import com.example.wmfunbett2026.ui.theme.TextSecondary
 
-private val NavPillWidth = 300.dp
+private val NavPillWidth = 380.dp
 private val NavPillHeight = 72.dp
 private val NavPillRadius = 36.dp
 private val NavPillShape = RoundedCornerShape(NavPillRadius)
@@ -90,39 +93,55 @@ fun MatchCenterBottomNav(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 18.dp),
+                    .padding(horizontal = 8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom
             ) {
                 BottomNavItem(
-                    label = stringResource(R.string.nav_home),
-                    icon = Icons.Default.Home,
-                    selected = selectedScreen == AppScreen.Home,
-                    onClick = { onScreenSelected(AppScreen.Home) },
+                    label = stringResource(AppScreen.Matches.labelRes),
+                    icon = AppScreen.Matches.icon,
+                    selected = selectedScreen == AppScreen.Matches,
+                    onClick = { onScreenSelected(AppScreen.Matches) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(bottom = 10.dp)
+                )
+                BottomNavItem(
+                    label = stringResource(AppScreen.Leagues.labelRes),
+                    icon = AppScreen.Leagues.icon,
+                    selected = selectedScreen == AppScreen.Leagues,
+                    onClick = { onScreenSelected(AppScreen.Leagues) },
                     modifier = Modifier
                         .weight(1f)
                         .padding(bottom = 10.dp)
                 )
                 Box(
                     modifier = Modifier
-                        .width(76.dp)
+                        .width(72.dp)
                         .padding(bottom = 8.dp),
                     contentAlignment = Alignment.BottomCenter
                 ) {
                     Text(
                         text = tippsLabel,
                         style = MaterialTheme.typography.labelSmall,
-                        fontWeight = if (selectedScreen == AppScreen.WM2026) {
-                            FontWeight.SemiBold
-                        } else {
-                            FontWeight.Normal
-                        },
-                        color = if (selectedScreen == AppScreen.WM2026) PrimaryBlue else TextSecondary
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 BottomNavItem(
-                    label = stringResource(R.string.nav_settings),
-                    icon = Icons.Default.Settings,
+                    label = stringResource(AppScreen.Friends.labelRes),
+                    icon = AppScreen.Friends.icon,
+                    selected = selectedScreen == AppScreen.Friends,
+                    onClick = { onScreenSelected(AppScreen.Friends) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(bottom = 10.dp)
+                )
+                BottomNavItem(
+                    label = stringResource(AppScreen.Settings.labelRes),
+                    icon = AppScreen.Settings.icon,
                     selected = selectedScreen == AppScreen.Settings,
                     onClick = { onScreenSelected(AppScreen.Settings) },
                     modifier = Modifier
@@ -198,7 +217,7 @@ private fun BottomNavItem(
         modifier = modifier
             .clip(CircleShape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .padding(horizontal = 4.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
@@ -206,13 +225,15 @@ private fun BottomNavItem(
             imageVector = icon,
             contentDescription = label,
             tint = tint,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(22.dp)
         )
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = tint
+            color = tint,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

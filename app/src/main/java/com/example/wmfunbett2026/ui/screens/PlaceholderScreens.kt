@@ -14,14 +14,14 @@ import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.components.MatchCenterEmptyState
 import com.example.wmfunbett2026.ui.components.MatchCenterBottomNavReservedHeight
 import com.example.wmfunbett2026.ui.components.MatchCenterHeader
-import com.example.wmfunbett2026.ui.theme.DarkNavy
+import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 
 @Composable
 fun HistoryScreen(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(DarkNavy)
+            .background(BackgroundDeep)
     ) {
         androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxSize()) {
             MatchCenterHeader(title = stringResource(R.string.nav_history))
@@ -50,13 +50,10 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(DarkNavy)
+            .background(BackgroundDeep)
     ) {
         androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxSize()) {
-            MatchCenterHeader(
-                title = stringResource(R.string.nav_settings),
-                showSearchIcon = true
-            )
+            MatchCenterHeader(title = stringResource(R.string.screen_settings))
             Box(
                 modifier = Modifier
                     .fillMaxSize()
