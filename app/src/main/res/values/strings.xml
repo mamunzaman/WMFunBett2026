@@ -43,6 +43,9 @@
 
     <!-- Leagues -->
     <string name="league_card_stats">%1$d matches · %2$d active · %3$d tipp groups</string>
+    <string name="league_grid_matches">%1$d matches</string>
+    <string name="league_grid_active">%1$d active</string>
+    <string name="league_grid_tipps">%1$d tipp groups</string>
     <string name="league_matches_empty_title">No matches in this league</string>
     <string name="league_matches_empty_message">Sample league data will appear here when available.</string>
 

@@ -46,7 +46,7 @@
 - [x] League list + league matches, Friends from entries, Tipps center sheet
 - [x] Matches header LIVE pill, calendar select sheet, search actions
 - [x] Shared screen content spacing (`screenContentPadding`, 16dp top)
-- [x] Match card redesign: active scoreline layout + compact flag cards
+- [x] Leagues screen staggered 2-column premium grid
 
 ## In Progress
 - None
@@ -59,4 +59,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Match card redesign (active + compact variants).
+2026-06-21 — Leagues staggered 2-column grid layout.
