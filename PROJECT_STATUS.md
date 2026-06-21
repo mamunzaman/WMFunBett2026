@@ -56,4 +56,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Added GSAP web preview for match-center jackpot + scroll-reveal match cards.
+2026-06-21 — Main navigation restructure for API-friendly match center flow.
