@@ -1,9 +1,10 @@
 # Next Task
 
 ## Current Goal
-Wire Tipps center actions to real create flows, or Room persistence.
+Add Day/Game to custom rounds from league matches, or wire Tipps center actions.
 
 ## Verify Next
-- Leagues tab: press league card — 97% scale, elevation bump, border glow, ripple, smooth release
-- Staggered grid entrance still plays on first load
-- Tap still navigates to league matches
+- Leagues → tap Custom League → Create Round dialog opens
+- Create disabled when name blank; enabled after typing
+- New round card appears before Custom League card
+- Tap new round → empty league matches screen with back nav

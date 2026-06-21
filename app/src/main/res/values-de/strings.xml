@@ -48,6 +48,9 @@
     <string name="league_grid_tipps">%1$d Tipp-Gruppen</string>
     <string name="league_matches_empty_title">Keine Spiele in dieser Liga</string>
     <string name="league_matches_empty_message">Beispieldaten erscheinen hier, sobald verfügbar.</string>
+    <string name="create_round">Runde erstellen</string>
+    <string name="round_name">Rundenname</string>
+    <string name="create">Erstellen</string>
 
     <!-- Friends -->
     <string name="friends_intro">Freunde-Übersicht wird aus gespeicherten Einträgen berechnet.</string>

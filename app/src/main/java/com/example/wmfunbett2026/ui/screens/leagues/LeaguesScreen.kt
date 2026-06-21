@@ -9,13 +9,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.repository.FunBettRepository
+import com.example.wmfunbett2026.ui.components.CreateRoundDialog
 import com.example.wmfunbett2026.ui.components.LeagueGridCard
 import com.example.wmfunbett2026.ui.components.MatchCenterHeader
 import com.example.wmfunbett2026.ui.components.screenContentPadding
@@ -28,12 +32,15 @@ private val LeagueGridColumnSpacing = 12.dp
 private val LeagueGridTallCardHeight = 205.dp
 private val LeagueGridCompactCardHeight = 188.dp
 
+private const val CustomLeagueId = "custom-league"
+
 @Composable
 fun LeaguesScreen(
     onLeagueClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     FunBettRepository.dataVersion.intValue
+    var showCreateRoundDialog by remember { mutableStateOf(false) }
     val leagues = remember(FunBettRepository.dataVersion.intValue) { loadLeagueSummaries() }
     val leftLeagues = remember(leagues) { leagues.filterIndexed { index, _ -> index % 2 == 0 } }
     val rightLeagues = remember(leagues) { leagues.filterIndexed { index, _ -> index % 2 == 1 } }
@@ -59,14 +66,26 @@ fun LeaguesScreen(
                 ) {
                     LeagueGridColumn(
                         leagues = leftLeagues,
-                        onLeagueClick = onLeagueClick,
+                        onLeagueClick = { leagueId ->
+                            if (leagueId == CustomLeagueId) {
+                                showCreateRoundDialog = true
+                            } else {
+                                onLeagueClick(leagueId)
+                            }
+                        },
                         tallFirst = true,
                         staggerIndexOffset = 0,
                         modifier = Modifier.weight(1f)
                     )
                     LeagueGridColumn(
                         leagues = rightLeagues,
-                        onLeagueClick = onLeagueClick,
+                        onLeagueClick = { leagueId ->
+                            if (leagueId == CustomLeagueId) {
+                                showCreateRoundDialog = true
+                            } else {
+                                onLeagueClick(leagueId)
+                            }
+                        },
                         tallFirst = false,
                         staggerIndexOffset = 1,
                         modifier = Modifier
@@ -76,6 +95,16 @@ fun LeaguesScreen(
                 }
             }
         }
+    }
+
+    if (showCreateRoundDialog) {
+        CreateRoundDialog(
+            onDismiss = { showCreateRoundDialog = false },
+            onCreate = { name ->
+                FunBettRepository.addRound(name, null)
+                showCreateRoundDialog = false
+            }
+        )
     }
 }
 

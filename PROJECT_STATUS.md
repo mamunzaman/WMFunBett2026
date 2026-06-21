@@ -48,6 +48,7 @@
 - [x] Shared screen content spacing (`screenContentPadding`, 16dp top)
 - [x] Leagues screen staggered 2-column premium grid
 - [x] League grid card premium M3 press interaction (scale, elevation, glow, ripple)
+- [x] Custom League Create Round dialog (in-memory rounds in grid)
 
 ## In Progress
 - None
@@ -60,4 +61,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — League grid card press interaction (scale, elevation, border glow, ripple).
+2026-06-21 — Custom League opens Create Round dialog; new rounds appear in grid.

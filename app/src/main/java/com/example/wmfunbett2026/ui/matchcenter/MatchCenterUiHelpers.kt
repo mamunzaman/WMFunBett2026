@@ -205,6 +205,22 @@ fun loadLeagueSummaries(): List<LeagueSummary> {
     val wcRound = rounds.find { it.id == FunBettRepository.ROUND_ID }
     val wcGames = wcRound?.let { flattenAllGames(listOf(it)) }.orEmpty()
 
+    val customRoundLeagues = rounds
+        .filter { it.id != FunBettRepository.ROUND_ID }
+        .map { round ->
+            val games = flattenAllGames(listOf(round))
+            LeagueSummary(
+                id = round.id,
+                name = round.name,
+                roundId = round.id,
+                matchCount = games.size,
+                activeMatchCount = games.count {
+                    it.game.status == MatchStatus.LIVE || it.game.status == MatchStatus.NOT_STARTED
+                },
+                tippGroupCount = games.sumOf { it.game.tippGroups.size }
+            )
+        }
+
     return listOf(
         LeagueSummary(
             id = "wc2026",
@@ -219,7 +235,8 @@ fun loadLeagueSummaries(): List<LeagueSummary> {
         LeagueSummary("bundesliga", "Bundesliga", null, 8, 3, 2),
         LeagueSummary("premier-league", "Premier League", null, 10, 4, 3),
         LeagueSummary("la-liga", "La Liga", null, 9, 2, 1),
-        LeagueSummary("champions-league", "Champions League", null, 6, 2, 2),
+        LeagueSummary("champions-league", "Champions League", null, 6, 2, 2)
+    ) + customRoundLeagues + listOf(
         LeagueSummary("custom-league", "Custom League", null, 0, 0, 0)
     )
 }

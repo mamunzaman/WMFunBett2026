@@ -48,6 +48,9 @@
     <string name="league_grid_tipps">%1$d tipp groups</string>
     <string name="league_matches_empty_title">No matches in this league</string>
     <string name="league_matches_empty_message">Sample league data will appear here when available.</string>
+    <string name="create_round">Create Round</string>
+    <string name="round_name">Round name</string>
+    <string name="create">Create</string>
 
     <!-- Friends -->
     <string name="friends_intro">Friends overview is calculated from saved entries.</string>
