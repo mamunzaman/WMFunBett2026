@@ -30,7 +30,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -67,49 +66,25 @@ fun MatchCenterBottomNav(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(bottom = 16.dp)
-            .height(MatchCenterBottomNavReservedHeight - 16.dp),
+            .padding(bottom = 16.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
         Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .offset(y = -(NavPillHeight - FabOverlap + 8.dp))
-                .fillMaxWidth()
-                .height(48.dp)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.Transparent,
-                            DarkNavy.copy(alpha = 0.35f),
-                            DarkNavy.copy(alpha = 0.72f)
-                        )
-                    )
-                )
-        )
-
-        Box(
-            modifier = Modifier
                 .width(NavPillWidth)
                 .height(NavPillHeight)
-                .shadow(
-                    elevation = 24.dp,
-                    shape = NavPillShape,
-                    ambientColor = Color.Black.copy(alpha = 0.35f),
-                    spotColor = Color.Black.copy(alpha = 0.5f)
-                )
                 .clip(NavPillShape)
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            DarkNavy.copy(alpha = 0.78f),
-                            DarkNavy.copy(alpha = 0.92f)
+                            DarkNavy.copy(alpha = 0.82f),
+                            DarkNavy.copy(alpha = 0.94f)
                         )
                     )
                 )
                 .border(
                     width = 1.dp,
-                    color = PrimaryText.copy(alpha = 0.22f),
+                    color = PrimaryText.copy(alpha = 0.24f),
                     shape = NavPillShape
                 )
         ) {
@@ -160,14 +135,7 @@ fun MatchCenterBottomNav(
 
         Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
                 .offset(y = -(NavPillHeight - FabOverlap))
-                .shadow(
-                    elevation = 22.dp,
-                    shape = CircleShape,
-                    ambientColor = PrimaryBlue.copy(alpha = 0.55f),
-                    spotColor = PrimaryBlue.copy(alpha = 0.7f)
-                )
                 .size(CenterFabSize)
                 .clip(CircleShape)
                 .background(
@@ -177,6 +145,11 @@ fun MatchCenterBottomNav(
                             Color(0xFF0F3D8C)
                         )
                     )
+                )
+                .border(
+                    width = 1.5.dp,
+                    color = PrimaryText.copy(alpha = 0.28f),
+                    shape = CircleShape
                 )
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },

@@ -48,6 +48,7 @@ import com.example.wmfunbett2026.ui.components.MatchCenterMatchCardShell
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
 import com.example.wmfunbett2026.ui.components.SetResultDialog
 import com.example.wmfunbett2026.ui.components.TippGroupListCard
+import com.example.wmfunbett2026.ui.components.TippGroupOverviewMiniCard
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
 import com.example.wmfunbett2026.ui.theme.JackpotGold
@@ -208,13 +209,6 @@ private fun GameMatchOverviewCard(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val matchdayLabel = dayLabel ?: "Matchday"
-    val bottomMeta = buildString {
-        append("$tippGroupCount tipps · $totalPeople people · $totalMoneyLabel")
-        if (carryLabel != null) {
-            append(" · ")
-            append(carryLabel)
-        }
-    }
 
     MatchCenterMatchCardShell(modifier = modifier) {
         Column(
@@ -224,8 +218,7 @@ private fun GameMatchOverviewCard(
         ) {
             MatchCenterMatchCardBody(
                 game = game,
-                matchdayLabel = matchdayLabel,
-                bottomMetaOverride = bottomMeta
+                matchdayLabel = matchdayLabel
             )
             Column(
                 modifier = Modifier
@@ -240,7 +233,7 @@ private fun GameMatchOverviewCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (expanded) "Hide overview" else "Tap for overview",
+                        text = if (expanded) "Hide tipps overview" else "Show tipps overview",
                         style = MaterialTheme.typography.labelLarge,
                         color = SecondaryText
                     )
@@ -256,15 +249,9 @@ private fun GameMatchOverviewCard(
                 ) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         HorizontalDivider(color = SecondaryText.copy(alpha = 0.2f))
-                        Text(
-                            text = "Overview",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = PrimaryText
-                        )
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -273,29 +260,25 @@ private fun GameMatchOverviewCard(
                             OverviewStat(label = "Entries", value = totalPeople.toString())
                             OverviewStat(label = "Collected", value = totalMoneyLabel, highlight = true)
                         }
-                        if (tippGroups.isNotEmpty()) {
+                        if (carryLabel != null) {
                             Text(
-                                text = "Per Tipp Group",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = SecondaryText
+                                text = carryLabel,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = JackpotGold.copy(alpha = 0.9f)
                             )
+                        }
+                        if (tippGroups.isNotEmpty()) {
                             tippGroups.forEach { group ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = group.title,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = PrimaryText,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Text(
-                                        text = "${group.entries.size} · ${group.totalAmount.toEuroLabel()}",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = SecondaryText
-                                    )
-                                }
+                                val outcome = TippGroupWinnerEngine.calculate(game, group)
+                                val entryLabel = entryAmountLabel(group).takeIf { it != "—" }
+                                TippGroupOverviewMiniCard(
+                                    title = group.title,
+                                    scopeLabel = group.timeScope.label,
+                                    peopleCount = group.entries.size,
+                                    entryAmountLabel = entryLabel,
+                                    collectedLabel = group.totalAmount.toEuroLabel(),
+                                    statusLabel = winnerStatusLabel(outcome)
+                                )
                             }
                         }
                     }

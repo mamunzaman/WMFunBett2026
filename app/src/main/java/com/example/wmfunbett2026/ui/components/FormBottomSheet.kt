@@ -23,7 +23,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,9 +33,9 @@ import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.theme.FormSheetTheme
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
-import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SheetOnSurface
 import com.example.wmfunbett2026.ui.theme.SheetOnSurfaceVariant
+import com.example.wmfunbett2026.ui.theme.SheetScrimColor
 import com.example.wmfunbett2026.ui.theme.SheetSurface
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,8 +57,20 @@ fun FormBottomSheet(
         sheetState = sheetState,
         containerColor = SheetSurface,
         contentColor = SheetOnSurface,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
-        dragHandle = null
+        scrimColor = SheetScrimColor,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        dragHandle = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                    .background(SheetSurface)
+                    .padding(top = 12.dp, bottom = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                BottomSheetDefaults.DragHandle(color = SheetOnSurfaceVariant.copy(alpha = 0.55f))
+            }
+        }
     ) {
         FormSheetTheme {
             Column(
@@ -65,28 +79,21 @@ fun FormBottomSheet(
                     .navigationBarsPadding()
                     .imePadding()
             ) {
-                Column(
+                Text(
+                    text = title,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(PrimaryBlue)
-                        .padding(top = 12.dp, bottom = 16.dp),
-                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
-                ) {
-                    BottomSheetDefaults.DragHandle(color = PrimaryText.copy(alpha = 0.5f))
-                    Text(
-                        text = title,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = PrimaryText
-                    )
-                }
+                        .padding(horizontal = 24.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = SheetOnSurface
+                )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = maxScrollHeight)
                         .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
                     content = content
                 )
                 Spacer(modifier = Modifier.height(8.dp))

@@ -37,15 +37,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.theme.DarkNavy
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.JackpotGold
+import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SecondaryText
 import com.example.wmfunbett2026.ui.theme.SurfaceDark
@@ -231,6 +234,113 @@ fun DetailInlineAddButton(
 }
 
 @Composable
+fun DetailStatChip(
+    label: String,
+    value: String,
+    highlight: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .background(
+                color = if (highlight) JackpotGold.copy(alpha = 0.12f) else SecondaryText.copy(alpha = 0.1f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .border(
+                width = 1.dp,
+                color = if (highlight) JackpotGold.copy(alpha = 0.35f) else SecondaryText.copy(alpha = 0.14f),
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = SecondaryText
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = if (highlight) JackpotGold else PrimaryText
+        )
+    }
+}
+
+@Composable
+fun TippGroupOverviewMiniCard(
+    title: String,
+    scopeLabel: String,
+    peopleCount: Int,
+    entryAmountLabel: String?,
+    collectedLabel: String,
+    statusLabel: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(SurfaceDark.copy(alpha = 0.85f), RoundedCornerShape(14.dp))
+            .border(1.dp, PrimaryBlue.copy(alpha = 0.18f), RoundedCornerShape(14.dp))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = PrimaryText
+            )
+            DetailStatusChip(label = statusLabel)
+        }
+        Text(
+            text = scopeLabel,
+            style = MaterialTheme.typography.bodyMedium,
+            color = SecondaryText
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            OverviewMiniRow(label = "Entries", value = "$peopleCount people")
+            if (entryAmountLabel != null) {
+                OverviewMiniRow(label = "Entry", value = "$entryAmountLabel / person")
+            }
+            OverviewMiniRow(label = "Collected", value = collectedLabel, highlight = true)
+        }
+    }
+}
+
+@Composable
+private fun OverviewMiniRow(
+    label: String,
+    value: String,
+    highlight: Boolean = false
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = SecondaryText
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = if (highlight) JackpotGold else PrimaryText
+        )
+    }
+}
+
+@Composable
 fun DetailStatusChip(
     label: String,
     modifier: Modifier = Modifier
@@ -384,7 +494,11 @@ fun EntryListCard(
                     shape = RoundedCornerShape(16.dp)
                 )
             } else {
-                Modifier
+                Modifier.border(
+                    width = 1.dp,
+                    color = PrimaryBlue.copy(alpha = 0.2f),
+                    shape = RoundedCornerShape(16.dp)
+                )
             }
         )
 
@@ -436,35 +550,37 @@ private fun EntryListCardContent(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
+            .padding(horizontal = 18.dp, vertical = 18.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = androidx.compose.ui.Alignment.Top
+        verticalAlignment = Alignment.Top
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = name,
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryText
                 )
                 DetailStatusChip(label = statusLabel)
             }
             Text(
                 text = prediction,
-                modifier = Modifier.padding(top = 6.dp),
-                style = MaterialTheme.typography.bodyMedium,
-                color = SecondaryText
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = PrimaryText.copy(alpha = 0.92f)
             )
             if (roundStakeLabel != null) {
                 Text(
                     text = roundStakeLabel,
-                    modifier = Modifier.padding(top = 4.dp),
                     style = MaterialTheme.typography.bodySmall,
                     color = SecondaryText
                 )
@@ -472,18 +588,18 @@ private fun EntryListCardContent(
             if (!note.isNullOrBlank()) {
                 Text(
                     text = note,
-                    modifier = Modifier.padding(top = 4.dp),
                     style = MaterialTheme.typography.bodySmall,
-                    color = SecondaryText
+                    color = SecondaryText.copy(alpha = 0.85f)
                 )
             }
         }
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(14.dp))
         Text(
             text = amount,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            color = JackpotGold
+            color = JackpotGold,
+            fontSize = 22.sp
         )
     }
 }

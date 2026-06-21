@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.text.style.TextAlign
+import com.example.wmfunbett2026.ui.components.DetailStatChip
+import com.example.wmfunbett2026.ui.components.MatchCenterMatchCardShell
+import com.example.wmfunbett2026.ui.matchcenter.teamFlagEmoji
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
 import com.example.wmfunbett2026.data.model.Entry
@@ -49,7 +53,6 @@ import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SecondaryText
-import com.example.wmfunbett2026.ui.theme.SurfaceDark
 import com.example.wmfunbett2026.ui.theme.WMFunBett2026Theme
 
 private data class PersonGameTippRow(
@@ -129,6 +132,8 @@ fun TippGroupDetailScreen(
                 TippGroupMatchOverviewCard(
                     title = tippGroup.title,
                     gameLabel = "${game.teamA} vs ${game.teamB}",
+                    teamA = game.teamA,
+                    teamB = game.teamB,
                     scopeLabel = tippGroup.timeScope.label,
                     peopleCount = entries.size,
                     entryAmountLabel = entryAmountLabel(tippGroup),
@@ -216,6 +221,8 @@ fun TippGroupDetailScreen(
 private fun TippGroupMatchOverviewCard(
     title: String,
     gameLabel: String,
+    teamA: String,
+    teamB: String,
     scopeLabel: String,
     peopleCount: Int,
     entryAmountLabel: String,
@@ -224,17 +231,12 @@ private fun TippGroupMatchOverviewCard(
     onAddPersonClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-    ) {
+    MatchCenterMatchCardShell(modifier = modifier) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -242,43 +244,66 @@ private fun TippGroupMatchOverviewCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = title,
+                    text = gameLabel,
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryText
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = SecondaryText
                 )
                 DetailStatusChip(label = winnerStatusLabel)
             }
-            Text(
-                text = gameLabel,
-                style = MaterialTheme.typography.bodyMedium,
-                color = SecondaryText
-            )
-            Text(
-                text = scopeLabel,
-                style = MaterialTheme.typography.bodyMedium,
-                color = SecondaryText
-            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Text(
-                    text = "$peopleCount people",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = teamFlagEmoji(teamA),
+                    fontSize = 28.sp,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "vs",
+                    style = MaterialTheme.typography.labelLarge,
                     color = SecondaryText
                 )
                 Text(
-                    text = "Entry $entryAmountLabel",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = SecondaryText
+                    text = teamFlagEmoji(teamB),
+                    fontSize = 28.sp,
+                    textAlign = TextAlign.Center
                 )
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = totalAmountLabel,
-                    style = MaterialTheme.typography.titleMedium,
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = JackpotGold
+                    color = PrimaryText
+                )
+                Text(
+                    text = scopeLabel,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = SecondaryText
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                DetailStatChip(
+                    label = "People",
+                    value = peopleCount.toString(),
+                    modifier = Modifier.weight(1f)
+                )
+                DetailStatChip(
+                    label = "Entry",
+                    value = entryAmountLabel,
+                    modifier = Modifier.weight(1f)
+                )
+                DetailStatChip(
+                    label = "Collected",
+                    value = totalAmountLabel,
+                    highlight = true,
+                    modifier = Modifier.weight(1f)
                 )
             }
             Row(

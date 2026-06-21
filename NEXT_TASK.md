@@ -4,6 +4,7 @@
 Wire real Add Tipp / Add Person / Add Game actions, or Room persistence.
 
 ## Verify Next
-- Bottom nav: content scrolls behind glass pill without hard cut
-- Match cards: flags, big team names, status pill on list + detail
-- Add Game form: section cards, matchday/date/time picks feel clear
+- Bottom nav: no dark block behind glass pill
+- Sheets: soft navy scrim, drag handle on rounded sheet
+- Game detail overview: mini cards per tipp group
+- Tipp detail: stat chips + polished entry cards
