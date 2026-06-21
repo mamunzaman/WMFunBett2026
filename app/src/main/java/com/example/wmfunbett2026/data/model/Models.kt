@@ -21,6 +21,7 @@ data class Entry(
     val name: String,
     val prediction: String,
     val amount: Double,
+    val currentRoundAmount: Double,
     val note: String? = null
 )
 
@@ -30,7 +31,7 @@ data class TippGroup(
     val timeScope: TimeScope,
     val entries: List<Entry>
 ) {
-    val totalAmount: Double get() = entries.sumOf { it.amount }
+    val totalAmount: Double get() = entries.sumOf { it.currentRoundAmount }
 }
 
 data class Game(

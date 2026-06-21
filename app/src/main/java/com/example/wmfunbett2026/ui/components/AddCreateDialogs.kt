@@ -9,17 +9,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,21 +25,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.TimeScope
-import com.example.wmfunbett2026.ui.theme.DangerRed
-import com.example.wmfunbett2026.ui.theme.JackpotGold
-import com.example.wmfunbett2026.ui.theme.PrimaryBlue
-import com.example.wmfunbett2026.ui.theme.PrimaryText
-import com.example.wmfunbett2026.ui.theme.SecondaryText
-import com.example.wmfunbett2026.ui.theme.SurfaceDark
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private enum class MatchdayChoice(val label: String) {
+private enum class MatchdayChoice(val storedLabel: String) {
     NONE(""),
     MD1("Matchday 1"),
     MD2("Matchday 2"),
@@ -54,7 +45,7 @@ private enum class MatchdayChoice(val label: String) {
 
 private enum class DateChoice { NONE, TODAY, TOMORROW, CUSTOM }
 
-private enum class TimeChoice(val label: String) {
+private enum class TimeChoice(val storedLabel: String) {
     NONE(""),
     T1400("14:00"),
     T1700("17:00"),
@@ -62,6 +53,7 @@ private enum class TimeChoice(val label: String) {
     CUSTOM("")
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTournamentDialog(
     onDismiss: () -> Unit,
@@ -70,61 +62,46 @@ fun AddTournamentDialog(
     var name by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val errorNameRequired = stringResource(R.string.error_name_required)
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add Tournament") },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = {
-                        name = it
-                        errorMessage = null
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Name") },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                OutlinedTextField(
-                    value = note,
-                    onValueChange = { note = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Note (optional)") },
-                    minLines = 2
-                )
-                if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = errorMessage.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = DangerRed
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    if (name.isBlank()) {
-                        errorMessage = "Name is required"
-                    } else {
-                        onSave(name, note.takeIf { it.isNotBlank() })
-                    }
-                }
-            ) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
+    FormBottomSheet(
+        title = stringResource(R.string.add_tournament),
+        onDismiss = onDismiss,
+        primaryActionLabel = stringResource(R.string.save),
+        onPrimaryAction = {
+            if (name.isBlank()) {
+                errorMessage = errorNameRequired
+            } else {
+                onSave(name, note.takeIf { it.isNotBlank() })
             }
         }
-    )
+    ) {
+        FormOutlinedTextField(
+            value = name,
+            onValueChange = {
+                name = it
+                errorMessage = null
+            },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.name)) }
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        FormOutlinedTextField(
+            value = note,
+            onValueChange = { note = it },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.note_optional)) },
+            singleLine = false,
+            minLines = 2
+        )
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(10.dp))
+            FormErrorText(text = errorMessage.orEmpty())
+        }
+    }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddGameDialog(
     onDismiss: () -> Unit,
@@ -142,222 +119,239 @@ fun AddGameDialog(
     var timeChoice by remember { mutableStateOf(TimeChoice.NONE) }
     var customTimeLabel by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val errorTeamA = stringResource(R.string.error_team_a_required)
+    val errorTeamB = stringResource(R.string.error_team_b_required)
+    val errorSelectMatchday = stringResource(R.string.error_select_matchday)
+    val errorCustomMatchday = stringResource(R.string.error_custom_matchday)
+    val errorCustomDate = stringResource(R.string.error_custom_date)
+    val errorCustomTime = stringResource(R.string.error_custom_time)
 
     LaunchedEffect(Unit) {
         blockInitialFocus.requestFocus()
         focusManager.clearFocus(force = true)
     }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add Game") },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Box(
-                    modifier = Modifier
-                        .height(0.dp)
-                        .focusRequester(blockInitialFocus)
-                        .focusable()
-                )
-                OutlinedTextField(
-                    value = teamA,
-                    onValueChange = {
-                        teamA = it
-                        errorMessage = null
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Team A") },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                OutlinedTextField(
-                    value = teamB,
-                    onValueChange = {
-                        teamB = it
-                        errorMessage = null
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Team B") },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                PickerSectionLabel("Matchday")
-                Spacer(modifier = Modifier.height(6.dp))
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PickerChip("Matchday 1", matchdayChoice == MatchdayChoice.MD1) {
-                            matchdayChoice = MatchdayChoice.MD1
-                            errorMessage = null
-                        }
-                        PickerChip("Matchday 2", matchdayChoice == MatchdayChoice.MD2) {
-                            matchdayChoice = MatchdayChoice.MD2
-                            errorMessage = null
-                        }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PickerChip("Matchday 3", matchdayChoice == MatchdayChoice.MD3) {
-                            matchdayChoice = MatchdayChoice.MD3
-                            errorMessage = null
-                        }
-                        PickerChip("Custom", matchdayChoice == MatchdayChoice.CUSTOM) {
-                            matchdayChoice = MatchdayChoice.CUSTOM
-                            errorMessage = null
-                        }
-                    }
+    FormBottomSheet(
+        title = stringResource(R.string.add_game),
+        onDismiss = onDismiss,
+        primaryActionLabel = stringResource(R.string.save),
+        onPrimaryAction = {
+            val resolvedMatchday = resolveMatchdayLabel(matchdayChoice, customMatchdayLabel)
+            val resolvedDate = resolveDateLabel(dateChoice, customDateLabel)
+            val resolvedTime = resolveTimeLabel(timeChoice, customTimeLabel)
+            errorMessage = when {
+                teamA.isBlank() -> errorTeamA
+                teamB.isBlank() -> errorTeamB
+                resolvedMatchday == null -> errorSelectMatchday
+                matchdayChoice == MatchdayChoice.CUSTOM && customMatchdayLabel.isBlank() ->
+                    errorCustomMatchday
+                dateChoice == DateChoice.CUSTOM && customDateLabel.isBlank() ->
+                    errorCustomDate
+                timeChoice == TimeChoice.CUSTOM && customTimeLabel.isBlank() ->
+                    errorCustomTime
+                else -> {
+                    onSave(resolvedMatchday, teamA, teamB, resolvedDate, resolvedTime)
+                    null
                 }
-                if (matchdayChoice == MatchdayChoice.CUSTOM) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = customMatchdayLabel,
-                        onValueChange = {
-                            customMatchdayLabel = it
-                            errorMessage = null
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Custom matchday") },
-                        placeholder = { Text("Round of 16") },
-                        singleLine = true
-                    )
-                }
-                Spacer(modifier = Modifier.height(14.dp))
-                PickerSectionLabel("Date (optional)")
-                Spacer(modifier = Modifier.height(6.dp))
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PickerChip("Today", dateChoice == DateChoice.TODAY) {
-                            dateChoice = DateChoice.TODAY
-                            errorMessage = null
-                        }
-                        PickerChip("Tomorrow", dateChoice == DateChoice.TOMORROW) {
-                            dateChoice = DateChoice.TOMORROW
-                            errorMessage = null
-                        }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PickerChip("Custom", dateChoice == DateChoice.CUSTOM) {
-                            dateChoice = DateChoice.CUSTOM
-                            errorMessage = null
-                        }
-                    }
-                }
-                if (dateChoice == DateChoice.CUSTOM) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = customDateLabel,
-                        onValueChange = {
-                            customDateLabel = it
-                            errorMessage = null
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Custom date") },
-                        placeholder = { Text("Sat 21 Jun") },
-                        singleLine = true
-                    )
-                }
-                Spacer(modifier = Modifier.height(14.dp))
-                PickerSectionLabel("Time (optional)")
-                Spacer(modifier = Modifier.height(6.dp))
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PickerChip("14:00", timeChoice == TimeChoice.T1400) {
-                            timeChoice = TimeChoice.T1400
-                            errorMessage = null
-                        }
-                        PickerChip("17:00", timeChoice == TimeChoice.T1700) {
-                            timeChoice = TimeChoice.T1700
-                            errorMessage = null
-                        }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PickerChip("20:00", timeChoice == TimeChoice.T2000) {
-                            timeChoice = TimeChoice.T2000
-                            errorMessage = null
-                        }
-                        PickerChip("Custom", timeChoice == TimeChoice.CUSTOM) {
-                            timeChoice = TimeChoice.CUSTOM
-                            errorMessage = null
-                        }
-                    }
-                }
-                if (timeChoice == TimeChoice.CUSTOM) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = customTimeLabel,
-                        onValueChange = {
-                            customTimeLabel = it
-                            errorMessage = null
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Custom time") },
-                        placeholder = { Text("20:00") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
-                }
-                val previewDate = resolveDateLabel(dateChoice, customDateLabel)
-                val previewTime = resolveTimeLabel(timeChoice, customTimeLabel)
-                if (previewDate != null || previewTime != null) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Schedule: ${listOfNotNull(previewDate, previewTime).joinToString(" · ")}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = SecondaryText
-                    )
-                }
-                if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = errorMessage.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = DangerRed
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val resolvedMatchday = resolveMatchdayLabel(matchdayChoice, customMatchdayLabel)
-                    val resolvedDate = resolveDateLabel(dateChoice, customDateLabel)
-                    val resolvedTime = resolveTimeLabel(timeChoice, customTimeLabel)
-                    when {
-                        teamA.isBlank() -> errorMessage = "Team A is required"
-                        teamB.isBlank() -> errorMessage = "Team B is required"
-                        resolvedMatchday == null -> errorMessage = "Select a matchday"
-                        matchdayChoice == MatchdayChoice.CUSTOM && customMatchdayLabel.isBlank() ->
-                            errorMessage = "Enter a custom matchday"
-                        dateChoice == DateChoice.CUSTOM && customDateLabel.isBlank() ->
-                            errorMessage = "Enter a custom date or pick Today/Tomorrow"
-                        timeChoice == TimeChoice.CUSTOM && customTimeLabel.isBlank() ->
-                            errorMessage = "Enter a custom time or pick a preset"
-                        else -> onSave(
-                            resolvedMatchday,
-                            teamA,
-                            teamB,
-                            resolvedDate,
-                            resolvedTime
-                        )
-                    }
-                }
-            ) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
             }
         }
-    )
+    ) {
+        Box(
+            modifier = Modifier
+                .height(0.dp)
+                .focusRequester(blockInitialFocus)
+                .focusable()
+        )
+        FormOutlinedTextField(
+            value = teamA,
+            onValueChange = {
+                teamA = it
+                errorMessage = null
+            },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.team_a)) }
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        FormOutlinedTextField(
+            value = teamB,
+            onValueChange = {
+                teamB = it
+                errorMessage = null
+            },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.team_b)) }
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        FormSectionLabel(text = stringResource(R.string.matchday))
+        Spacer(modifier = Modifier.height(6.dp))
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FormFilterChip(
+                    label = stringResource(R.string.matchday_1),
+                    selected = matchdayChoice == MatchdayChoice.MD1
+                ) {
+                    matchdayChoice = MatchdayChoice.MD1
+                    errorMessage = null
+                }
+                FormFilterChip(
+                    label = stringResource(R.string.matchday_2),
+                    selected = matchdayChoice == MatchdayChoice.MD2
+                ) {
+                    matchdayChoice = MatchdayChoice.MD2
+                    errorMessage = null
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FormFilterChip(
+                    label = stringResource(R.string.matchday_3),
+                    selected = matchdayChoice == MatchdayChoice.MD3
+                ) {
+                    matchdayChoice = MatchdayChoice.MD3
+                    errorMessage = null
+                }
+                FormFilterChip(
+                    label = stringResource(R.string.custom),
+                    selected = matchdayChoice == MatchdayChoice.CUSTOM
+                ) {
+                    matchdayChoice = MatchdayChoice.CUSTOM
+                    errorMessage = null
+                }
+            }
+        }
+        if (matchdayChoice == MatchdayChoice.CUSTOM) {
+            Spacer(modifier = Modifier.height(8.dp))
+            FormOutlinedTextField(
+                value = customMatchdayLabel,
+                onValueChange = {
+                    customMatchdayLabel = it
+                    errorMessage = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.custom_matchday)) },
+                placeholder = { Text("Round of 16") }
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        FormSectionLabel(text = stringResource(R.string.date_optional))
+        Spacer(modifier = Modifier.height(6.dp))
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FormFilterChip(
+                    label = stringResource(R.string.today),
+                    selected = dateChoice == DateChoice.TODAY
+                ) {
+                    dateChoice = DateChoice.TODAY
+                    errorMessage = null
+                }
+                FormFilterChip(
+                    label = stringResource(R.string.tomorrow),
+                    selected = dateChoice == DateChoice.TOMORROW
+                ) {
+                    dateChoice = DateChoice.TOMORROW
+                    errorMessage = null
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FormFilterChip(
+                    label = stringResource(R.string.custom),
+                    selected = dateChoice == DateChoice.CUSTOM
+                ) {
+                    dateChoice = DateChoice.CUSTOM
+                    errorMessage = null
+                }
+            }
+        }
+        if (dateChoice == DateChoice.CUSTOM) {
+            Spacer(modifier = Modifier.height(8.dp))
+            FormOutlinedTextField(
+                value = customDateLabel,
+                onValueChange = {
+                    customDateLabel = it
+                    errorMessage = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.custom_date)) },
+                placeholder = { Text("Sat 21 Jun") }
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        FormSectionLabel(text = stringResource(R.string.time_optional))
+        Spacer(modifier = Modifier.height(6.dp))
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FormFilterChip(
+                    label = "14:00",
+                    selected = timeChoice == TimeChoice.T1400
+                ) {
+                    timeChoice = TimeChoice.T1400
+                    errorMessage = null
+                }
+                FormFilterChip(
+                    label = "17:00",
+                    selected = timeChoice == TimeChoice.T1700
+                ) {
+                    timeChoice = TimeChoice.T1700
+                    errorMessage = null
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FormFilterChip(
+                    label = "20:00",
+                    selected = timeChoice == TimeChoice.T2000
+                ) {
+                    timeChoice = TimeChoice.T2000
+                    errorMessage = null
+                }
+                FormFilterChip(
+                    label = stringResource(R.string.custom),
+                    selected = timeChoice == TimeChoice.CUSTOM
+                ) {
+                    timeChoice = TimeChoice.CUSTOM
+                    errorMessage = null
+                }
+            }
+        }
+        if (timeChoice == TimeChoice.CUSTOM) {
+            Spacer(modifier = Modifier.height(8.dp))
+            FormOutlinedTextField(
+                value = customTimeLabel,
+                onValueChange = {
+                    customTimeLabel = it
+                    errorMessage = null
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.custom_time)) },
+                placeholder = { Text("20:00") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+        }
+        val previewDate = resolveDateLabel(dateChoice, customDateLabel)
+        val previewTime = resolveTimeLabel(timeChoice, customTimeLabel)
+        if (previewDate != null || previewTime != null) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = stringResource(
+                    R.string.schedule_preview,
+                    listOfNotNull(previewDate, previewTime).joinToString(" · ")
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        if (errorMessage != null) {
+            Spacer(modifier = Modifier.height(10.dp))
+            FormErrorText(text = errorMessage.orEmpty())
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -371,16 +365,19 @@ fun AddTippGroupDialog(
     val initialScope = availableScopes.firstOrNull()
 
     if (initialScope == null) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text("No Tipp type available") },
-            text = { Text("No Tipp type is available for this game anymore.") },
-            confirmButton = {
-                TextButton(onClick = onDismiss) {
-                    Text("OK")
-                }
-            }
-        )
+        FormBottomSheet(
+            title = stringResource(R.string.no_tipp_type_available),
+            onDismiss = onDismiss,
+            primaryActionLabel = stringResource(R.string.ok),
+            onPrimaryAction = onDismiss,
+            showCancel = false
+        ) {
+            Text(
+                text = stringResource(R.string.no_tipp_type_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         return
     }
 
@@ -390,103 +387,57 @@ fun AddTippGroupDialog(
     }
     val autoTitle = selectedScope.defaultTippTitle()
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add Tipp Group") },
-        text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                if (noMatchTimeNote != null) {
-                    Text(
-                        text = noMatchTimeNote,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = SecondaryText
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
-                ) {
-                    OutlinedTextField(
-                        value = selectedScope.label,
-                        onValueChange = {},
-                        readOnly = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor(),
-                        label = { Text("Time scope") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        availableScopes.forEach { scope ->
-                            DropdownMenuItem(
-                                text = { Text(scope.label) },
-                                onClick = {
-                                    selectedScope = scope
-                                    expanded = false
-                                }
-                            )
+    FormBottomSheet(
+        title = stringResource(R.string.add_tipp_group),
+        onDismiss = onDismiss,
+        primaryActionLabel = stringResource(R.string.save),
+        onPrimaryAction = { onSave(autoTitle, selectedScope) }
+    ) {
+        if (noMatchTimeNote != null) {
+            Text(
+                text = noMatchTimeNote,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            FormOutlinedTextField(
+                value = selectedScope.label,
+                onValueChange = {},
+                readOnly = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
+                label = { Text(stringResource(R.string.time_scope)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                availableScopes.forEach { scope ->
+                    DropdownMenuItem(
+                        text = { Text(scope.label) },
+                        onClick = {
+                            selectedScope = scope
+                            expanded = false
                         }
-                    }
+                    )
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Tipp title: $autoTitle",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = PrimaryText
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onSave(autoTitle, selectedScope) }) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
             }
         }
-    )
-}
-
-@Composable
-private fun PickerSectionLabel(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium,
-        color = SecondaryText
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun PickerChip(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(label) },
-        colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = PrimaryBlue,
-            selectedLabelColor = PrimaryText,
-            containerColor = SurfaceDark,
-            labelColor = SecondaryText
-        ),
-        border = FilterChipDefaults.filterChipBorder(
-            enabled = true,
-            selected = selected,
-            borderColor = SecondaryText.copy(alpha = 0.35f),
-            selectedBorderColor = JackpotGold.copy(alpha = 0.6f)
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = stringResource(R.string.tipp_title_label, autoTitle),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
         )
-    )
+    }
 }
 
 private fun formatGameDateLabel(date: LocalDate): String =
@@ -495,7 +446,7 @@ private fun formatGameDateLabel(date: LocalDate): String =
 private fun resolveMatchdayLabel(choice: MatchdayChoice, customLabel: String): String? {
     return when (choice) {
         MatchdayChoice.NONE -> null
-        MatchdayChoice.MD1, MatchdayChoice.MD2, MatchdayChoice.MD3 -> choice.label
+        MatchdayChoice.MD1, MatchdayChoice.MD2, MatchdayChoice.MD3 -> choice.storedLabel
         MatchdayChoice.CUSTOM -> customLabel.trim().takeIf { it.isNotEmpty() }
     }
 }
@@ -512,7 +463,7 @@ private fun resolveDateLabel(choice: DateChoice, customLabel: String): String? {
 private fun resolveTimeLabel(choice: TimeChoice, customLabel: String): String? {
     return when (choice) {
         TimeChoice.NONE -> null
-        TimeChoice.T1400, TimeChoice.T1700, TimeChoice.T2000 -> choice.label
+        TimeChoice.T1400, TimeChoice.T1700, TimeChoice.T2000 -> choice.storedLabel
         TimeChoice.CUSTOM -> customLabel.trim().takeIf { it.isNotEmpty() }
     }
 }

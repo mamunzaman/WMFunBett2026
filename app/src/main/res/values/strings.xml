@@ -1,3 +1,101 @@
 <resources>
     <string name="app_name">WM Fun Bett 2026</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_tipps">Tipps</string>
+    <string name="nav_kasse">Kasse</string>
+
+    <!-- Screen titles -->
+    <string name="screen_home">Home</string>
+    <string name="screen_kasse">Kasse</string>
+    <string name="screen_tipps">Tipps</string>
+
+    <!-- Form sheet titles -->
+    <string name="add_tournament">Add Tournament</string>
+    <string name="add_game">Add Game</string>
+    <string name="add_tipp_group">Add Tipp Group</string>
+    <string name="add_entry">Add Entry</string>
+    <string name="set_result">Set Result</string>
+    <string name="winner_share_settings">Winner Share Settings</string>
+    <string name="no_tipp_type_available">No Tipp type available</string>
+
+    <!-- Actions -->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="done">Done</string>
+    <string name="ok">OK</string>
+    <string name="add_entry_with_amount">Add Entry · %1$s</string>
+
+    <!-- Fields -->
+    <string name="name">Name</string>
+    <string name="note_optional">Note (optional)</string>
+    <string name="team_a">Team A</string>
+    <string name="team_b">Team B</string>
+    <string name="matchday">Matchday</string>
+    <string name="date">Date</string>
+    <string name="date_optional">Date (optional)</string>
+    <string name="time">Time</string>
+    <string name="time_optional">Time (optional)</string>
+    <string name="prediction">Prediction</string>
+    <string name="status">Status</string>
+    <string name="score">Score</string>
+    <string name="time_scope">Time scope</string>
+
+    <!-- Payment -->
+    <string name="payment_breakdown">Payment breakdown</string>
+    <string name="previous_unpaid_rounds">Previous unpaid rounds:</string>
+    <string name="previous_jackpot_buy_in">Previous jackpot buy-in:</string>
+    <string name="current_round_amount">Current round amount:</string>
+    <string name="current_round_amount_locked">Current round amount: %1$s</string>
+    <string name="current_round_amount_euro">Current round amount €</string>
+    <string name="required_total">Required total to join:</string>
+    <string name="required_total_inline">Required total to join: %1$s</string>
+    <string name="round_amount_locked_hint">All entries in this Tipp round must use the same amount.</string>
+
+    <!-- Chips -->
+    <string name="matchday_1">Matchday 1</string>
+    <string name="matchday_2">Matchday 2</string>
+    <string name="matchday_3">Matchday 3</string>
+    <string name="custom">Custom</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="custom_matchday">Custom matchday</string>
+    <string name="custom_date">Custom date</string>
+    <string name="custom_time">Custom time</string>
+
+    <!-- Match status -->
+    <string name="status_not_started">Not Started</string>
+    <string name="status_live">Live</string>
+    <string name="status_finished">Finished</string>
+
+    <!-- Winner share -->
+    <string name="equal_split_default">Equal split (default)</string>
+    <string name="manual_custom_shares">Manual custom shares</string>
+    <string name="custom_shares_coming">Custom winner shares coming next</string>
+
+    <!-- Messages -->
+    <string name="no_tipp_type_message">No Tipp type is available for this game anymore.</string>
+    <string name="tipp_title_label">Tipp title: %1$s</string>
+    <string name="schedule_preview">Schedule: %1$s</string>
+    <string name="delete_confirm_title">Delete?</string>
+    <string name="delete_confirm_message">This will remove this item from this session.</string>
+
+    <!-- Errors -->
+    <string name="error_name_required">Name is required</string>
+    <string name="error_team_a_required">Team A is required</string>
+    <string name="error_team_b_required">Team B is required</string>
+    <string name="error_select_matchday">Select a matchday</string>
+    <string name="error_custom_matchday">Enter a custom matchday</string>
+    <string name="error_custom_date">Enter a custom date or pick Today/Tomorrow</string>
+    <string name="error_custom_time">Enter a custom time or pick a preset</string>
+    <string name="error_scores_required">Both scores are required</string>
+    <string name="error_scores_numbers">Scores must be numbers</string>
+    <string name="error_scores_non_negative">Scores must be 0 or more</string>
+    <string name="error_round_amount">Current round amount must be greater than 0</string>
+    <string name="error_round_amount_with_carry">Enter a valid current round amount. Previous unpaid rounds are included in the total.</string>
+    <string name="error_scores_required_live_finished">Both scores are required for Live or Finished</string>
+    <string name="error_team_a_score_number">Team A score must be a number</string>
+    <string name="error_team_b_score_number">Team B score must be a number</string>
 </resources>

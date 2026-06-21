@@ -26,9 +26,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Round
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
@@ -57,7 +59,7 @@ fun TournamentScreen(
     val kassePreview = FunBettRepository.getTotalKassePreview().toEuroLabel()
 
     HierarchyScreenLayout(
-        title = "Tipps",
+        title = stringResource(R.string.screen_tipps),
         breadcrumbs = HierarchyLabels.forTournamentList(),
         onBackClick = null,
         onFabClick = { showAddDialog = true },
@@ -123,7 +125,7 @@ private fun TournamentStatsRow(
     ) {
         TournamentMiniStatCard(label = "Tournaments", value = tournamentCount.toString(), modifier = Modifier.weight(1f))
         TournamentMiniStatCard(label = "Games", value = gameCount.toString(), modifier = Modifier.weight(1f))
-        TournamentMiniStatCard(label = "Kasse", value = kassePreview, modifier = Modifier.weight(1f))
+        TournamentMiniStatCard(label = stringResource(R.string.nav_kasse), value = kassePreview, modifier = Modifier.weight(1f))
     }
 }
 

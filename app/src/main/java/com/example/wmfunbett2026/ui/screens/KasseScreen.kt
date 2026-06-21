@@ -5,8 +5,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.components.JackpotCard
@@ -22,7 +24,7 @@ fun KasseScreen(modifier: Modifier = Modifier) {
 
     TopLevelScrollContent(modifier = modifier) {
         Text(
-            text = "Kasse / Jackpot",
+            text = stringResource(R.string.screen_kasse),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground

@@ -159,7 +159,8 @@ object FunBettRepository {
         tippGroupId: String,
         name: String,
         prediction: String,
-        amount: Double,
+        totalPaid: Double,
+        currentRoundAmount: Double,
         note: String?
     ): Entry? {
         if (getTippGroup(tippGroupId) == null) return null
@@ -168,7 +169,8 @@ object FunBettRepository {
             id = "entry-${System.currentTimeMillis()}",
             name = name.trim(),
             prediction = prediction.trim(),
-            amount = amount,
+            amount = totalPaid,
+            currentRoundAmount = currentRoundAmount,
             note = note?.trim()?.takeIf { it.isNotEmpty() }
         )
 
@@ -325,13 +327,15 @@ object FunBettRepository {
                     name = "Alex",
                     prediction = "2:1",
                     amount = 10.0,
+                    currentRoundAmount = 10.0,
                     note = "Confident home win"
                 ),
                 Entry(
                     id = "entry-2",
                     name = "John",
                     prediction = "1:1",
-                    amount = 5.0
+                    amount = 5.0,
+                    currentRoundAmount = 5.0
                 )
             )
         )

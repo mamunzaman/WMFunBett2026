@@ -1,9 +1,10 @@
 # Next Task
 
 ## Current Goal
-Custom winner shares implementation, or Room persistence.
+Jackpot payout settlement, custom winner shares, or Room persistence.
 
 ## Verify Next
-- Game detail: tipp card 3-dot → Delete only when 0 entries
-- Tipp detail: Winner Share Settings dialog opens
-- Equal split still shows Alex + Mamun €17.50 each
+- Bottom sheets: white surface, blue focus border, dark text
+- Main app screens stay dark
+- Device DE → German labels; EN/other → English
+- All form sheets use string resources

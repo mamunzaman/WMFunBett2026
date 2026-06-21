@@ -32,9 +32,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
@@ -118,7 +120,7 @@ fun HierarchyScreenLayout(
                             ) {
                                 if (onWinnerShareSettingsClick != null) {
                                     DropdownMenuItem(
-                                        text = { Text("Winner Share Settings") },
+                                        text = { Text(stringResource(R.string.winner_share_settings)) },
                                         onClick = {
                                             showMenu = false
                                             onWinnerShareSettingsClick()
@@ -127,7 +129,7 @@ fun HierarchyScreenLayout(
                                 }
                                 if (onSetResultClick != null) {
                                     DropdownMenuItem(
-                                        text = { Text("Set Result") },
+                                        text = { Text(stringResource(R.string.set_result)) },
                                         onClick = {
                                             showMenu = false
                                             onSetResultClick()
@@ -136,7 +138,7 @@ fun HierarchyScreenLayout(
                                 }
                                 if (onDeleteClick != null && deleteEnabled) {
                                     DropdownMenuItem(
-                                        text = { Text("Delete", color = DangerRed) },
+                                        text = { Text(stringResource(R.string.delete), color = DangerRed) },
                                         onClick = {
                                             showMenu = false
                                             onDeleteClick()
@@ -328,7 +330,7 @@ fun TippGroupListCard(
                 ) {
                     if (canDelete) {
                         DropdownMenuItem(
-                            text = { Text("Delete", color = DangerRed) },
+                            text = { Text(stringResource(R.string.delete), color = DangerRed) },
                             onClick = {
                                 showMenu = false
                                 onDelete()
@@ -396,6 +398,7 @@ fun EntryListCard(
     prediction: String,
     amount: String,
     note: String? = null,
+    roundStakeLabel: String? = null,
     isWinner: Boolean = false,
     onDelete: (() -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -442,6 +445,14 @@ fun EntryListCard(
                     style = MaterialTheme.typography.bodyMedium,
                     color = SecondaryText
                 )
+                if (roundStakeLabel != null) {
+                    Text(
+                        text = roundStakeLabel,
+                        modifier = Modifier.padding(top = 4.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = SecondaryText
+                    )
+                }
                 if (!note.isNullOrBlank()) {
                     Text(
                         text = note,
@@ -470,7 +481,7 @@ fun EntryListCard(
                         onDismissRequest = { showMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Delete", color = DangerRed) },
+                            text = { Text(stringResource(R.string.delete), color = DangerRed) },
                             onClick = {
                                 showMenu = false
                                 onDelete()

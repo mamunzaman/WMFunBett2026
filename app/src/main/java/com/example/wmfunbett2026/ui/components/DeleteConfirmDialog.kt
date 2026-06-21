@@ -5,6 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.theme.DangerRed
 
 @Composable
@@ -14,21 +16,21 @@ fun DeleteConfirmDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete?") },
+        title = { Text(stringResource(R.string.delete_confirm_title)) },
         text = {
             Text(
-                text = "This will remove this item from this session.",
+                text = stringResource(R.string.delete_confirm_message),
                 style = MaterialTheme.typography.bodyMedium
             )
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Delete", color = DangerRed)
+                Text(stringResource(R.string.delete), color = DangerRed)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.cancel))
             }
         }
     )

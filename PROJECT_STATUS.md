@@ -26,6 +26,10 @@
 - [x] Game result management: scores, MatchStatus, Set Result dialog (no winner calc yet)
 - [x] Winner Engine V1: per tipp group, equal split, UI summary + entry highlight
 - [x] Tipp group menus: card delete guard, Winner Share Settings placeholder
+- [x] Jackpot Chain V1: carry model, calculator, Add Entry payment breakdown
+- [x] Add Entry amount enforcement: locked round stake, carry-in total, `currentRoundAmount` on Entry
+- [x] Modal bottom sheets for create/edit actions (FormBottomSheet shell)
+- [x] Light Material 3 form sheets + EN/DE string resources
 
 ## In Progress
 - None
@@ -38,4 +42,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Winner Engine V1: per-group split, summary cards, entry highlight.
+2026-06-21 — White form bottom sheets, blue inputs/buttons, EN/DE via strings.xml.

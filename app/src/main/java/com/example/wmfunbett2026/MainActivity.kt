@@ -21,9 +21,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.navigation.AppScreen
 import com.example.wmfunbett2026.ui.navigation.TournamentNavGraph
 import com.example.wmfunbett2026.ui.screens.HomeScreen
@@ -102,12 +104,12 @@ private fun AppFooterNavigation(
                 icon = {
                     Icon(
                         imageVector = screen.icon,
-                        contentDescription = screen.label
+                        contentDescription = stringResource(screen.labelRes)
                     )
                 },
                 label = {
                     Text(
-                        text = screen.label,
+                        text = stringResource(screen.labelRes),
                         style = MaterialTheme.typography.labelMedium
                     )
                 },

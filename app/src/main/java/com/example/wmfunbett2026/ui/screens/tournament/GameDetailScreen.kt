@@ -9,13 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
+import com.example.wmfunbett2026.ui.components.FormBottomSheet
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,9 +23,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.TimeScope
 import com.example.wmfunbett2026.data.model.toEuroLabel
@@ -201,16 +202,19 @@ fun GameDetailScreen(
     }
 
     if (showNoScopeDialog) {
-        AlertDialog(
-            onDismissRequest = { showNoScopeDialog = false },
-            title = { Text("No Tipp type available") },
-            text = { Text("No Tipp type is available for this game anymore.") },
-            confirmButton = {
-                TextButton(onClick = { showNoScopeDialog = false }) {
-                    Text("OK")
-                }
-            }
-        )
+        FormBottomSheet(
+            title = stringResource(R.string.no_tipp_type_available),
+            onDismiss = { showNoScopeDialog = false },
+            primaryActionLabel = stringResource(R.string.ok),
+            onPrimaryAction = { showNoScopeDialog = false },
+            showCancel = false
+        ) {
+            Text(
+                text = stringResource(R.string.no_tipp_type_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = SecondaryText
+            )
+        }
     }
 
     if (showSetResultDialog && game != null) {

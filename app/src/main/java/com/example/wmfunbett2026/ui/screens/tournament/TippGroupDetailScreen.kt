@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
@@ -65,8 +66,13 @@ fun TippGroupDetailScreen(
     }
 
     val game = FunBettRepository.getGameInDay(dayId, gameId)
+    val round = FunBettRepository.getRound(roundId)
     val tippGroup = FunBettRepository.getTippGroupInGame(gameId, tippGroupId)
     val entries = tippGroup?.entries.orEmpty()
+    val carryItems = remember(round, gameId, FunBettRepository.dataVersion.intValue) {
+        if (round != null) JackpotChainCalculator.calculateCarryItems(round, gameId) else emptyList()
+    }
+    val existingRoundAmount = entries.firstOrNull()?.currentRoundAmount
     val winnerOutcome = remember(game, tippGroup, FunBettRepository.dataVersion.intValue) {
         if (game != null && tippGroup != null) {
             TippGroupWinnerEngine.calculate(game, tippGroup)
@@ -137,6 +143,11 @@ fun TippGroupDetailScreen(
                         name = entry.name,
                         prediction = entry.prediction,
                         amount = entry.amount.toEuroLabel(),
+                        roundStakeLabel = if (entry.amount != entry.currentRoundAmount) {
+                            "Round stake: ${entry.currentRoundAmount.toEuroLabel()}"
+                        } else {
+                            null
+                        },
                         note = entry.note,
                         isWinner = winnerOutcome?.let { outcome ->
                             TippGroupWinnerEngine.isWinningEntry(outcome, entry.id)
@@ -152,9 +163,18 @@ fun TippGroupDetailScreen(
         AddEntryDialog(
             teamA = game.teamA,
             teamB = game.teamB,
+            carryItems = carryItems,
+            existingRoundAmount = existingRoundAmount,
             onDismiss = { showAddEntryDialog = false },
-            onSave = { name, prediction, amount, note ->
-                FunBettRepository.addEntry(tippGroupId, name, prediction, amount, note)
+            onSave = { name, prediction, totalPaid, currentRoundAmount, note ->
+                FunBettRepository.addEntry(
+                    tippGroupId,
+                    name,
+                    prediction,
+                    totalPaid,
+                    currentRoundAmount,
+                    note
+                )
                 showAddEntryDialog = false
             }
         )
