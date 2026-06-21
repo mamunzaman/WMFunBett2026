@@ -49,6 +49,7 @@
 - [x] Leagues screen staggered 2-column premium grid
 - [x] League grid card premium M3 press interaction (scale, elevation, glow, ripple)
 - [x] Custom League Create Round dialog (in-memory rounds in grid)
+- [x] Matches screen staggered card entrance animation (fade + slide up)
 
 ## In Progress
 - None
@@ -61,4 +62,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Custom League opens Create Round dialog; new rounds appear in grid.
+2026-06-21 — Matches screen staggered card entrance animation.

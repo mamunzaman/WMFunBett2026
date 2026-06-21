@@ -39,6 +39,8 @@ fun MatchListScreenContent(
     onBackClick: (() -> Unit)? = null,
     showLiveAction: Boolean = false,
     showQuickFilters: Boolean = false,
+    animateEntrance: Boolean = false,
+    entranceSession: Int = 0,
     emptyTitle: String? = null,
     emptyMessage: String? = null
 ) {
@@ -60,6 +62,14 @@ fun MatchListScreenContent(
         applyMatchQuickFilters(headerFiltered, timeQuickFilter, leagueQuickFilterId)
     }
     val grouped = remember(filtered) { groupMatchesBySection(filtered) }
+    val cardStaggerIndices = remember(grouped) {
+        val indices = linkedMapOf<String, Int>()
+        var index = 0
+        grouped.values.flatten().forEach { item ->
+            indices["${item.roundId}-${item.dayId}-${item.game.id}"] = index++
+        }
+        indices
+    }
     val calendarFilterActive = !liveOnlyActive && selectFilter != MatchSelectFilter.ALL_MATCHES
 
     Column(
@@ -146,10 +156,14 @@ fun MatchListScreenContent(
                         )
                     }
                     items(sectionGames, key = { "${it.roundId}-${it.dayId}-${it.game.id}" }) { item ->
+                        val itemKey = "${item.roundId}-${item.dayId}-${item.game.id}"
                         MatchCenterCard(
                             game = item.game,
                             matchdayLabel = item.dayName,
-                            onClick = { onGameClick(item) }
+                            onClick = { onGameClick(item) },
+                            staggerIndex = cardStaggerIndices[itemKey] ?: 0,
+                            entranceSession = entranceSession,
+                            animateEntrance = animateEntrance
                         )
                     }
                 }

@@ -26,6 +26,7 @@ fun MatchesNavGraph(
     ) {
         composable(MainRoutes.MATCHES) {
             MatchesScreen(
+                navController = navController,
                 onGameClick = { item ->
                     navController.navigate(
                         TournamentRoutes.gameDetail(item.roundId, item.dayId, item.game.id)
