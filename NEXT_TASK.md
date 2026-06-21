@@ -1,13 +1,9 @@
 # Next Task
 
 ## Current Goal
-Add Room database with entities matching the hierarchy (Round, Day, Game, TippGroup, Entry) and replace SampleData lookups.
+Add edit actions for hierarchy items, or persist data with Room database.
 
 ## Verify Next
-- Rounds tab → tap Bundesliga Round 1 → Saturday → Germany vs France → Correct Score → View Entries
-- Alex 2:1 €10 and John 1:1 €5 visible on Entry List
-- Back navigation works at every level
-- Breadcrumbs update on each screen
-- Bottom bar hidden on detail screens, visible on Rounds list
-- Gold FAB visible on all hierarchy screens
-- Build passes with `./gradlew assembleDebug`
+- Full manual flow: add/delete all hierarchy levels
+- Rotate emulator during open dialog → no stale crash
+- Invalid deep-link ids → not-found screen, no crash

@@ -1,55 +1,35 @@
 package com.example.wmfunbett2026.ui.navigation
 
-import com.example.wmfunbett2026.data.sample.SampleData
+import com.example.wmfunbett2026.data.repository.FunBettRepository
 
 object HierarchyLabels {
-    fun roundName(roundId: String): String =
-        SampleData.getRound(roundId)?.name ?: roundId
+    private const val ROOT = "Tipps"
 
-    fun dayName(dayId: String): String =
-        SampleData.getDay(dayId)?.name ?: dayId
+    fun roundName(roundId: String): String =
+        FunBettRepository.getRound(roundId)?.name ?: roundId
 
     fun gameName(gameId: String): String =
-        SampleData.getGame(gameId)?.displayName ?: gameId
+        FunBettRepository.getGame(gameId)?.displayName ?: gameId
 
     fun tippGroupName(tippGroupId: String): String =
-        SampleData.getTippGroup(tippGroupId)?.name ?: tippGroupId
+        FunBettRepository.getTippGroup(tippGroupId)?.title ?: tippGroupId
 
-    fun forRoundsList(): List<String> = listOf("Rounds")
+    fun forTournamentList(): List<String> = listOf(ROOT)
 
-    fun forRoundDetail(roundId: String): List<String> =
-        listOf("Rounds", roundName(roundId))
+    fun forTournamentDetail(roundId: String): List<String> =
+        listOf(ROOT, roundName(roundId))
 
-    fun forDayDetail(roundId: String, dayId: String): List<String> =
-        listOf("Rounds", roundName(roundId), dayName(dayId))
-
-    fun forGameDetail(roundId: String, dayId: String, gameId: String): List<String> =
-        listOf("Rounds", roundName(roundId), dayName(dayId), gameName(gameId))
+    fun forGameDetail(roundId: String, gameId: String): List<String> =
+        listOf(ROOT, roundName(roundId), gameName(gameId))
 
     fun forTippGroupDetail(
         roundId: String,
-        dayId: String,
         gameId: String,
         tippGroupId: String
     ): List<String> = listOf(
-        "Rounds",
+        ROOT,
         roundName(roundId),
-        dayName(dayId),
         gameName(gameId),
         tippGroupName(tippGroupId)
-    )
-
-    fun forEntryList(
-        roundId: String,
-        dayId: String,
-        gameId: String,
-        tippGroupId: String
-    ): List<String> = listOf(
-        "Rounds",
-        roundName(roundId),
-        dayName(dayId),
-        gameName(gameId),
-        tippGroupName(tippGroupId),
-        "Entries"
     )
 }

@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,14 +23,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.wmfunbett2026.ui.navigation.AppScreen
-import com.example.wmfunbett2026.ui.navigation.RoundsNavGraph
-import com.example.wmfunbett2026.ui.navigation.RoundsRoutes
-import com.example.wmfunbett2026.ui.screens.DashboardScreen
-import com.example.wmfunbett2026.ui.screens.JackpotScreen
-import com.example.wmfunbett2026.ui.screens.SettingsScreen
+import com.example.wmfunbett2026.ui.navigation.TournamentNavGraph
+import com.example.wmfunbett2026.ui.screens.HomeScreen
+import com.example.wmfunbett2026.ui.screens.KasseScreen
 import com.example.wmfunbett2026.ui.theme.DarkNavy
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
@@ -50,59 +49,82 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppShell(modifier: Modifier = Modifier) {
-    var selectedScreen by rememberSaveable { mutableStateOf(AppScreen.Dashboard) }
-    val roundsNavController = rememberNavController()
-    val roundsBackStackEntry by roundsNavController.currentBackStackEntryAsState()
-    val showBottomBar = selectedScreen != AppScreen.Rounds ||
-        roundsBackStackEntry?.destination?.route == RoundsRoutes.ROUNDS_LIST
+    var selectedScreen by rememberSaveable { mutableStateOf(AppScreen.Home) }
+    val tournamentNavController = rememberNavController()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = DarkNavy,
         bottomBar = {
-            if (showBottomBar) {
-                NavigationBar(
-                    containerColor = SurfaceDark,
-                    tonalElevation = 0.dp
-                ) {
-                    AppScreen.entries.forEach { screen ->
-                        val selected = selectedScreen == screen
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = { selectedScreen = screen },
-                            icon = {
-                                Icon(
-                                    imageVector = screen.icon,
-                                    contentDescription = screen.label
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = screen.label,
-                                    style = MaterialTheme.typography.labelMedium
-                                )
-                            },
-                            colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = JackpotGold,
-                                selectedTextColor = JackpotGold,
-                                unselectedIconColor = SecondaryText,
-                                unselectedTextColor = SecondaryText,
-                                indicatorColor = PrimaryBlue.copy(alpha = 0.25f)
-                            )
-                        )
-                    }
-                }
-            }
+            AppFooterNavigation(
+                selectedScreen = selectedScreen,
+                onScreenSelected = { selectedScreen = it }
+            )
         }
     ) { innerPadding ->
-        when (selectedScreen) {
-            AppScreen.Dashboard -> DashboardScreen(Modifier.padding(innerPadding))
-            AppScreen.Rounds -> RoundsNavGraph(
-                navController = roundsNavController,
-                modifier = Modifier.padding(innerPadding)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            when (selectedScreen) {
+                AppScreen.Home -> HomeScreen(Modifier.fillMaxSize())
+                AppScreen.WM2026 -> TournamentNavGraph(
+                    navController = tournamentNavController,
+                    modifier = Modifier.fillMaxSize()
+                )
+                AppScreen.Kasse -> KasseScreen(Modifier.fillMaxSize())
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppFooterNavigation(
+    selectedScreen: AppScreen,
+    onScreenSelected: (AppScreen) -> Unit
+) {
+    NavigationBar(
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = SurfaceDark,
+        tonalElevation = 0.dp
+    ) {
+        AppScreen.entries.forEach { screen ->
+            val selected = selectedScreen == screen
+            val selectedColor = when {
+                selected && screen == AppScreen.Kasse -> JackpotGold
+                selected -> PrimaryBlue
+                else -> SecondaryText
+            }
+            NavigationBarItem(
+                selected = selected,
+                onClick = { onScreenSelected(screen) },
+                icon = {
+                    Icon(
+                        imageVector = screen.icon,
+                        contentDescription = screen.label
+                    )
+                },
+                label = {
+                    Text(
+                        text = screen.label,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = selectedColor,
+                    selectedTextColor = selectedColor,
+                    unselectedIconColor = SecondaryText,
+                    unselectedTextColor = SecondaryText,
+                    indicatorColor = if (screen == AppScreen.Kasse) {
+                        JackpotGold.copy(alpha = 0.18f)
+                    } else {
+                        PrimaryBlue.copy(alpha = 0.22f)
+                    },
+                    disabledIconColor = SecondaryText,
+                    disabledTextColor = SecondaryText
+                )
             )
-            AppScreen.Jackpot -> JackpotScreen(Modifier.padding(innerPadding))
-            AppScreen.Settings -> SettingsScreen(Modifier.padding(innerPadding))
         }
     }
 }

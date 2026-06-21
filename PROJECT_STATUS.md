@@ -5,22 +5,34 @@
 - [x] Dark theme as default application theme
 - [x] Material 3 color scheme with custom palette
 - [x] Dashboard placeholder screen (jackpot card + stats)
-- [x] Bottom navigation shell (Dashboard, Rounds, Jackpot, Settings)
+- [x] Bottom navigation shell (Home, Tipps, Kasse — 3 tabs)
+- [x] Home overview and Kasse jackpot placeholder
 - [x] Shared card components (JackpotCard, StatCard, PlaceholderCard)
 - [x] Round → Day → Game → Tipp Group → Entry navigation flow
-- [x] Placeholder data models and hardcoded sample data
-- [x] Six hierarchy screens with top app bar, breadcrumbs, and FABs
-- [x] Nested NavHost for Rounds tab (bottom bar hides on detail screens)
+- [x] In-memory data models and FunBettRepository (offline hierarchy)
+- [x] Game screen: teams, result placeholder, game kasse, tipp groups
+- [x] Tipp Group screen: entries with name, prediction, amount, note, group total
+- [x] Add Entry dialog with score UI and in-memory save
+- [x] Hierarchy screens with top app bar, breadcrumbs, FAB add, 3-dot delete
+- [x] Nested NavHost for WM 2026 tab (bottom bar always visible)
+- [x] WM 2026 tab: add tournament, game, tipp group, entry via FAB
+- [x] In-memory delete for tournament, game, tipp group, entry with confirm dialog
+- [x] Add Game dialog: chip-style date/time pickers with custom fallback
+- [x] Add Tipp Group dialog: auto title from time scope
+- [x] Tipp scope availability: duplicate + time cutoff rules on add
+- [x] Add Tipp Group crash fix: safe empty-scope handling
+- [x] Add Game crash fix: Column/Row chip layout (no FlowRow)
+- [x] Stability audit: immutable repo reads, scoped lookups, dialog reset on nav, not-found screens
 
 ## In Progress
 - None
 
 ## Pending Tasks
-- [ ] Room database layer (Round, Day, Game, TippGroup, Entry entities)
+- [ ] Room database layer (replace FunBettRepository in-memory store)
 - [ ] ViewModels and repositories
-- [ ] Create actions wired to FABs
+- [ ] Edit actions
 - [ ] Jackpot management business logic
 - [ ] Winner and scoring logic
 
 ## Last Update
-2026-06-21 — Full Round hierarchy UI skeleton and navigation flow added.
+2026-06-21 — In-memory stability audit: repo safety, nav guards, crash prevention.
