@@ -64,6 +64,7 @@
 - [x] + menu Tipp Group targets current game via nav arguments
 - [x] Unified addTippGroup path; Second Half allowed pre-match via menu rules
 - [x] Real Add Entry sheet on Tipp Group detail only (in-memory)
+- [x] Entry amount locked to Tipp Group entryAmount (no per-entry override)
 
 ## In Progress
 - None
@@ -76,4 +77,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Real Add Entry on Tipp Group detail; Entry removed from other + menus.
+2026-06-21 — Entry amount locked to Tipp Group; removed amount input from Add Entry sheet.

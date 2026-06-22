@@ -241,18 +241,22 @@ object FunBettRepository {
         tippGroupId: String,
         name: String,
         prediction: String,
-        amount: Double,
         note: String?
     ): Entry? {
+        val tippGroup = getTippGroup(tippGroupId) ?: return null
+        val entryAmount = tippGroup.entryAmount ?: return null
+        if (entryAmount <= 0.0) return null
+
         val trimmedName = name.trim()
         val trimmedPrediction = prediction.trim()
-        if (trimmedName.isEmpty() || trimmedPrediction.isEmpty() || amount <= 0.0) return null
+        if (trimmedName.isEmpty() || trimmedPrediction.isEmpty()) return null
+
         return addEntry(
             tippGroupId = tippGroupId,
             name = trimmedName,
             prediction = trimmedPrediction,
-            totalPaid = amount,
-            currentRoundAmount = amount,
+            totalPaid = entryAmount,
+            currentRoundAmount = entryAmount,
             note = note
         )
     }
@@ -397,7 +401,8 @@ object FunBettRepository {
                     amount = 10.0,
                     currentRoundAmount = 10.0
                 )
-            )
+            ),
+            entryAmount = 10.0
         )
 
         val game = Game(

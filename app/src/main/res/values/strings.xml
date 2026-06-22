@@ -91,7 +91,8 @@
     <string name="tipp_type_full_time_penalties">Full Time + Penalty Shootout</string>
     <string name="add_match_locked_league">League: %1$s</string>
     <string name="add_tipp_group_entry_amount">Entry amount</string>
-    <string name="add_entry_amount">Amount</string>
+    <string name="add_entry_locked_amount">Entry amount: %1$s</string>
+    <string name="add_entry_no_group_amount">This Tipp Group has no entry amount set.</string>
     <string name="add_entry_prediction_hint">e.g. 2:1</string>
     <string name="tipp_group_entries_empty">No entries yet — use Add Entry below</string>
     <string name="friend_detail_from_entries">Calculated from saved entries</string>

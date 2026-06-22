@@ -1,9 +1,8 @@
 # Next Task
 
 ## Current Goal
-Verify entry list refresh and winner status on Tipp Group detail after multiple entries.
+Verify winner engine and collected totals after multiple equal-amount entries.
 
 ## Verify Next
-- Tipp Group detail: + and Add Entry button both create entries
-- Same name entries allowed
-- Entry hidden on Match/Game screens
+- Tipp Group €10 → all new entries show €10
+- Add Entry sheet shows locked amount row, no amount field

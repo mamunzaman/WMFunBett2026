@@ -173,12 +173,11 @@ fun TippGroupDetailScreen(
         AddEntrySheet(
             tippGroupId = tippGroupId,
             onDismiss = { showAddEntry = false },
-            onCreate = { name, prediction, amount, note ->
+            onCreate = { name, prediction, note ->
                 FunBettRepository.addEntryToTippGroup(
                     tippGroupId = tippGroupId,
                     name = name,
                     prediction = prediction,
-                    amount = amount,
                     note = note
                 )
                 showAddEntry = false
