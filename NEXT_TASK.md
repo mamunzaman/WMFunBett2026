@@ -1,8 +1,9 @@
 # Next Task
 
 ## Current Goal
-Verify winner engine and collected totals after multiple equal-amount entries.
+Manually verify Room persistence survives a full app restart.
 
 ## Verify Next
-- Tipp Group €10 → all new entries show €10
-- Add Entry sheet shows locked amount row, no amount field
+- Fresh install → sample World Cup data appears once
+- Create League, Match, Tipp Group, Entry → force-close app → reopen → all data still present
+- Second launch → sample data is not re-injected

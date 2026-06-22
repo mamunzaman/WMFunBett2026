@@ -1,6 +1,9 @@
 package com.example.wmfunbett2026.data.repository
 
+import android.content.Context
 import androidx.compose.runtime.mutableIntStateOf
+import com.example.wmfunbett2026.data.local.FunBettDatabase
+import com.example.wmfunbett2026.data.local.FunBettLocalStore
 import com.example.wmfunbett2026.data.model.Day
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
@@ -22,8 +25,29 @@ object FunBettRepository {
 
     val dataVersion = mutableIntStateOf(0)
 
-    private var roundsInternal: List<Round> = listOf(buildSampleRound())
+    private var roundsInternal: List<Round> = emptyList()
+    private lateinit var localStore: FunBettLocalStore
+    private var initialized = false
     private val sampleLeagueRoundIds = mutableMapOf<String, String>()
+
+    fun initialize(context: Context) {
+        if (initialized) return
+        val database = FunBettDatabase.getInstance(context)
+        localStore = FunBettLocalStore(
+            leagueDao = database.leagueDao(),
+            matchDao = database.matchDao(),
+            tippGroupDao = database.tippGroupDao(),
+            entryDao = database.entryDao()
+        )
+        roundsInternal = if (localStore.isEmpty()) {
+            val sample = listOf(buildSampleRound())
+            localStore.persistAll(sample)
+            sample
+        } else {
+            localStore.loadRounds()
+        }
+        initialized = true
+    }
 
     fun getSampleLeagueRoundId(leagueId: String): String? = sampleLeagueRoundIds[leagueId]
 
@@ -38,11 +62,13 @@ object FunBettRepository {
 
         val roundId = "sample-$leagueId"
         if (getRound(roundId) == null) {
-            roundsInternal = roundsInternal + Round(
+            val round = Round(
                 id = roundId,
                 name = leagueName,
                 days = emptyList()
             )
+            roundsInternal = roundsInternal + round
+            localStore.persistRound(round)
             sampleLeagueRoundIds[leagueId] = roundId
             notifyChanged()
         }
@@ -100,6 +126,7 @@ object FunBettRepository {
             days = emptyList()
         )
         roundsInternal = roundsInternal + round
+        localStore.persistRound(round)
         notifyChanged()
         return round
     }
@@ -124,12 +151,14 @@ object FunBettRepository {
             note = note?.trim()?.takeIf { it.isNotEmpty() }
         )
         val normalizedDayLabel = dayLabel.trim()
+        var targetDay: Day? = null
 
         roundsInternal = roundsInternal.map { round ->
             if (round.id != roundId) return@map round
 
             val existingDay = round.days.find { it.name.equals(normalizedDayLabel, ignoreCase = true) }
             if (existingDay != null) {
+                targetDay = existingDay
                 round.copy(
                     days = round.days.map { day ->
                         if (day.id == existingDay.id) {
@@ -145,9 +174,11 @@ object FunBettRepository {
                     name = normalizedDayLabel,
                     games = listOf(game)
                 )
+                targetDay = newDay
                 round.copy(days = round.days + newDay)
             }
         }
+        targetDay?.let { day -> localStore.persistGame(roundId, day, game) }
         notifyChanged()
         return game
     }
@@ -186,6 +217,7 @@ object FunBettRepository {
                 }
             )
         }
+        localStore.persistTippGroup(gameId, tippGroup)
         notifyChanged()
         return tippGroup
     }
@@ -233,6 +265,7 @@ object FunBettRepository {
                 }
             )
         }
+        localStore.persistEntry(tippGroupId, newEntry)
         notifyChanged()
         return newEntry
     }
@@ -268,23 +301,27 @@ object FunBettRepository {
         status: MatchStatus
     ): Boolean {
         if (gameId.isBlank() || getGame(gameId) == null) return false
+        val location = findGameLocation(gameId) ?: return false
+        val (roundId, day, game) = location
+        val updatedGame = game.copy(
+            teamAScore = teamAScore,
+            teamBScore = teamBScore,
+            status = status
+        )
 
         roundsInternal = roundsInternal.map { round ->
             round.copy(
-                days = round.days.map { day ->
-                    day.copy(
-                        games = day.games.map { game ->
-                            if (game.id != gameId) return@map game
-                            game.copy(
-                                teamAScore = teamAScore,
-                                teamBScore = teamBScore,
-                                status = status
-                            )
+                days = round.days.map { dayItem ->
+                    dayItem.copy(
+                        games = dayItem.games.map { gameItem ->
+                            if (gameItem.id != gameId) return@map gameItem
+                            updatedGame
                         }
                     )
                 }
             )
         }
+        localStore.updateGame(updatedGame, roundId, day)
         notifyChanged()
         return true
     }
@@ -294,6 +331,7 @@ object FunBettRepository {
         val before = roundsInternal.size
         roundsInternal = roundsInternal.filterNot { it.id == roundId }
         if (roundsInternal.size == before) return false
+        localStore.deleteLeague(roundId)
         notifyChanged()
         return true
     }
@@ -311,6 +349,7 @@ object FunBettRepository {
             )
         }
         if (!removed) return false
+        localStore.deleteMatch(gameId)
         notifyChanged()
         return true
     }
@@ -332,6 +371,7 @@ object FunBettRepository {
             )
         }
         if (!removed) return false
+        localStore.deleteTippGroup(tippGroupId)
         notifyChanged()
         return true
     }
@@ -358,8 +398,20 @@ object FunBettRepository {
             )
         }
         if (!removed) return false
+        localStore.deleteEntry(tippGroupId, entryId)
         notifyChanged()
         return true
+    }
+
+    private fun findGameLocation(gameId: String): Triple<String, Day, Game>? {
+        roundsInternal.forEach { round ->
+            round.days.forEach { day ->
+                day.games.find { it.id == gameId }?.let { game ->
+                    return Triple(round.id, day, game)
+                }
+            }
+        }
+        return null
     }
 
     private fun buildDateTimeLabel(dateLabel: String?, timeLabel: String?): String {

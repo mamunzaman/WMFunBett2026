@@ -65,16 +65,19 @@
 - [x] Unified addTippGroup path; Second Half allowed pre-match via menu rules
 - [x] Real Add Entry sheet on Tipp Group detail only (in-memory)
 - [x] Entry amount locked to Tipp Group entryAmount (no per-entry override)
+- [x] Room database foundation: entities, DAOs, mappers, FunBettDatabase v1
+- [x] Persist leagues, matches, tipp groups, entries across app restart
+- [x] Sample data seeds only when database is empty
 
 ## In Progress
 - None
 
 ## Pending Tasks
-- [ ] Room database layer (replace FunBettRepository in-memory store)
 - [ ] ViewModels and repositories
 - [ ] Edit actions
 - [ ] Jackpot management business logic
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
+- [ ] Room migrations (when schema changes)
 
 ## Last Update
-2026-06-21 — Entry amount locked to Tipp Group; removed amount input from Add Entry sheet.
+2026-06-21 — Room persistence foundation: Leagues, Matches, Tipp Groups, Entries survive app restart.
