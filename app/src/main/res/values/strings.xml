@@ -90,6 +90,14 @@
     <string name="entry_winner_badge">Winner</string>
     <string name="tipp_group_winner_count_one">🏆 1 Winner</string>
     <string name="tipp_group_winner_count_many">🏆 %1$d Winners</string>
+    <string name="settlement_title">Settlement</string>
+    <string name="settlement_pending_title">Settlement pending</string>
+    <string name="settlement_pending_message">Set the match result to calculate winners.</string>
+    <string name="settlement_collected">Collected</string>
+    <string name="settlement_winners">Winners</string>
+    <string name="settlement_share_per_winner">Share / Winner</string>
+    <string name="settlement_no_winner">No winner</string>
+    <string name="entry_winner_share">Share %1$s</string>
     <string name="add_entry_friend_already_joined">This friend already joined this Tipp Group</string>
     <string name="friend_active_entries">%1$d active entries</string>
     <string name="friend_active_amount">%1$s active</string>

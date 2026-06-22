@@ -88,5 +88,7 @@
 
 - [x] Tipp Group entry table winner highlighting (exact score match, multi-winner)
 
+- [x] Tipp Group settlement summary (display-only theoretical winner shares)
+
 ## Last Update
-2026-06-21 — Tipp Group entry winner highlighting and summary row.
+2026-06-21 — Result settlement foundation: summary card + winner share on entry rows.

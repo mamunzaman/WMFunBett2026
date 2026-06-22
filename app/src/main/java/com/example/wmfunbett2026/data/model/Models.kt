@@ -83,6 +83,19 @@ data class TippGroup(
     val totalAmount: Double get() = entries.sumOf { it.currentRoundAmount }
 }
 
+enum class TippGroupSettlementStatus {
+    PENDING,
+    NO_WINNERS,
+    WINNERS
+}
+
+data class TippGroupSettlementSummary(
+    val status: TippGroupSettlementStatus,
+    val totalCollected: Double,
+    val winnerCount: Int,
+    val sharePerWinner: Double
+)
+
 data class Game(
     val id: String,
     val teamA: String,

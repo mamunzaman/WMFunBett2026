@@ -1,10 +1,9 @@
 # Next Task
 
 ## Current Goal
-Manual verify winner highlighting with exact score match on Tipp Group detail.
+Manual verify settlement card states and winner share labels on Tipp Group detail.
 
 ## Verify Next
-- Score 2:1 + Alex 2:1 → winner highlight + summary
-- John 1:1 → no highlight
-- Sarah 2:1 → both Alex + Sarah highlighted
-- Clear score → no winners highlighted
+- No result → Settlement pending message
+- Result, 0 winners → Collected + Winners 0 + No winner
+- 2 winners, €40 collected → Share / Winner €20 + row Share €20

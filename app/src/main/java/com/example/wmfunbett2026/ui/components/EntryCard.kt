@@ -33,7 +33,9 @@ import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
+import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.model.toEuroLabel
+import com.example.wmfunbett2026.ui.matchcenter.shouldShowEntryWinnerShare
 import com.example.wmfunbett2026.ui.theme.Divider
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.MatchCardCompactSurface
@@ -59,6 +61,7 @@ fun TippGroupEntryTable(
     entries: List<Entry>,
     winningEntryIds: Set<String>,
     winnerNames: List<String>,
+    settlement: TippGroupSettlementSummary,
     onEntryClick: (Entry) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -82,13 +85,23 @@ fun TippGroupEntryTable(
         }
         EntryTableHeaderRow()
         entries.forEachIndexed { index, entry ->
+            val isWinner = entry.id in winningEntryIds
+            val shareLabel = if (shouldShowEntryWinnerShare(game, isWinner, settlement)) {
+                stringResource(
+                    R.string.entry_winner_share,
+                    settlement.sharePerWinner.toEuroLabel()
+                )
+            } else {
+                null
+            }
             EntryCard(
                 name = entry.friendName,
                 prediction = entry.prediction,
                 amountLabel = entry.amount.toEuroLabel(),
                 matchStatus = matchStatus,
                 currentScoreLabel = currentScoreLabel,
-                isWinner = entry.id in winningEntryIds,
+                isWinner = isWinner,
+                shareLabel = shareLabel,
                 isFirstRow = index == 0,
                 isLastRow = index == entries.lastIndex,
                 showDivider = index < entries.lastIndex,
@@ -180,6 +193,7 @@ fun EntryCard(
     matchStatus: MatchStatus,
     currentScoreLabel: String,
     isWinner: Boolean = false,
+    shareLabel: String? = null,
     isFirstRow: Boolean = false,
     isLastRow: Boolean = false,
     showDivider: Boolean = false,
@@ -229,27 +243,42 @@ fun EntryCard(
                     initials = friendDisplayInitials(name),
                     size = 32.dp
                 )
-                Row(
+                Column(
                     modifier = Modifier.weight(1f, fill = false),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    if (isWinner) {
-                        Icon(
-                            imageVector = Icons.Outlined.EmojiEvents,
-                            contentDescription = null,
-                            tint = JackpotGold,
-                            modifier = Modifier.size(13.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        if (isWinner) {
+                            Icon(
+                                imageVector = Icons.Outlined.EmojiEvents,
+                                contentDescription = null,
+                                tint = JackpotGold,
+                                modifier = Modifier.size(13.dp)
+                            )
+                        }
+                        Text(
+                            text = name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = if (isWinner) FontWeight.Bold else FontWeight.SemiBold,
+                            color = if (isWinner) TextPrimary else TextPrimary.copy(alpha = 0.88f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
-                    Text(
-                        text = name,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = if (isWinner) FontWeight.Bold else FontWeight.SemiBold,
-                        color = if (isWinner) TextPrimary else TextPrimary.copy(alpha = 0.88f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    shareLabel?.let { label ->
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = JackpotGold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(start = if (isWinner) 18.dp else 0.dp)
+                        )
+                    }
                 }
             }
             Box(

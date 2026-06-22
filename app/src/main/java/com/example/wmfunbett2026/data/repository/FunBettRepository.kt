@@ -16,7 +16,9 @@ import com.example.wmfunbett2026.data.model.MatchTippType
 import com.example.wmfunbett2026.data.model.Round
 import com.example.wmfunbett2026.data.model.TimeScope
 import com.example.wmfunbett2026.data.model.TippGroup
+import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.tipp.TippScopeAvailability
+import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import java.time.LocalDate
 
 object FunBettRepository {
@@ -217,6 +219,15 @@ object FunBettRepository {
 
     fun getTippGroupInGame(gameId: String, tippGroupId: String): TippGroup? =
         if (gameId.isBlank() || tippGroupId.isBlank()) null else getGame(gameId)?.tippGroups?.find { it.id == tippGroupId }
+
+    fun getTippGroupSettlementSummary(
+        gameId: String,
+        tippGroupId: String
+    ): TippGroupSettlementSummary? {
+        val game = getGame(gameId) ?: return null
+        val tippGroup = getTippGroupInGame(gameId, tippGroupId) ?: return null
+        return TippGroupWinnerEngine.settlementSummary(game, tippGroup)
+    }
 
     fun getEntries(tippGroupId: String): List<Entry> =
         getTippGroup(tippGroupId)?.entries?.toList().orEmpty()

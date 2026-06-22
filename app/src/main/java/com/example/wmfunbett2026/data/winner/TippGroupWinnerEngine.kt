@@ -4,6 +4,8 @@ import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.TippGroup
+import com.example.wmfunbett2026.data.model.TippGroupSettlementStatus
+import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 
 sealed class TippGroupWinnerOutcome {
     data object Pending : TippGroupWinnerOutcome()
@@ -67,6 +69,38 @@ object TippGroupWinnerEngine {
         if (!game.hasResult) return false
         val resultKey = formatScoreKey(game.teamAScore!!, game.teamBScore!!)
         return normalizePrediction(entry.prediction) == resultKey
+    }
+
+    fun settlementSummary(game: Game, tippGroup: TippGroup): TippGroupSettlementSummary {
+        val totalCollected = theoreticalTotalCollected(tippGroup)
+        if (!game.hasResult) {
+            return TippGroupSettlementSummary(
+                status = TippGroupSettlementStatus.PENDING,
+                totalCollected = totalCollected,
+                winnerCount = 0,
+                sharePerWinner = 0.0
+            )
+        }
+
+        val winnerCount = winningEntries(game, tippGroup).size
+        val sharePerWinner = if (winnerCount > 0) totalCollected / winnerCount else 0.0
+        val status = if (winnerCount > 0) {
+            TippGroupSettlementStatus.WINNERS
+        } else {
+            TippGroupSettlementStatus.NO_WINNERS
+        }
+
+        return TippGroupSettlementSummary(
+            status = status,
+            totalCollected = totalCollected,
+            winnerCount = winnerCount,
+            sharePerWinner = sharePerWinner
+        )
+    }
+
+    private fun theoreticalTotalCollected(tippGroup: TippGroup): Double {
+        val entryAmount = tippGroup.entryAmount ?: return tippGroup.totalAmount
+        return tippGroup.entries.size * entryAmount
     }
 
     private fun formatScoreKey(teamAScore: Int, teamBScore: Int): String = "$teamAScore-$teamBScore"

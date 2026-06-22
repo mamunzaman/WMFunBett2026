@@ -8,6 +8,8 @@ import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.Round
 import com.example.wmfunbett2026.data.model.TippGroup
+import com.example.wmfunbett2026.data.model.TippGroupSettlementStatus
+import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
@@ -380,5 +382,15 @@ fun tippGroupWinningEntryIds(game: Game, tippGroup: TippGroup): Set<String> =
 
 fun tippGroupWinnerNames(game: Game, tippGroup: TippGroup): List<String> =
     TippGroupWinnerEngine.winningEntries(game, tippGroup).map { it.friendName }
+
+fun shouldShowEntryWinnerShare(
+    game: Game,
+    isWinner: Boolean,
+    settlement: TippGroupSettlementSummary
+): Boolean =
+    game.hasResult &&
+        isWinner &&
+        settlement.status == TippGroupSettlementStatus.WINNERS &&
+        settlement.sharePerWinner > 0
 
 fun FriendSummary.totalTippedLabel(): String = totalTipped.toEuroLabel()

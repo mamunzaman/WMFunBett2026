@@ -25,6 +25,8 @@ import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.TippGroup
+import com.example.wmfunbett2026.data.model.TippGroupSettlementStatus
+import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
@@ -116,6 +118,9 @@ fun TippGroupDetailScreen(
             emptyList()
         }
     }
+    val settlement = remember(gameId, tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getTippGroupSettlementSummary(gameId, tippGroupId)
+    }
 
     HierarchyScreenLayout(
         title = tippGroup?.title ?: "Tipp Group",
@@ -165,6 +170,11 @@ fun TippGroupDetailScreen(
                     }
                 )
             }
+            settlement?.let { summary ->
+                item(key = "settlement") {
+                    TippGroupSettlementCard(summary = summary)
+                }
+            }
             item(key = "section") { HierarchySectionHeader(title = "Entries") }
             if (entries.isEmpty()) {
                 item(key = "empty") {
@@ -181,6 +191,12 @@ fun TippGroupDetailScreen(
                         entries = entries,
                         winningEntryIds = winningEntryIds,
                         winnerNames = winnerNames,
+                        settlement = settlement ?: TippGroupSettlementSummary(
+                            status = TippGroupSettlementStatus.PENDING,
+                            totalCollected = 0.0,
+                            winnerCount = 0,
+                            sharePerWinner = 0.0
+                        ),
                         onEntryClick = { entry -> selectedPersonName = entry.friendName }
                     )
                 }
@@ -232,6 +248,71 @@ fun TippGroupDetailScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun TippGroupSettlementCard(
+    summary: TippGroupSettlementSummary,
+    modifier: Modifier = Modifier
+) {
+    GlassSurface(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.settlement_title),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = PrimaryText
+            )
+            when (summary.status) {
+                TippGroupSettlementStatus.PENDING -> {
+                    Text(
+                        text = stringResource(R.string.settlement_pending_title),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = PrimaryText
+                    )
+                    Text(
+                        text = stringResource(R.string.settlement_pending_message),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SecondaryText
+                    )
+                }
+                TippGroupSettlementStatus.NO_WINNERS,
+                TippGroupSettlementStatus.WINNERS -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        GlassStatChip(
+                            label = stringResource(R.string.settlement_collected),
+                            value = summary.totalCollected.toEuroLabel(),
+                            modifier = Modifier.weight(1f)
+                        )
+                        GlassStatChip(
+                            label = stringResource(R.string.settlement_winners),
+                            value = summary.winnerCount.toString(),
+                            modifier = Modifier.weight(1f)
+                        )
+                        GlassStatChip(
+                            label = stringResource(R.string.settlement_share_per_winner),
+                            value = when (summary.status) {
+                                TippGroupSettlementStatus.WINNERS ->
+                                    summary.sharePerWinner.toEuroLabel()
+                                else -> stringResource(R.string.settlement_no_winner)
+                            },
+                            highlight = summary.status == TippGroupSettlementStatus.WINNERS,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
