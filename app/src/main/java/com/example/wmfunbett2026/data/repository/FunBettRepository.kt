@@ -5,6 +5,7 @@ import com.example.wmfunbett2026.data.model.Day
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
+import com.example.wmfunbett2026.data.model.MatchTippType
 import com.example.wmfunbett2026.data.model.Round
 import com.example.wmfunbett2026.data.model.TimeScope
 import com.example.wmfunbett2026.data.model.TippGroup
@@ -21,6 +22,31 @@ object FunBettRepository {
     val dataVersion = mutableIntStateOf(0)
 
     private var roundsInternal: List<Round> = listOf(buildSampleRound())
+    private val sampleLeagueRoundIds = mutableMapOf<String, String>()
+
+    fun getSampleLeagueRoundId(leagueId: String): String? = sampleLeagueRoundIds[leagueId]
+
+    fun resolveRoundIdForLeague(leagueId: String, leagueName: String): String? {
+        when (leagueId) {
+            "wc2026" -> return ROUND_ID
+            "custom-league" -> return null
+        }
+        if (getRound(leagueId) != null) return leagueId
+        sampleLeagueRoundIds[leagueId]?.let { return it }
+        if (leagueId.startsWith("round-")) return leagueId.takeIf { getRound(it) != null }
+
+        val roundId = "sample-$leagueId"
+        if (getRound(roundId) == null) {
+            roundsInternal = roundsInternal + Round(
+                id = roundId,
+                name = leagueName,
+                days = emptyList()
+            )
+            sampleLeagueRoundIds[leagueId] = roundId
+            notifyChanged()
+        }
+        return roundId
+    }
 
     fun getRounds(): List<Round> = roundsInternal.toList()
 
@@ -80,7 +106,9 @@ object FunBettRepository {
         teamA: String,
         teamB: String,
         dateLabel: String?,
-        timeLabel: String?
+        timeLabel: String?,
+        tippType: MatchTippType = MatchTippType.FULL_TIME,
+        note: String? = null
     ): Game? {
         if (getRound(roundId) == null) return null
 
@@ -89,7 +117,9 @@ object FunBettRepository {
             teamA = teamA.trim(),
             teamB = teamB.trim(),
             dateTimeLabel = buildDateTimeLabel(dateLabel, timeLabel),
-            tippGroups = emptyList()
+            tippGroups = emptyList(),
+            tippType = tippType,
+            note = note?.trim()?.takeIf { it.isNotEmpty() }
         )
         val normalizedDayLabel = dayLabel.trim()
 
@@ -153,6 +183,42 @@ object FunBettRepository {
         }
         notifyChanged()
         return true
+    }
+
+    fun addTippGroupFromMenu(
+        gameId: String,
+        tippType: MatchTippType,
+        entryAmount: Double,
+        note: String?
+    ): TippGroup? {
+        if (getGame(gameId) == null || entryAmount <= 0.0) return null
+
+        val tippGroup = TippGroup(
+            id = "tipp-${System.currentTimeMillis()}",
+            title = tippType.defaultTippTitle(),
+            timeScope = tippType.toTimeScope(),
+            entries = emptyList(),
+            entryAmount = entryAmount,
+            note = note?.trim()?.takeIf { it.isNotEmpty() }
+        )
+
+        roundsInternal = roundsInternal.map { round ->
+            round.copy(
+                days = round.days.map { day ->
+                    day.copy(
+                        games = day.games.map { gameItem ->
+                            if (gameItem.id == gameId) {
+                                gameItem.copy(tippGroups = gameItem.tippGroups + tippGroup)
+                            } else {
+                                gameItem
+                            }
+                        }
+                    )
+                }
+            )
+        }
+        notifyChanged()
+        return tippGroup
     }
 
     fun addEntry(

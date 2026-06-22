@@ -17,8 +17,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.wmfunbett2026.data.repository.FunBettRepository
+import com.example.wmfunbett2026.ui.components.AddMatchSheet
+import com.example.wmfunbett2026.ui.components.AddTippGroupSheet
 import com.example.wmfunbett2026.ui.components.CreateRoundSheet
 import com.example.wmfunbett2026.ui.components.MatchCenterBottomNav
 import com.example.wmfunbett2026.ui.components.ModalSheetBackdropOverlay
@@ -28,10 +31,27 @@ import com.example.wmfunbett2026.ui.components.modalSheetBackdropBlur
 import com.example.wmfunbett2026.ui.navigation.AppScreen
 import com.example.wmfunbett2026.ui.navigation.LeaguesNavGraph
 import com.example.wmfunbett2026.ui.navigation.MatchesNavGraph
+import com.example.wmfunbett2026.ui.navigation.resolveCreateNavigationState
 import com.example.wmfunbett2026.ui.screens.SettingsScreen
 import com.example.wmfunbett2026.ui.screens.friends.FriendsScreen
 import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 import com.example.wmfunbett2026.ui.theme.WMFunBett2026Theme
+
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+private val AddMatchDateFormatter =
+    DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH)
+
+private val AddMatchTimeFormatter =
+    DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
+
+private sealed class CreateSheet {
+    data object Menu : CreateSheet()
+    data object Round : CreateSheet()
+    data class Match(val lockedLeagueId: String?) : CreateSheet()
+    data class TippGroup(val gameId: String) : CreateSheet()
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,11 +71,26 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppShell(modifier: Modifier = Modifier) {
     var selectedScreen by rememberSaveable { mutableStateOf(AppScreen.Matches) }
-    var showTippsCenterSheet by remember { mutableStateOf(false) }
-    var showCreateRoundSheet by remember { mutableStateOf(false) }
+    var activeCreateSheet by remember { mutableStateOf<CreateSheet?>(null) }
     val matchesNavController = rememberNavController()
     val leaguesNavController = rememberNavController()
     val sheetBackdropActive = ModalSheetBackdropState.isActive
+
+    val matchesBackStackEntry by matchesNavController.currentBackStackEntryAsState()
+    val leaguesBackStackEntry by leaguesNavController.currentBackStackEntryAsState()
+
+    val createNavState = remember(
+        selectedScreen,
+        matchesBackStackEntry?.destination?.route,
+        leaguesBackStackEntry?.destination?.route
+    ) {
+        val route = when (selectedScreen) {
+            AppScreen.Matches -> matchesBackStackEntry?.destination?.route
+            AppScreen.Leagues -> leaguesBackStackEntry?.destination?.route
+            else -> null
+        }
+        resolveCreateNavigationState(selectedScreen, route)
+    }
 
     Box(
         modifier = modifier
@@ -87,27 +122,74 @@ fun AppShell(modifier: Modifier = Modifier) {
             modifier = Modifier.align(Alignment.BottomCenter),
             selectedScreen = selectedScreen,
             onScreenSelected = { selectedScreen = it },
-            onCenterAddClick = { showTippsCenterSheet = true }
+            onCenterAddClick = { activeCreateSheet = CreateSheet.Menu }
         )
     }
 
-    if (showTippsCenterSheet) {
-        TippsCenterActionSheet(
-            onDismiss = { showTippsCenterSheet = false },
-            onRoundClick = {
-                showTippsCenterSheet = false
-                showCreateRoundSheet = true
-            }
-        )
-    }
-
-    if (showCreateRoundSheet) {
-        CreateRoundSheet(
-            onDismiss = { showCreateRoundSheet = false },
-            onCreate = { name ->
-                FunBettRepository.addRound(name, null)
-                showCreateRoundSheet = false
-            }
-        )
+    when (val sheet = activeCreateSheet) {
+        CreateSheet.Menu -> {
+            TippsCenterActionSheet(
+                context = createNavState.context,
+                onDismiss = { activeCreateSheet = null },
+                onRoundClick = { activeCreateSheet = CreateSheet.Round },
+                onMatchClick = {
+                    activeCreateSheet = CreateSheet.Match(createNavState.preselectedLeagueId)
+                },
+                onTippGroupClick = {
+                    createNavState.activeGameId?.let { gameId ->
+                        activeCreateSheet = CreateSheet.TippGroup(gameId)
+                    }
+                },
+                onEntryClick = {
+                    activeCreateSheet = null
+                    selectedScreen = AppScreen.Friends
+                }
+            )
+        }
+        CreateSheet.Round -> {
+            CreateRoundSheet(
+                onDismiss = { activeCreateSheet = null },
+                onCreate = { name ->
+                    FunBettRepository.addRound(name, null)
+                    activeCreateSheet = null
+                }
+            )
+        }
+        is CreateSheet.Match -> {
+            AddMatchSheet(
+                lockedLeagueId = sheet.lockedLeagueId,
+                onDismiss = { activeCreateSheet = null },
+                onCreate = { leagueId, leagueName, teamA, teamB, day, time, tippType, note ->
+                    val roundId = FunBettRepository.resolveRoundIdForLeague(leagueId, leagueName)
+                        ?: return@AddMatchSheet
+                    FunBettRepository.addGame(
+                        roundId = roundId,
+                        dayLabel = day.format(AddMatchDateFormatter),
+                        teamA = teamA,
+                        teamB = teamB,
+                        dateLabel = day.format(AddMatchDateFormatter),
+                        timeLabel = time.format(AddMatchTimeFormatter),
+                        tippType = tippType,
+                        note = note
+                    )
+                    activeCreateSheet = null
+                }
+            )
+        }
+        is CreateSheet.TippGroup -> {
+            AddTippGroupSheet(
+                onDismiss = { activeCreateSheet = null },
+                onCreate = { tippType, entryAmount, note ->
+                    FunBettRepository.addTippGroupFromMenu(
+                        gameId = sheet.gameId,
+                        tippType = tippType,
+                        entryAmount = entryAmount,
+                        note = note
+                    )
+                    activeCreateSheet = null
+                }
+            )
+        }
+        null -> Unit
     }
 }

@@ -52,6 +52,11 @@
 - [x] Matches screen staggered card entrance animation (fade + slide up)
 - [x] Premium Create menu bottom sheet (+ action flow)
 - [x] Create Round modal bottom sheet (replaces dialog)
+- [x] Context-aware + menu (Matches/Leagues/League detail/Game detail)
+- [x] Add Match bottom sheet with round selector
+- [x] Add Match sheet: date/time pickers, tipp type, all leagues in selector
+- [x] Add Match inside league: locked league info row, no dropdown
+- [x] Add Tipp Group bottom sheet: tipp type, entry amount, note (in-memory)
 
 ## In Progress
 - None
@@ -62,6 +67,7 @@
 - [ ] Edit actions
 - [ ] Jackpot management business logic
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
+- [ ] Real Add Entry flow (currently navigates to Friends)
 
 ## Last Update
-2026-06-21 — Premium Create menu + Create Round bottom sheet.
+2026-06-21 — Add Match locked league + real Add Tipp Group sheet on game detail.

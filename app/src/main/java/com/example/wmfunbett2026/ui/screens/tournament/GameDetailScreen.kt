@@ -41,9 +41,9 @@ import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerOutcome
+import com.example.wmfunbett2026.ui.components.AddTippGroupSheet
 import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.DetailInlineAddButton
-import com.example.wmfunbett2026.ui.components.FormBottomSheet
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
@@ -160,19 +160,18 @@ fun GameDetailScreen(
     }
 
     if (showSampleAddTipp) {
-        FormBottomSheet(
-            title = "Add Tipp",
+        AddTippGroupSheet(
             onDismiss = { showSampleAddTipp = false },
-            primaryActionLabel = stringResource(R.string.ok),
-            onPrimaryAction = { showSampleAddTipp = false },
-            showCancel = false
-        ) {
-            Text(
-                text = "Sample action only — tipp creation will be wired in a later step.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = SecondaryText
-            )
-        }
+            onCreate = { tippType, entryAmount, note ->
+                FunBettRepository.addTippGroupFromMenu(
+                    gameId = gameId,
+                    tippType = tippType,
+                    entryAmount = entryAmount,
+                    note = note
+                )
+                showSampleAddTipp = false
+            }
+        )
     }
 
     if (showSetResultDialog && game != null) {

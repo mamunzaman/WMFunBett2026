@@ -50,6 +50,19 @@ enum class MatchSelectFilter(@StringRes val labelRes: Int) {
 /** @deprecated Use [MatchSelectFilter] */
 typealias MatchdayFilter = MatchSelectFilter
 
+data class LeagueRoundOption(
+    val leagueId: String,
+    val displayName: String
+)
+
+fun loadSelectableLeagueRoundOptions(): List<LeagueRoundOption> =
+    loadLeagueSummaries()
+        .filter { it.id != "custom-league" }
+        .map { LeagueRoundOption(leagueId = it.id, displayName = it.name) }
+
+private fun resolvedLeagueRoundId(leagueId: String, staticRoundId: String?): String? =
+    staticRoundId ?: FunBettRepository.getSampleLeagueRoundId(leagueId)
+
 data class LeagueSummary(
     val id: String,
     val name: String,
@@ -232,10 +245,10 @@ fun loadLeagueSummaries(): List<LeagueSummary> {
             },
             tippGroupCount = wcGames.sumOf { it.game.tippGroups.size }
         ),
-        LeagueSummary("bundesliga", "Bundesliga", null, 8, 3, 2),
-        LeagueSummary("premier-league", "Premier League", null, 10, 4, 3),
-        LeagueSummary("la-liga", "La Liga", null, 9, 2, 1),
-        LeagueSummary("champions-league", "Champions League", null, 6, 2, 2)
+        LeagueSummary("bundesliga", "Bundesliga", resolvedLeagueRoundId("bundesliga", null), 8, 3, 2),
+        LeagueSummary("premier-league", "Premier League", resolvedLeagueRoundId("premier-league", null), 10, 4, 3),
+        LeagueSummary("la-liga", "La Liga", resolvedLeagueRoundId("la-liga", null), 9, 2, 1),
+        LeagueSummary("champions-league", "Champions League", resolvedLeagueRoundId("champions-league", null), 6, 2, 2)
     ) + customRoundLeagues + listOf(
         LeagueSummary("custom-league", "Custom League", null, 0, 0, 0)
     )

@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.ui.navigation.CreateMenuContext
 import com.example.wmfunbett2026.ui.theme.GlassBorder
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.PrimaryBlueBright
@@ -72,47 +73,74 @@ private data class CreateMenuItem(
     val action: CreateMenuAction,
     val titleRes: Int,
     val descriptionRes: Int,
-    val icon: ImageVector,
-    val enabled: Boolean
+    val icon: ImageVector
 )
+
+private fun createMenuItems(context: CreateMenuContext): List<CreateMenuItem> {
+    return when (context) {
+        CreateMenuContext.MatchesMain, CreateMenuContext.LeaguesMain -> listOf(
+            CreateMenuItem(
+                CreateMenuAction.Round,
+                R.string.create_menu_round,
+                R.string.create_menu_round_description,
+                Icons.Outlined.EmojiEvents
+            ),
+            CreateMenuItem(
+                CreateMenuAction.Match,
+                R.string.create_menu_match,
+                R.string.create_menu_match_description,
+                Icons.Outlined.SportsSoccer
+            ),
+            CreateMenuItem(
+                CreateMenuAction.Entry,
+                R.string.create_menu_entry,
+                R.string.create_menu_entry_description,
+                Icons.Outlined.EditNote
+            )
+        )
+        CreateMenuContext.LeagueDetail -> listOf(
+            CreateMenuItem(
+                CreateMenuAction.Match,
+                R.string.create_menu_match,
+                R.string.create_menu_match_description,
+                Icons.Outlined.SportsSoccer
+            ),
+            CreateMenuItem(
+                CreateMenuAction.Entry,
+                R.string.create_menu_entry,
+                R.string.create_menu_entry_description,
+                Icons.Outlined.EditNote
+            )
+        )
+        CreateMenuContext.GameDetail -> listOf(
+            CreateMenuItem(
+                CreateMenuAction.TippGroup,
+                R.string.create_menu_tipp_group,
+                R.string.create_menu_tipp_group_description,
+                Icons.Outlined.Groups
+            ),
+            CreateMenuItem(
+                CreateMenuAction.Entry,
+                R.string.create_menu_entry,
+                R.string.create_menu_entry_description,
+                Icons.Outlined.EditNote
+            )
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TippsCenterActionSheet(
+    context: CreateMenuContext,
     onDismiss: () -> Unit,
     onRoundClick: () -> Unit,
+    onMatchClick: () -> Unit,
+    onTippGroupClick: () -> Unit,
+    onEntryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val menuItems = listOf(
-        CreateMenuItem(
-            action = CreateMenuAction.Round,
-            titleRes = R.string.create_menu_round,
-            descriptionRes = R.string.create_menu_round_description,
-            icon = Icons.Outlined.EmojiEvents,
-            enabled = true
-        ),
-        CreateMenuItem(
-            action = CreateMenuAction.Match,
-            titleRes = R.string.create_menu_match,
-            descriptionRes = R.string.create_menu_match_description,
-            icon = Icons.Outlined.SportsSoccer,
-            enabled = false
-        ),
-        CreateMenuItem(
-            action = CreateMenuAction.TippGroup,
-            titleRes = R.string.create_menu_tipp_group,
-            descriptionRes = R.string.create_menu_tipp_group_description,
-            icon = Icons.Outlined.Groups,
-            enabled = false
-        ),
-        CreateMenuItem(
-            action = CreateMenuAction.Entry,
-            titleRes = R.string.create_menu_entry,
-            descriptionRes = R.string.create_menu_entry_description,
-            icon = Icons.Outlined.EditNote,
-            enabled = false
-        )
-    )
+    val menuItems = remember(context) { createMenuItems(context) }
 
     DisposableEffect(Unit) {
         ModalSheetBackdropState.push()
@@ -151,8 +179,11 @@ fun TippsCenterActionSheet(
                     CreateMenuRow(
                         item = item,
                         onClick = {
-                            if (item.enabled && item.action == CreateMenuAction.Round) {
-                                onRoundClick()
+                            when (item.action) {
+                                CreateMenuAction.Round -> onRoundClick()
+                                CreateMenuAction.Match -> onMatchClick()
+                                CreateMenuAction.TippGroup -> onTippGroupClick()
+                                CreateMenuAction.Entry -> onEntryClick()
                             }
                         }
                     )
@@ -208,21 +239,6 @@ private fun CreateMenuRow(
     item: CreateMenuItem,
     onClick: () -> Unit
 ) {
-    val titleColor = if (item.enabled) TextPrimary else TextPrimary.copy(alpha = 0.55f)
-    val subtitle = if (item.enabled) {
-        stringResource(item.descriptionRes)
-    } else {
-        stringResource(R.string.coming_soon)
-    }
-    val subtitleColor = if (item.enabled) TextSecondary else TextSecondary.copy(alpha = 0.65f)
-    val iconTint = if (item.enabled) PrimaryBlueBright else TextSecondary.copy(alpha = 0.55f)
-    val iconBackground = if (item.enabled) {
-        PrimaryBlue.copy(alpha = 0.22f)
-    } else {
-        Surface.copy(alpha = 0.65f)
-    }
-    val chevronTint = if (item.enabled) TextSecondary else TextSecondary.copy(alpha = 0.35f)
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -230,7 +246,6 @@ private fun CreateMenuRow(
             .background(Surface)
             .border(1.dp, GlassBorder, CreateMenuRowShape)
             .clickable(
-                enabled = item.enabled,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(color = PrimaryBlueBright.copy(alpha = 0.12f)),
                 onClick = onClick
@@ -243,14 +258,14 @@ private fun CreateMenuRow(
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(iconBackground)
+                .background(PrimaryBlue.copy(alpha = 0.22f))
                 .border(1.dp, GlassBorder, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = item.icon,
                 contentDescription = null,
-                tint = iconTint,
+                tint = PrimaryBlueBright,
                 modifier = Modifier.size(22.dp)
             )
         }
@@ -262,86 +277,20 @@ private fun CreateMenuRow(
                 text = stringResource(item.titleRes),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = titleColor
+                color = TextPrimary
             )
             Text(
-                text = subtitle,
+                text = stringResource(item.descriptionRes),
                 style = MaterialTheme.typography.bodySmall,
-                color = subtitleColor
+                color = TextSecondary
             )
         }
         Icon(
             imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
             contentDescription = null,
-            tint = chevronTint,
+            tint = TextSecondary,
             modifier = Modifier.size(22.dp)
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TippsSampleActionSheet(
-    title: String,
-    actions: List<String>,
-    onDismiss: () -> Unit,
-    onActionClick: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    DisposableEffect(Unit) {
-        ModalSheetBackdropState.push()
-        onDispose { ModalSheetBackdropState.pop() }
-    }
-
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = SheetSurface,
-        contentColor = TextPrimary,
-        scrimColor = ModalSheetScrimColor,
-        shape = CreateMenuSheetShape,
-        tonalElevation = 0.dp,
-        dragHandle = { SheetDragHandle() },
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 28.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary,
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
-            actions.forEach { action ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .clickable { onActionClick(action) }
-                        .padding(horizontal = 14.dp, vertical = 14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = action,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = TextPrimary
-                    )
-                    Text(
-                        text = "›",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = TextSecondary
-                    )
-                }
-            }
-        }
     }
 }
 

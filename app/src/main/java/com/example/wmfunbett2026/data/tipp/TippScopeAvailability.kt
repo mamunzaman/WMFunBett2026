@@ -79,7 +79,8 @@ object TippScopeAvailability {
         return when (scope) {
             TimeScope.HALF_TIME, TimeScope.HALF_TIME_STOPPAGE -> now.isBefore(matchStart)
             TimeScope.SECOND_HALF -> !now.isBefore(halfTimeStart) && now.isBefore(secondHalfStart)
-            TimeScope.FULL_TIME, TimeScope.FULL_TIME_STOPPAGE -> now.isBefore(secondHalfStart)
+            TimeScope.FULL_TIME, TimeScope.FULL_TIME_STOPPAGE, TimeScope.FULL_TIME_PENALTIES ->
+                now.isBefore(secondHalfStart)
         }
     }
 

@@ -22,9 +22,11 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.SheetBorderUnfocused
@@ -82,6 +84,49 @@ fun FormOutlinedTextField(
         trailingIcon = trailingIcon,
         shape = FormFieldShape,
         colors = formTextFieldColors(isError = isError)
+    )
+}
+
+@Composable
+fun LockedLeagueInfoRow(
+    leagueName: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                RoundedCornerShape(12.dp)
+            )
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(R.string.add_match_locked_league, leagueName),
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun FormPickerField(
+    value: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    label: @Composable (() -> Unit)? = null,
+    placeholder: @Composable (() -> Unit)? = null
+) {
+    FormOutlinedTextField(
+        value = value,
+        onValueChange = {},
+        readOnly = true,
+        modifier = modifier.clickable(onClick = onClick),
+        label = label,
+        placeholder = placeholder
     )
 }
 

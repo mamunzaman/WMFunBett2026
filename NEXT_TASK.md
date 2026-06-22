@@ -1,10 +1,10 @@
 # Next Task
 
 ## Current Goal
-Add Match creation from + menu when ready, or Day/Game in custom rounds.
+Implement real Add Entry flow on Friends / game screen.
 
 ## Verify Next
-- Tap + → Create sheet with 4 premium rows (staggered entrance)
-- Round → Create Round sheet → new card in Leagues grid
-- Match / Tipp Group / Entry → disabled, "Coming soon", no navigation
-- Custom League card still opens Create Round sheet
+- + inside game → Add Tipp Group creates group visible on game detail
+- + inside league → Add Match shows locked league row, no dropdown
+- + on Matches/Leagues main → Add Match shows league dropdown
+- Entry from + menu still navigates to Friends

@@ -28,7 +28,7 @@ import com.example.wmfunbett2026.ui.components.MatchCenterHeader
 import com.example.wmfunbett2026.ui.components.PremiumCard
 import com.example.wmfunbett2026.ui.components.ScreenContentHorizontalPadding
 import com.example.wmfunbett2026.ui.components.ScreenContentTopPadding
-import com.example.wmfunbett2026.ui.components.TippsSampleActionSheet
+import com.example.wmfunbett2026.ui.components.FriendDetailSheet
 import com.example.wmfunbett2026.ui.components.screenContentPadding
 import com.example.wmfunbett2026.ui.matchcenter.FriendSummary
 import com.example.wmfunbett2026.ui.matchcenter.loadFriendSummaries
@@ -131,21 +131,4 @@ private fun FriendCard(
             )
         }
     }
-}
-
-@Composable
-private fun FriendDetailSheet(
-    friend: FriendSummary,
-    onDismiss: () -> Unit
-) {
-    TippsSampleActionSheet(
-        title = friend.name,
-        actions = listOf(
-            stringResource(R.string.friend_detail_matches, friend.joinedMatches),
-            stringResource(R.string.friend_detail_tipped, friend.totalTippedLabel()),
-            stringResource(R.string.friend_detail_wins, friend.winsPlaceholder)
-        ),
-        onDismiss = onDismiss,
-        onActionClick = { onDismiss() }
-    )
 }

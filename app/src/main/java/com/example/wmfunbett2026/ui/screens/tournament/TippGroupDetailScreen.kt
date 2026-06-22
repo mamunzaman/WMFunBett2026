@@ -31,6 +31,7 @@ import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerOutcome
+import com.example.wmfunbett2026.ui.components.AddEntryPlaceholderSheet
 import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.DetailStatusChip
 import com.example.wmfunbett2026.ui.components.FormBottomSheet
@@ -167,19 +168,7 @@ fun TippGroupDetailScreen(
     }
 
     if (showSampleAddPerson) {
-        FormBottomSheet(
-            title = "Add Person",
-            onDismiss = { showSampleAddPerson = false },
-            primaryActionLabel = stringResource(R.string.ok),
-            onPrimaryAction = { showSampleAddPerson = false },
-            showCancel = false
-        ) {
-            Text(
-                text = "Sample action only — person entry will be wired in a later step.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = SecondaryText
-            )
-        }
+        AddEntryPlaceholderSheet(onDismiss = { showSampleAddPerson = false })
     }
 
     selectedPersonName?.let { personName ->

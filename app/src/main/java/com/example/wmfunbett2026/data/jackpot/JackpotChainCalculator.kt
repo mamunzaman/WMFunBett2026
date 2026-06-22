@@ -33,7 +33,7 @@ object JackpotChainCalculator {
     }
 
     fun requiredPerPersonAmount(tippGroup: TippGroup): Double? =
-        tippGroup.entries.firstOrNull()?.currentRoundAmount
+        tippGroup.entries.firstOrNull()?.currentRoundAmount ?: tippGroup.entryAmount
 
     private fun gamesInTournamentOrder(round: Round): List<Game> =
         round.days.flatMap { it.games }

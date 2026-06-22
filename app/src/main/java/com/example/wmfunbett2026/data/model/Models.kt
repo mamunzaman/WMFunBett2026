@@ -11,9 +11,26 @@ enum class TimeScope(val label: String) {
     HALF_TIME_STOPPAGE("Half Time + Stoppage"),
     SECOND_HALF("Second Half"),
     FULL_TIME("Full Time"),
-    FULL_TIME_STOPPAGE("Full Time + Stoppage");
+    FULL_TIME_STOPPAGE("Full Time + Stoppage"),
+    FULL_TIME_PENALTIES("Full Time + Penalty Shootout");
 
     fun defaultTippTitle(): String = "$label Tipp"
+}
+
+enum class MatchTippType(val label: String) {
+    HALF_TIME("Half Time"),
+    SECOND_HALF("Second Half"),
+    FULL_TIME("Full Time"),
+    FULL_TIME_PENALTIES("Full Time + Penalty Shootout");
+
+    fun toTimeScope(): TimeScope = when (this) {
+        HALF_TIME -> TimeScope.HALF_TIME
+        SECOND_HALF -> TimeScope.SECOND_HALF
+        FULL_TIME -> TimeScope.FULL_TIME
+        FULL_TIME_PENALTIES -> TimeScope.FULL_TIME_PENALTIES
+    }
+
+    fun defaultTippTitle(): String = toTimeScope().defaultTippTitle()
 }
 
 data class Entry(
@@ -29,7 +46,9 @@ data class TippGroup(
     val id: String,
     val title: String,
     val timeScope: TimeScope,
-    val entries: List<Entry>
+    val entries: List<Entry>,
+    val entryAmount: Double? = null,
+    val note: String? = null
 ) {
     val totalAmount: Double get() = entries.sumOf { it.currentRoundAmount }
 }
@@ -42,7 +61,9 @@ data class Game(
     val teamAScore: Int? = null,
     val teamBScore: Int? = null,
     val status: MatchStatus = MatchStatus.NOT_STARTED,
-    val tippGroups: List<TippGroup>
+    val tippGroups: List<TippGroup>,
+    val tippType: MatchTippType? = null,
+    val note: String? = null
 ) {
     val displayName: String get() = "$teamA vs $teamB"
     val totalKasse: Double get() = tippGroups.sumOf { it.totalAmount }
