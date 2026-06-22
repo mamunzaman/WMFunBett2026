@@ -31,7 +31,7 @@ import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerOutcome
-import com.example.wmfunbett2026.ui.components.AddEntryPlaceholderSheet
+import com.example.wmfunbett2026.ui.components.AddEntrySheet
 import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.DetailStatusChip
 import com.example.wmfunbett2026.ui.components.FormBottomSheet
@@ -73,19 +73,21 @@ fun TippGroupDetailScreen(
     FunBettRepository.dataVersion.intValue
     var showDeleteGroupDialog by remember { mutableStateOf(false) }
     var showWinnerShareDialog by remember { mutableStateOf(false) }
-    var showSampleAddPerson by remember { mutableStateOf(false) }
+    var showAddEntry by remember { mutableStateOf(false) }
     var selectedPersonName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(tippGroupId, gameId) {
         showDeleteGroupDialog = false
         showWinnerShareDialog = false
-        showSampleAddPerson = false
+        showAddEntry = false
         selectedPersonName = null
     }
 
     val game = FunBettRepository.getGameInDay(dayId, gameId)
     val tippGroup = FunBettRepository.getTippGroupInGame(gameId, tippGroupId)
-    val entries = tippGroup?.entries.orEmpty()
+    val entries = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getTippGroupInGame(gameId, tippGroupId)?.entries.orEmpty()
+    }
     val winnerOutcome = remember(game, tippGroup, FunBettRepository.dataVersion.intValue) {
         if (game != null && tippGroup != null) {
             TippGroupWinnerEngine.calculate(game, tippGroup)
@@ -136,14 +138,14 @@ fun TippGroupDetailScreen(
                     entryAmountLabel = entryAmountLabel(tippGroup),
                     totalAmountLabel = tippGroup.totalAmount.toEuroLabel(),
                     winnerStatusLabel = winnerOutcome?.let { winnerStatusLabel(it) } ?: "Open",
-                    onAddPersonClick = { showSampleAddPerson = true }
+                    onAddEntryClick = { showAddEntry = true }
                 )
             }
             item(key = "section") { HierarchySectionHeader(title = "Entries") }
             if (entries.isEmpty()) {
                 item(key = "empty") {
                     Text(
-                        text = "No entries yet — use Add Person below",
+                        text = stringResource(R.string.tipp_group_entries_empty),
                         style = MaterialTheme.typography.bodyLarge,
                         color = SecondaryText
                     )
@@ -167,8 +169,21 @@ fun TippGroupDetailScreen(
         }
     }
 
-    if (showSampleAddPerson) {
-        AddEntryPlaceholderSheet(onDismiss = { showSampleAddPerson = false })
+    if (showAddEntry) {
+        AddEntrySheet(
+            tippGroupId = tippGroupId,
+            onDismiss = { showAddEntry = false },
+            onCreate = { name, prediction, amount, note ->
+                FunBettRepository.addEntryToTippGroup(
+                    tippGroupId = tippGroupId,
+                    name = name,
+                    prediction = prediction,
+                    amount = amount,
+                    note = note
+                )
+                showAddEntry = false
+            }
+        )
     }
 
     selectedPersonName?.let { personName ->
@@ -208,7 +223,7 @@ private fun TippGroupGlassHeaderCard(
     entryAmountLabel: String,
     totalAmountLabel: String,
     winnerStatusLabel: String,
-    onAddPersonClick: () -> Unit,
+    onAddEntryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     GlassSurface(modifier = modifier.fillMaxWidth()) {
@@ -262,8 +277,8 @@ private fun TippGroupGlassHeaderCard(
                 )
             }
             GlassPrimaryActionButton(
-                label = "Add Person",
-                onClick = onAddPersonClick
+                label = stringResource(R.string.action_add_entry),
+                onClick = onAddEntryClick
             )
         }
     }

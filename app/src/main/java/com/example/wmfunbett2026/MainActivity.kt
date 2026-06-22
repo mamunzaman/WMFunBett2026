@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.wmfunbett2026.data.repository.FunBettRepository
+import com.example.wmfunbett2026.ui.components.AddEntrySheet
 import com.example.wmfunbett2026.ui.components.AddMatchSheet
 import com.example.wmfunbett2026.ui.components.AddTippGroupSheet
 import com.example.wmfunbett2026.ui.components.CreateRoundSheet
@@ -51,6 +52,7 @@ private sealed class CreateSheet {
     data object Round : CreateSheet()
     data class Match(val lockedLeagueId: String?) : CreateSheet()
     data class TippGroup(val gameId: String) : CreateSheet()
+    data class Entry(val tippGroupId: String) : CreateSheet()
 }
 
 class MainActivity : ComponentActivity() {
@@ -141,8 +143,9 @@ fun AppShell(modifier: Modifier = Modifier) {
                     }
                 },
                 onEntryClick = {
-                    activeCreateSheet = null
-                    selectedScreen = AppScreen.Friends
+                    createNavState.activeTippGroupId?.let { tippGroupId ->
+                        activeCreateSheet = CreateSheet.Entry(tippGroupId)
+                    }
                 }
             )
         }
@@ -185,6 +188,22 @@ fun AppShell(modifier: Modifier = Modifier) {
                         gameId = sheet.gameId,
                         tippType = tippType,
                         entryAmount = entryAmount,
+                        note = note
+                    )
+                    activeCreateSheet = null
+                }
+            )
+        }
+        is CreateSheet.Entry -> {
+            AddEntrySheet(
+                tippGroupId = sheet.tippGroupId,
+                onDismiss = { activeCreateSheet = null },
+                onCreate = { name, prediction, amount, note ->
+                    FunBettRepository.addEntryToTippGroup(
+                        tippGroupId = sheet.tippGroupId,
+                        name = name,
+                        prediction = prediction,
+                        amount = amount,
                         note = note
                     )
                     activeCreateSheet = null

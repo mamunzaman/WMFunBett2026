@@ -63,6 +63,7 @@
 - [x] Add Match past-date blocked (picker + validation)
 - [x] + menu Tipp Group targets current game via nav arguments
 - [x] Unified addTippGroup path; Second Half allowed pre-match via menu rules
+- [x] Real Add Entry sheet on Tipp Group detail only (in-memory)
 
 ## In Progress
 - None
@@ -73,7 +74,6 @@
 - [ ] Edit actions
 - [ ] Jackpot management business logic
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
-- [ ] Real Add Entry flow (currently navigates to Friends)
 
 ## Last Update
-2026-06-21 — Unified Tipp Group create path; Second Half fix for pre-match games.
+2026-06-21 — Real Add Entry on Tipp Group detail; Entry removed from other + menus.

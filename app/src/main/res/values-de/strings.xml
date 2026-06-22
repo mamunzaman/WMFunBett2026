@@ -91,7 +91,9 @@
     <string name="tipp_type_full_time_penalties">Endstand + Elfmeterschießen</string>
     <string name="add_match_locked_league">Liga: %1$s</string>
     <string name="add_tipp_group_entry_amount">Einsatzbetrag</string>
-    <string name="add_entry_placeholder_message">Eintrags-Erstellung folgt als Nächstes.</string>
+    <string name="add_entry_amount">Betrag</string>
+    <string name="add_entry_prediction_hint">z. B. 2:1</string>
+    <string name="tipp_group_entries_empty">Noch keine Einträge — Eintrag unten hinzufügen</string>
     <string name="friend_detail_from_entries">Berechnet aus gespeicherten Einträgen</string>
     <string name="action_add_league">Liga hinzufügen</string>
     <string name="action_add_match">Spiel hinzufügen</string>

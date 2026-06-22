@@ -237,6 +237,26 @@ object FunBettRepository {
         return newEntry
     }
 
+    fun addEntryToTippGroup(
+        tippGroupId: String,
+        name: String,
+        prediction: String,
+        amount: Double,
+        note: String?
+    ): Entry? {
+        val trimmedName = name.trim()
+        val trimmedPrediction = prediction.trim()
+        if (trimmedName.isEmpty() || trimmedPrediction.isEmpty() || amount <= 0.0) return null
+        return addEntry(
+            tippGroupId = tippGroupId,
+            name = trimmedName,
+            prediction = trimmedPrediction,
+            totalPaid = amount,
+            currentRoundAmount = amount,
+            note = note
+        )
+    }
+
     fun updateGameResult(
         gameId: String,
         teamAScore: Int?,

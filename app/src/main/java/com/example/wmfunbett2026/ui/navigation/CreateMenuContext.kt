@@ -6,26 +6,36 @@ enum class CreateMenuContext {
     MatchesMain,
     LeaguesMain,
     LeagueDetail,
-    GameDetail
+    GameDetail,
+    TippGroupDetail
 }
 
 data class CreateNavigationState(
     val context: CreateMenuContext,
     val preselectedLeagueId: String? = null,
-    val activeGameId: String? = null
+    val activeGameId: String? = null,
+    val activeTippGroupId: String? = null
 )
 
 fun resolveCreateNavigationState(
     selectedScreen: AppScreen,
     backStackEntry: NavBackStackEntry?
 ): CreateNavigationState {
-    backStackEntry?.arguments?.getString("gameId")?.takeIf { it.isNotBlank() }?.let { gameId ->
+    val args = backStackEntry?.arguments
+    args?.getString("tippGroupId")?.takeIf { it.isNotBlank() }?.let { tippGroupId ->
+        return CreateNavigationState(
+            context = CreateMenuContext.TippGroupDetail,
+            activeGameId = args.getString("gameId"),
+            activeTippGroupId = tippGroupId
+        )
+    }
+    args?.getString("gameId")?.takeIf { it.isNotBlank() }?.let { gameId ->
         return CreateNavigationState(
             context = CreateMenuContext.GameDetail,
             activeGameId = gameId
         )
     }
-    backStackEntry?.arguments?.getString("leagueId")?.takeIf { it.isNotBlank() }?.let { leagueId ->
+    args?.getString("leagueId")?.takeIf { it.isNotBlank() }?.let { leagueId ->
         return CreateNavigationState(
             context = CreateMenuContext.LeagueDetail,
             preselectedLeagueId = leagueId

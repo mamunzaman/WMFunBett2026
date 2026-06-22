@@ -90,12 +90,6 @@ private fun createMenuItems(context: CreateMenuContext): List<CreateMenuItem> {
                 R.string.create_menu_match,
                 R.string.create_menu_match_description,
                 Icons.Outlined.SportsSoccer
-            ),
-            CreateMenuItem(
-                CreateMenuAction.Entry,
-                R.string.create_menu_entry,
-                R.string.create_menu_entry_description,
-                Icons.Outlined.EditNote
             )
         )
         CreateMenuContext.LeagueDetail -> listOf(
@@ -104,12 +98,6 @@ private fun createMenuItems(context: CreateMenuContext): List<CreateMenuItem> {
                 R.string.create_menu_match,
                 R.string.create_menu_match_description,
                 Icons.Outlined.SportsSoccer
-            ),
-            CreateMenuItem(
-                CreateMenuAction.Entry,
-                R.string.create_menu_entry,
-                R.string.create_menu_entry_description,
-                Icons.Outlined.EditNote
             )
         )
         CreateMenuContext.GameDetail -> listOf(
@@ -118,7 +106,9 @@ private fun createMenuItems(context: CreateMenuContext): List<CreateMenuItem> {
                 R.string.create_menu_tipp_group,
                 R.string.create_menu_tipp_group_description,
                 Icons.Outlined.Groups
-            ),
+            )
+        )
+        CreateMenuContext.TippGroupDetail -> listOf(
             CreateMenuItem(
                 CreateMenuAction.Entry,
                 R.string.create_menu_entry,

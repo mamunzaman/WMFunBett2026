@@ -1,8 +1,9 @@
 # Next Task
 
 ## Current Goal
-Implement real Add Entry flow on Friends / game screen.
+Verify entry list refresh and winner status on Tipp Group detail after multiple entries.
 
 ## Verify Next
-- Match detail: + and detail-card Add Tipp create all 4 types on not-started games
-- Second Half appears immediately after create from center +
+- Tipp Group detail: + and Add Entry button both create entries
+- Same name entries allowed
+- Entry hidden on Match/Game screens
