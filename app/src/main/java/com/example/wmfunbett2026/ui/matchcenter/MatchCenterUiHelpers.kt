@@ -263,7 +263,7 @@ fun loadFriendSummaries(): List<FriendSummary> {
     loadFlatGames().forEach { item ->
         item.game.tippGroups.forEach { group ->
             group.entries.forEach { entry ->
-                entriesByPerson.getOrPut(entry.name) { mutableListOf() }.add(item to entry)
+                entriesByPerson.getOrPut(entry.friendName) { mutableListOf() }.add(item to entry)
             }
         }
     }

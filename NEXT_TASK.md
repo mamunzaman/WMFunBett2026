@@ -1,9 +1,8 @@
 # Next Task
 
 ## Current Goal
-Manually verify Room persistence survives a full app restart.
+Commit Friends usability improvements after manual verification.
 
 ## Verify Next
-- Fresh install → sample World Cup data appears once
-- Create League, Match, Tipp Group, Entry → force-close app → reopen → all data still present
-- Second launch → sample data is not re-injected
+- Add 10+ friends → Add Entry search "ma" → Mamun selectable with checkmark
+- Friends card shows Mamun entry count + active amount after saving entry

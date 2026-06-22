@@ -1,11 +1,13 @@
 package com.example.wmfunbett2026.data.local
 
 import com.example.wmfunbett2026.data.local.entity.EntryEntity
+import com.example.wmfunbett2026.data.local.entity.FriendEntity
 import com.example.wmfunbett2026.data.local.entity.LeagueEntity
 import com.example.wmfunbett2026.data.local.entity.MatchEntity
 import com.example.wmfunbett2026.data.local.entity.TippGroupEntity
 import com.example.wmfunbett2026.data.model.Day
 import com.example.wmfunbett2026.data.model.Entry
+import com.example.wmfunbett2026.data.model.Friend
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.Round
@@ -100,7 +102,8 @@ fun TippGroupEntity.toTippGroup(entryEntities: List<EntryEntity>): TippGroup = T
 fun Entry.toEntity(tippGroupId: String): EntryEntity = EntryEntity(
     id = id,
     tippGroupId = tippGroupId,
-    name = name,
+    friendId = friendId,
+    friendName = friendName,
     prediction = prediction,
     amount = amount,
     currentRoundAmount = currentRoundAmount,
@@ -109,9 +112,24 @@ fun Entry.toEntity(tippGroupId: String): EntryEntity = EntryEntity(
 
 fun EntryEntity.toEntry(): Entry = Entry(
     id = id,
-    name = name,
+    friendId = friendId,
+    friendName = friendName,
     prediction = prediction,
     amount = amount,
     currentRoundAmount = currentRoundAmount,
     note = note
+)
+
+fun Friend.toEntity(): FriendEntity = FriendEntity(
+    id = id,
+    name = name,
+    note = note,
+    createdAt = createdAt
+)
+
+fun FriendEntity.toFriend(): Friend = Friend(
+    id = id,
+    name = name,
+    note = note,
+    createdAt = createdAt
 )

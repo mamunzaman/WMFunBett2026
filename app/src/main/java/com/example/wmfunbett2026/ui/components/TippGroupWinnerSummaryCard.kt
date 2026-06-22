@@ -61,7 +61,7 @@ fun TippGroupWinnerSummaryCard(
                 }
                 is TippGroupWinnerOutcome.Winners -> {
                     Text(
-                        text = "Winner(s): ${outcome.winningEntries.joinToString(", ") { it.name }}",
+                        text = "Winner(s): ${outcome.winningEntries.joinToString(", ") { it.friendName }}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = PrimaryText

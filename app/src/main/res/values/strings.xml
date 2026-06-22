@@ -53,9 +53,20 @@
     <string name="create">Create</string>
 
     <!-- Friends -->
-    <string name="friends_intro">Friends overview is calculated from saved entries.</string>
+    <string name="friends_count">%1$d friends</string>
     <string name="friends_empty_title">No friends yet</string>
-    <string name="friends_empty_message">Add entries to matches to see friend stats here.</string>
+    <string name="friends_empty_message">Add local participants to use them in tipp entries.</string>
+    <string name="add_friend">Add Friend</string>
+    <string name="add_friend_duplicate_error">A friend with this name already exists.</string>
+    <string name="add_entry_friend_label">Friend</string>
+    <string name="add_entry_search_friend">Search friend</string>
+    <string name="add_entry_no_friend_found">No friend found</string>
+    <string name="add_entry_recently_used">Recently Used</string>
+    <string name="add_entry_more_friends">More</string>
+    <string name="add_entry_clear_friend">Clear friend</string>
+    <string name="add_entry_no_friends">Add friends first before creating an entry.</string>
+    <string name="friend_active_entries">%1$d active entries</string>
+    <string name="friend_active_amount">%1$s active</string>
     <string name="friend_matches_count">%1$d matches</string>
     <string name="friend_total_tipped">%1$s tipped</string>
     <string name="friend_wins_placeholder">%1$d wins (sample)</string>

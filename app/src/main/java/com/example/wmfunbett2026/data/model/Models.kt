@@ -33,9 +33,23 @@ enum class MatchTippType(val label: String) {
     fun defaultTippTitle(): String = toTimeScope().defaultTippTitle()
 }
 
-data class Entry(
+data class Friend(
     val id: String,
     val name: String,
+    val note: String? = null,
+    val createdAt: Long
+)
+
+data class FriendWithStats(
+    val friend: Friend,
+    val activeEntryCount: Int,
+    val activeAmountTotal: Double
+)
+
+data class Entry(
+    val id: String,
+    val friendId: String,
+    val friendName: String,
     val prediction: String,
     val amount: Double,
     val currentRoundAmount: Double,

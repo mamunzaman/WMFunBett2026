@@ -68,16 +68,19 @@
 - [x] Room database foundation: entities, DAOs, mappers, FunBettDatabase v1
 - [x] Persist leagues, matches, tipp groups, entries across app restart
 - [x] Sample data seeds only when database is empty
+- [x] Friends foundation: FriendEntity, FriendDao, local participants only
+- [x] Friends screen: count, list, empty state, Add Friend sheet
+- [x] Entry stores friendId + friendName; Add Entry uses friend selector
 
 ## In Progress
 - None
 
 ## Pending Tasks
 - [ ] ViewModels and repositories
-- [ ] Edit actions
+- [ ] Edit actions (friends, entries)
 - [ ] Jackpot management business logic
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 - [ ] Room migrations (when schema changes)
 
 ## Last Update
-2026-06-21 — Room persistence foundation: Leagues, Matches, Tipp Groups, Entries survive app restart.
+2026-06-21 — Searchable friend picker on Add Entry; Friends cards show active entry count and amount.

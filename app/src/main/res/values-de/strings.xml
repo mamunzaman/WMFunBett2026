@@ -53,9 +53,20 @@
     <string name="create">Erstellen</string>
 
     <!-- Friends -->
-    <string name="friends_intro">Freunde-Übersicht wird aus gespeicherten Einträgen berechnet.</string>
+    <string name="friends_count">%1$d Freunde</string>
     <string name="friends_empty_title">Noch keine Freunde</string>
-    <string name="friends_empty_message">Füge Einträge zu Spielen hinzu, um Freund-Statistiken zu sehen.</string>
+    <string name="friends_empty_message">Füge lokale Teilnehmer hinzu, um sie in Tipp-Einträgen zu verwenden.</string>
+    <string name="add_friend">Freund hinzufügen</string>
+    <string name="add_friend_duplicate_error">Ein Freund mit diesem Namen existiert bereits.</string>
+    <string name="add_entry_friend_label">Freund</string>
+    <string name="add_entry_search_friend">Freund suchen</string>
+    <string name="add_entry_no_friend_found">Kein Freund gefunden</string>
+    <string name="add_entry_recently_used">Zuletzt verwendet</string>
+    <string name="add_entry_more_friends">Mehr</string>
+    <string name="add_entry_clear_friend">Freund entfernen</string>
+    <string name="add_entry_no_friends">Füge zuerst Freunde hinzu, bevor du einen Eintrag erstellst.</string>
+    <string name="friend_active_entries">%1$d aktive Einträge</string>
+    <string name="friend_active_amount">%1$s aktiv</string>
     <string name="friend_matches_count">%1$d Spiele</string>
     <string name="friend_total_tipped">%1$s getippt</string>
     <string name="friend_wins_placeholder">%1$d Siege (Beispiel)</string>

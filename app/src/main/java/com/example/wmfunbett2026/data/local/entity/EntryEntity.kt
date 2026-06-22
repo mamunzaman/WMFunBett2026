@@ -20,7 +20,8 @@ import androidx.room.PrimaryKey
 data class EntryEntity(
     @PrimaryKey val id: String,
     val tippGroupId: String,
-    val name: String,
+    val friendId: String,
+    val friendName: String,
     val prediction: String,
     val amount: Double,
     val currentRoundAmount: Double,

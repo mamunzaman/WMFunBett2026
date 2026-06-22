@@ -6,6 +6,8 @@ import com.example.wmfunbett2026.data.local.FunBettDatabase
 import com.example.wmfunbett2026.data.local.FunBettLocalStore
 import com.example.wmfunbett2026.data.model.Day
 import com.example.wmfunbett2026.data.model.Entry
+import com.example.wmfunbett2026.data.model.Friend
+import com.example.wmfunbett2026.data.model.FriendWithStats
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.MatchTippType
@@ -22,10 +24,13 @@ object FunBettRepository {
     const val GAME_ID = "game-1"
     const val GAME_ID_2 = "game-2"
     const val TIPP_GROUP_ID = "tipp-1"
+    const val FRIEND_ID_ALEX = "friend-alex"
+    const val FRIEND_ID_JOHN = "friend-john"
 
     val dataVersion = mutableIntStateOf(0)
 
     private var roundsInternal: List<Round> = emptyList()
+    private var friendsInternal: List<Friend> = emptyList()
     private lateinit var localStore: FunBettLocalStore
     private var initialized = false
     private val sampleLeagueRoundIds = mutableMapOf<String, String>()
@@ -37,16 +42,72 @@ object FunBettRepository {
             leagueDao = database.leagueDao(),
             matchDao = database.matchDao(),
             tippGroupDao = database.tippGroupDao(),
-            entryDao = database.entryDao()
+            entryDao = database.entryDao(),
+            friendDao = database.friendDao()
         )
         roundsInternal = if (localStore.isEmpty()) {
+            val sampleFriends = buildSampleFriends()
+            localStore.persistFriends(sampleFriends)
+            friendsInternal = sampleFriends
             val sample = listOf(buildSampleRound())
             localStore.persistAll(sample)
             sample
         } else {
+            friendsInternal = localStore.loadFriends()
             localStore.loadRounds()
         }
         initialized = true
+    }
+
+    fun getFriends(): List<Friend> = friendsInternal.toList()
+
+    fun getFriendsWithStats(): List<FriendWithStats> {
+        val entryCountByFriendId = mutableMapOf<String, Int>()
+        val amountByFriendId = mutableMapOf<String, Double>()
+
+        getAllGames().forEach { game ->
+            game.tippGroups.forEach { group ->
+                group.entries.forEach { entry ->
+                    entryCountByFriendId[entry.friendId] =
+                        (entryCountByFriendId[entry.friendId] ?: 0) + 1
+                    amountByFriendId[entry.friendId] =
+                        (amountByFriendId[entry.friendId] ?: 0.0) + entry.amount
+                }
+            }
+        }
+
+        return friendsInternal.map { friend ->
+            FriendWithStats(
+                friend = friend,
+                activeEntryCount = entryCountByFriendId[friend.id] ?: 0,
+                activeAmountTotal = amountByFriendId[friend.id] ?: 0.0
+            )
+        }.sortedBy { it.friend.name.lowercase() }
+    }
+
+    fun getFriend(friendId: String): Friend? =
+        if (friendId.isBlank()) null else friendsInternal.find { it.id == friendId }
+
+    fun friendNameExists(name: String): Boolean {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return false
+        return friendsInternal.any { it.name.equals(trimmed, ignoreCase = true) }
+    }
+
+    fun addFriend(name: String, note: String?): Friend? {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty() || friendNameExists(trimmed)) return null
+
+        val friend = Friend(
+            id = "friend-${System.currentTimeMillis()}",
+            name = trimmed,
+            note = note?.trim()?.takeIf { it.isNotEmpty() },
+            createdAt = System.currentTimeMillis()
+        )
+        friendsInternal = friendsInternal + friend
+        localStore.persistFriend(friend)
+        notifyChanged()
+        return friend
     }
 
     fun getSampleLeagueRoundId(leagueId: String): String? = sampleLeagueRoundIds[leagueId]
@@ -229,7 +290,8 @@ object FunBettRepository {
 
     fun addEntry(
         tippGroupId: String,
-        name: String,
+        friendId: String,
+        friendName: String,
         prediction: String,
         totalPaid: Double,
         currentRoundAmount: Double,
@@ -239,7 +301,8 @@ object FunBettRepository {
 
         val newEntry = Entry(
             id = "entry-${System.currentTimeMillis()}",
-            name = name.trim(),
+            friendId = friendId,
+            friendName = friendName.trim(),
             prediction = prediction.trim(),
             amount = totalPaid,
             currentRoundAmount = currentRoundAmount,
@@ -272,21 +335,22 @@ object FunBettRepository {
 
     fun addEntryToTippGroup(
         tippGroupId: String,
-        name: String,
+        friendId: String,
         prediction: String,
         note: String?
     ): Entry? {
         val tippGroup = getTippGroup(tippGroupId) ?: return null
+        val friend = getFriend(friendId) ?: return null
         val entryAmount = tippGroup.entryAmount ?: return null
         if (entryAmount <= 0.0) return null
 
-        val trimmedName = name.trim()
         val trimmedPrediction = prediction.trim()
-        if (trimmedName.isEmpty() || trimmedPrediction.isEmpty()) return null
+        if (trimmedPrediction.isEmpty()) return null
 
         return addEntry(
             tippGroupId = tippGroupId,
-            name = trimmedName,
+            friendId = friend.id,
+            friendName = friend.name,
             prediction = trimmedPrediction,
             totalPaid = entryAmount,
             currentRoundAmount = entryAmount,
@@ -432,6 +496,11 @@ object FunBettRepository {
     private fun getAllGames(): List<Game> =
         roundsInternal.flatMap { it.days }.flatMap { it.games }
 
+    private fun buildSampleFriends(): List<Friend> = listOf(
+        Friend(id = FRIEND_ID_ALEX, name = "Alex", createdAt = 0L),
+        Friend(id = FRIEND_ID_JOHN, name = "John", createdAt = 0L)
+    )
+
     private fun buildSampleRound(): Round {
         val correctScoreGroup = TippGroup(
             id = TIPP_GROUP_ID,
@@ -440,7 +509,8 @@ object FunBettRepository {
             entries = listOf(
                 Entry(
                     id = "entry-1",
-                    name = "Alex",
+                    friendId = FRIEND_ID_ALEX,
+                    friendName = "Alex",
                     prediction = "2:1",
                     amount = 10.0,
                     currentRoundAmount = 10.0,
@@ -448,7 +518,8 @@ object FunBettRepository {
                 ),
                 Entry(
                     id = "entry-2",
-                    name = "John",
+                    friendId = FRIEND_ID_JOHN,
+                    friendName = "John",
                     prediction = "1:1",
                     amount = 10.0,
                     currentRoundAmount = 10.0

@@ -153,7 +153,7 @@ fun TippGroupDetailScreen(
             } else {
                 items(entries, key = { it.id }) { entry ->
                     GlassEntryCard(
-                        name = entry.name,
+                        name = entry.friendName,
                         prediction = entry.prediction,
                         amountLabel = entry.amount.toEuroLabel(),
                         statusLabel = entryStatusLabel(winnerOutcome, entry),
@@ -162,7 +162,7 @@ fun TippGroupDetailScreen(
                         isWinner = winnerOutcome?.let { outcome ->
                             TippGroupWinnerEngine.isWinningEntry(outcome, entry.id)
                         } == true,
-                        onClick = { selectedPersonName = entry.name }
+                        onClick = { selectedPersonName = entry.friendName }
                     )
                 }
             }
@@ -173,10 +173,10 @@ fun TippGroupDetailScreen(
         AddEntrySheet(
             tippGroupId = tippGroupId,
             onDismiss = { showAddEntry = false },
-            onCreate = { name, prediction, note ->
+            onCreate = { friendId, prediction, note ->
                 FunBettRepository.addEntryToTippGroup(
                     tippGroupId = tippGroupId,
-                    name = name,
+                    friendId = friendId,
                     prediction = prediction,
                     note = note
                 )
@@ -378,7 +378,7 @@ private fun collectPersonGameTipps(game: Game, personName: String): List<PersonG
     val normalized = personName.trim().lowercase()
     return game.tippGroups.flatMap { group ->
         group.entries
-            .filter { it.name.trim().lowercase() == normalized }
+            .filter { it.friendName.trim().lowercase() == normalized }
             .map { entry ->
                 PersonGameTippRow(
                     tippTitle = group.title,

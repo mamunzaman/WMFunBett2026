@@ -10,7 +10,12 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -381,4 +386,184 @@ fun FormErrorText(text: String, modifier: Modifier = Modifier) {
         style = MaterialTheme.typography.bodySmall,
         color = DangerRed
     )
+}
+
+fun friendDisplayInitials(name: String): String {
+    val parts = name.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+    return when {
+        parts.isEmpty() -> "?"
+        parts.size == 1 -> parts[0].take(2).uppercase()
+        else -> "${parts.first().first()}${parts[1].first()}".uppercase()
+    }
+}
+
+@Composable
+fun FriendInitialsAvatar(
+    initials: String,
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    size: Dp = 44.dp
+) {
+    val background = if (selected) {
+        PrimaryBlue.copy(alpha = 0.35f)
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
+    }
+    val borderColor = if (selected) PrimaryBlue else MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)
+
+    Box(
+        modifier = modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(background)
+            .border(1.5.dp, borderColor, CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = initials,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (selected) SheetOnSurface else SheetOnSurfaceVariant,
+            fontSize = if (size <= 36.dp) 11.sp else 13.sp
+        )
+    }
+}
+
+@Composable
+fun FriendQuickPickChip(
+    friendName: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        FriendInitialsAvatar(initials = friendDisplayInitials(friendName))
+        Text(
+            text = friendName,
+            style = MaterialTheme.typography.labelSmall,
+            color = SheetOnSurface,
+            maxLines = 1,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+fun FriendQuickPickMoreChip(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(SheetChipUnselected.copy(alpha = 0.55f))
+                .border(1.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.45f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "•••",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = SheetOnSurfaceVariant
+            )
+        }
+        Text(
+            text = stringResource(R.string.add_entry_more_friends),
+            style = MaterialTheme.typography.labelSmall,
+            color = SheetOnSurfaceVariant,
+            maxLines = 1,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+fun FriendSelectedCard(
+    friendName: String,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .border(2.dp, PrimaryBlue, RoundedCornerShape(12.dp))
+            .background(PrimaryBlue.copy(alpha = 0.12f))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        FriendInitialsAvatar(
+            initials = friendDisplayInitials(friendName),
+            selected = true,
+            size = 40.dp
+        )
+        Text(
+            text = friendName,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = SheetOnSurface,
+            maxLines = 1
+        )
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .clickable(onClick = onClear)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "✕",
+                style = MaterialTheme.typography.labelLarge,
+                color = SheetOnSurfaceVariant,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun FriendSearchResultCard(
+    friendName: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f))
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        FriendInitialsAvatar(
+            initials = friendDisplayInitials(friendName),
+            size = 34.dp
+        )
+        Text(
+            text = friendName,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = SheetOnSurface,
+            maxLines = 1
+        )
+    }
 }
