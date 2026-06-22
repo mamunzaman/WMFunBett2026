@@ -10,6 +10,7 @@ import com.example.wmfunbett2026.data.model.Round
 import com.example.wmfunbett2026.data.model.TimeScope
 import com.example.wmfunbett2026.data.model.TippGroup
 import com.example.wmfunbett2026.data.tipp.TippScopeAvailability
+import java.time.LocalDate
 
 object FunBettRepository {
 
@@ -88,6 +89,9 @@ object FunBettRepository {
     fun getTotalKassePreview(): Double =
         getAllGames().sumOf { it.totalKasse }
 
+    fun isMatchDateAllowed(date: LocalDate, reference: LocalDate = LocalDate.now()): Boolean =
+        !date.isBefore(reference)
+
     fun addRound(name: String, note: String?): Round {
         val round = Round(
             id = "round-${System.currentTimeMillis()}",
@@ -107,7 +111,6 @@ object FunBettRepository {
         teamB: String,
         dateLabel: String?,
         timeLabel: String?,
-        tippType: MatchTippType = MatchTippType.FULL_TIME,
         note: String? = null
     ): Game? {
         if (getRound(roundId) == null) return null
@@ -118,7 +121,6 @@ object FunBettRepository {
             teamB = teamB.trim(),
             dateTimeLabel = buildDateTimeLabel(dateLabel, timeLabel),
             tippGroups = emptyList(),
-            tippType = tippType,
             note = note?.trim()?.takeIf { it.isNotEmpty() }
         )
         val normalizedDayLabel = dayLabel.trim()
@@ -150,51 +152,18 @@ object FunBettRepository {
         return game
     }
 
-    fun addTippGroup(gameId: String, title: String, timeScope: TimeScope): Boolean {
-        val game = getGame(gameId) ?: return false
-        val available = runCatching {
-            TippScopeAvailability.getAvailableScopes(game)
-        }.getOrElse {
-            emptyList()
-        }
-        if (timeScope !in available) return false
-
-        val tippGroup = TippGroup(
-            id = "tipp-${System.currentTimeMillis()}",
-            title = title.trim(),
-            timeScope = timeScope,
-            entries = emptyList()
-        )
-
-        roundsInternal = roundsInternal.map { round ->
-            round.copy(
-                days = round.days.map { day ->
-                    day.copy(
-                        games = day.games.map { gameItem ->
-                            if (gameItem.id == gameId) {
-                                gameItem.copy(tippGroups = gameItem.tippGroups + tippGroup)
-                            } else {
-                                gameItem
-                            }
-                        }
-                    )
-                }
-            )
-        }
-        notifyChanged()
-        return true
-    }
-
-    fun addTippGroupFromMenu(
+    fun addTippGroup(
         gameId: String,
         tippType: MatchTippType,
         entryAmount: Double,
-        note: String?
+        note: String? = null
     ): TippGroup? {
-        if (getGame(gameId) == null || entryAmount <= 0.0) return null
+        val game = getGame(gameId) ?: return null
+        if (entryAmount <= 0.0) return null
+        if (!TippScopeAvailability.canCreateMenuTippType(game, tippType)) return null
 
         val tippGroup = TippGroup(
-            id = "tipp-${System.currentTimeMillis()}",
+            id = "tipp-${System.currentTimeMillis()}-${tippType.name}",
             title = tippType.defaultTippTitle(),
             timeScope = tippType.toTimeScope(),
             entries = emptyList(),
@@ -219,6 +188,11 @@ object FunBettRepository {
         }
         notifyChanged()
         return tippGroup
+    }
+
+    fun availableMenuTippTypes(gameId: String): List<MatchTippType> {
+        val game = getGame(gameId) ?: return emptyList()
+        return TippScopeAvailability.getAvailableMenuTippTypes(game)
     }
 
     fun addEntry(

@@ -1,5 +1,7 @@
 package com.example.wmfunbett2026.ui.navigation
 
+import androidx.navigation.NavBackStackEntry
+
 enum class CreateMenuContext {
     MatchesMain,
     LeaguesMain,
@@ -13,30 +15,21 @@ data class CreateNavigationState(
     val activeGameId: String? = null
 )
 
-private val gameDetailRouteRegex =
-    Regex("""^tournament/([^/]+)/day/([^/]+)/game/([^/]+)(?:/tipp/[^/]+)?$""")
-
-private val leagueMatchesRouteRegex =
-    Regex("""^leagues/([^/]+)/matches$""")
-
 fun resolveCreateNavigationState(
     selectedScreen: AppScreen,
-    activeRoute: String?
+    backStackEntry: NavBackStackEntry?
 ): CreateNavigationState {
-    activeRoute?.let { route ->
-        gameDetailRouteRegex.matchEntire(route)?.let { match ->
-            return CreateNavigationState(
-                context = CreateMenuContext.GameDetail,
-                activeGameId = match.groupValues[3]
-            )
-        }
-        leagueMatchesRouteRegex.matchEntire(route)?.let { match ->
-            val leagueId = match.groupValues[1]
-            return CreateNavigationState(
-                context = CreateMenuContext.LeagueDetail,
-                preselectedLeagueId = leagueId
-            )
-        }
+    backStackEntry?.arguments?.getString("gameId")?.takeIf { it.isNotBlank() }?.let { gameId ->
+        return CreateNavigationState(
+            context = CreateMenuContext.GameDetail,
+            activeGameId = gameId
+        )
+    }
+    backStackEntry?.arguments?.getString("leagueId")?.takeIf { it.isNotBlank() }?.let { leagueId ->
+        return CreateNavigationState(
+            context = CreateMenuContext.LeagueDetail,
+            preselectedLeagueId = leagueId
+        )
     }
 
     return when (selectedScreen) {

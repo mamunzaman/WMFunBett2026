@@ -57,6 +57,12 @@
 - [x] Add Match sheet: date/time pickers, tipp type, all leagues in selector
 - [x] Add Match inside league: locked league info row, no dropdown
 - [x] Add Tipp Group bottom sheet: tipp type, entry amount, note (in-memory)
+- [x] Hierarchy cleanup: tipp type on Tipp Group only, not on Match
+- [x] Add Match Day/Time picker fields open Material pickers on tap
+- [x] Add Match Team A/B: flag badge, country autocomplete, name normalization
+- [x] Add Match past-date blocked (picker + validation)
+- [x] + menu Tipp Group targets current game via nav arguments
+- [x] Unified addTippGroup path; Second Half allowed pre-match via menu rules
 
 ## In Progress
 - None
@@ -70,4 +76,4 @@
 - [ ] Real Add Entry flow (currently navigates to Friends)
 
 ## Last Update
-2026-06-21 — Add Match locked league + real Add Tipp Group sheet on game detail.
+2026-06-21 — Unified Tipp Group create path; Second Half fix for pre-match games.

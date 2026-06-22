@@ -2,6 +2,8 @@ package com.example.wmfunbett2026.data.tipp
 
 import android.util.Log
 import com.example.wmfunbett2026.data.model.Game
+import com.example.wmfunbett2026.data.model.MatchStatus
+import com.example.wmfunbett2026.data.model.MatchTippType
 import com.example.wmfunbett2026.data.model.TimeScope
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -20,6 +22,29 @@ object TippScopeAvailability {
     private val dateFormatter = DateTimeFormatter.ofPattern("EEE d MMM yyyy", Locale.ENGLISH)
     private val timeFormatter = DateTimeFormatter.ofPattern("H:mm", Locale.ENGLISH)
     private val timeOnlyPattern = Regex("""^\d{1,2}:\d{2}$""")
+
+    fun getAvailableMenuTippTypes(
+        game: Game,
+        now: LocalDateTime = LocalDateTime.now()
+    ): List<MatchTippType> =
+        MatchTippType.entries.filter { canCreateMenuTippType(game, it, now) }
+
+    fun canCreateMenuTippType(
+        game: Game,
+        tippType: MatchTippType,
+        now: LocalDateTime = LocalDateTime.now()
+    ): Boolean {
+        val scope = tippType.toTimeScope()
+        if (game.tippGroups.any { it.timeScope == scope }) return false
+
+        val matchStart = parseMatchStartSafe(game.dateTimeLabel, now)
+        if (game.status == MatchStatus.NOT_STARTED && (matchStart == null || now.isBefore(matchStart))) {
+            return true
+        }
+        if (matchStart == null) return true
+
+        return isScopeOpenAtSafe(scope, now, matchStart)
+    }
 
     fun getAvailableScopes(
         game: Game,

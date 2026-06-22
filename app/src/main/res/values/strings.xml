@@ -82,8 +82,9 @@
     <string name="add_match_day_hint">Pick a date</string>
     <string name="add_match_time_label">Time</string>
     <string name="add_match_time_hint">Pick a time</string>
-    <string name="add_match_tipp_type_label">Tipp type</string>
-    <string name="add_match_tipp_type_hint">Select tipp type</string>
+    <string name="error_add_match_past_date">Match day must be today or in the future</string>
+    <string name="add_tipp_group_tipp_type_label">Tipp type</string>
+    <string name="add_tipp_group_tipp_type_hint">Select tipp type</string>
     <string name="tipp_type_half_time">Half Time</string>
     <string name="tipp_type_second_half">Second Half</string>
     <string name="tipp_type_full_time">Full Time</string>

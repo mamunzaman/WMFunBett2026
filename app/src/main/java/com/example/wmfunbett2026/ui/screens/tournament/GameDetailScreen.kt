@@ -84,7 +84,9 @@ fun GameDetailScreen(
     val game = FunBettRepository.getGameInDay(dayId, gameId)
     val day = FunBettRepository.getDay(dayId)
     val round = FunBettRepository.getRound(roundId)
-    val tippGroups = FunBettRepository.getTippGroups(gameId)
+    val tippGroups = remember(gameId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getTippGroups(gameId)
+    }
     val carryItems = remember(round, gameId, FunBettRepository.dataVersion.intValue) {
         if (round != null) JackpotChainCalculator.calculateCarryItems(round, gameId) else emptyList()
     }
@@ -161,9 +163,10 @@ fun GameDetailScreen(
 
     if (showSampleAddTipp) {
         AddTippGroupSheet(
+            gameId = gameId,
             onDismiss = { showSampleAddTipp = false },
             onCreate = { tippType, entryAmount, note ->
-                FunBettRepository.addTippGroupFromMenu(
+                FunBettRepository.addTippGroup(
                     gameId = gameId,
                     tippType = tippType,
                     entryAmount = entryAmount,

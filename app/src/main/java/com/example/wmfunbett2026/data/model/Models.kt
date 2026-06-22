@@ -62,7 +62,6 @@ data class Game(
     val teamBScore: Int? = null,
     val status: MatchStatus = MatchStatus.NOT_STARTED,
     val tippGroups: List<TippGroup>,
-    val tippType: MatchTippType? = null,
     val note: String? = null
 ) {
     val displayName: String get() = "$teamA vs $teamB"

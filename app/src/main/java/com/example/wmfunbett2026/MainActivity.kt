@@ -81,15 +81,15 @@ fun AppShell(modifier: Modifier = Modifier) {
 
     val createNavState = remember(
         selectedScreen,
-        matchesBackStackEntry?.destination?.route,
-        leaguesBackStackEntry?.destination?.route
+        matchesBackStackEntry,
+        leaguesBackStackEntry
     ) {
-        val route = when (selectedScreen) {
-            AppScreen.Matches -> matchesBackStackEntry?.destination?.route
-            AppScreen.Leagues -> leaguesBackStackEntry?.destination?.route
+        val entry = when (selectedScreen) {
+            AppScreen.Matches -> matchesBackStackEntry
+            AppScreen.Leagues -> leaguesBackStackEntry
             else -> null
         }
-        resolveCreateNavigationState(selectedScreen, route)
+        resolveCreateNavigationState(selectedScreen, entry)
     }
 
     Box(
@@ -159,7 +159,8 @@ fun AppShell(modifier: Modifier = Modifier) {
             AddMatchSheet(
                 lockedLeagueId = sheet.lockedLeagueId,
                 onDismiss = { activeCreateSheet = null },
-                onCreate = { leagueId, leagueName, teamA, teamB, day, time, tippType, note ->
+                onCreate = { leagueId, leagueName, teamA, teamB, day, time, note ->
+                    if (!FunBettRepository.isMatchDateAllowed(day)) return@AddMatchSheet
                     val roundId = FunBettRepository.resolveRoundIdForLeague(leagueId, leagueName)
                         ?: return@AddMatchSheet
                     FunBettRepository.addGame(
@@ -169,7 +170,6 @@ fun AppShell(modifier: Modifier = Modifier) {
                         teamB = teamB,
                         dateLabel = day.format(AddMatchDateFormatter),
                         timeLabel = time.format(AddMatchTimeFormatter),
-                        tippType = tippType,
                         note = note
                     )
                     activeCreateSheet = null
@@ -178,9 +178,10 @@ fun AppShell(modifier: Modifier = Modifier) {
         }
         is CreateSheet.TippGroup -> {
             AddTippGroupSheet(
+                gameId = sheet.gameId,
                 onDismiss = { activeCreateSheet = null },
                 onCreate = { tippType, entryAmount, note ->
-                    FunBettRepository.addTippGroupFromMenu(
+                    FunBettRepository.addTippGroup(
                         gameId = sheet.gameId,
                         tippType = tippType,
                         entryAmount = entryAmount,

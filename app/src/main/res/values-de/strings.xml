@@ -82,8 +82,9 @@
     <string name="add_match_day_hint">Datum wählen</string>
     <string name="add_match_time_label">Uhrzeit</string>
     <string name="add_match_time_hint">Uhrzeit wählen</string>
-    <string name="add_match_tipp_type_label">Tipp-Typ</string>
-    <string name="add_match_tipp_type_hint">Tipp-Typ wählen</string>
+    <string name="error_add_match_past_date">Spieltag muss heute oder in der Zukunft liegen</string>
+    <string name="add_tipp_group_tipp_type_label">Tipp-Typ</string>
+    <string name="add_tipp_group_tipp_type_hint">Tipp-Typ wählen</string>
     <string name="tipp_type_half_time">Halbzeit</string>
     <string name="tipp_type_second_half">Zweite Halbzeit</string>
     <string name="tipp_type_full_time">Endstand</string>

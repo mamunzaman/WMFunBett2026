@@ -4,7 +4,5 @@
 Implement real Add Entry flow on Friends / game screen.
 
 ## Verify Next
-- + inside game → Add Tipp Group creates group visible on game detail
-- + inside league → Add Match shows locked league row, no dropdown
-- + on Matches/Leagues main → Add Match shows league dropdown
-- Entry from + menu still navigates to Friends
+- Match detail: + and detail-card Add Tipp create all 4 types on not-started games
+- Second Half appears immediately after create from center +

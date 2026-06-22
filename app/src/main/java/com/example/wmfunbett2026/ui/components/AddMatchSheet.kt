@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -25,11 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
-import com.example.wmfunbett2026.data.model.MatchTippType
 import com.example.wmfunbett2026.data.repository.FunBettRepository
+import com.example.wmfunbett2026.ui.matchcenter.MatchTeamCountryCatalog
 import com.example.wmfunbett2026.ui.matchcenter.loadLeagueSummaries
 import com.example.wmfunbett2026.ui.matchcenter.loadSelectableLeagueRoundOptions
-import com.example.wmfunbett2026.ui.matchcenter.localizedLabel
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -55,7 +54,6 @@ fun AddMatchSheet(
         teamB: String,
         day: LocalDate,
         time: LocalTime,
-        tippType: MatchTippType,
         note: String?
     ) -> Unit
 ) {
@@ -78,22 +76,23 @@ fun AddMatchSheet(
     var teamB by remember { mutableStateOf("") }
     var selectedDay by remember { mutableStateOf<LocalDate?>(null) }
     var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
-    var selectedTippType by remember { mutableStateOf<MatchTippType?>(null) }
     var note by remember { mutableStateOf("") }
 
     var leagueMenuExpanded by remember { mutableStateOf(false) }
-    var tippTypeMenuExpanded by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var dayDateError by remember { mutableStateOf(false) }
 
+    val today = remember { LocalDate.now() }
+    val isDayValid = selectedDay?.let { FunBettRepository.isMatchDateAllowed(it, today) } == true
     val effectiveLeagueId = lockedLeagueId ?: selectedLeagueId
     val effectiveLeague = leagueOptions.find { it.leagueId == effectiveLeagueId }
     val canCreate = effectiveLeague != null &&
         teamA.isNotBlank() &&
         teamB.isNotBlank() &&
-        selectedDay != null &&
+        isDayValid &&
         selectedTime != null &&
-        selectedTippType != null
+        !dayDateError
 
     FormBottomSheet(
         title = stringResource(R.string.add_match_sheet_title),
@@ -104,11 +103,10 @@ fun AddMatchSheet(
             onCreate(
                 league.leagueId,
                 league.displayName,
-                teamA.trim(),
-                teamB.trim(),
+                MatchTeamCountryCatalog.normalizeForStorage(teamA),
+                MatchTeamCountryCatalog.normalizeForStorage(teamB),
                 selectedDay!!,
                 selectedTime!!,
-                selectedTippType!!,
                 note.trim().takeIf { it.isNotEmpty() }
             )
         },
@@ -155,7 +153,7 @@ fun AddMatchSheet(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        FormOutlinedTextField(
+        FormTeamField(
             value = teamA,
             onValueChange = { teamA = it },
             modifier = Modifier.fillMaxWidth(),
@@ -164,7 +162,7 @@ fun AddMatchSheet(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        FormOutlinedTextField(
+        FormTeamField(
             value = teamB,
             onValueChange = { teamB = it },
             modifier = Modifier.fillMaxWidth(),
@@ -178,8 +176,13 @@ fun AddMatchSheet(
             onClick = { showDatePicker = true },
             modifier = Modifier.fillMaxWidth(),
             label = { Text(stringResource(R.string.add_match_day_label)) },
-            placeholder = { Text(stringResource(R.string.add_match_day_hint)) }
+            placeholder = { Text(stringResource(R.string.add_match_day_hint)) },
+            isError = dayDateError
         )
+
+        if (dayDateError) {
+            FormErrorText(text = stringResource(R.string.error_add_match_past_date))
+        }
 
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -190,41 +193,6 @@ fun AddMatchSheet(
             label = { Text(stringResource(R.string.add_match_time_label)) },
             placeholder = { Text(stringResource(R.string.add_match_time_hint)) }
         )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        ExposedDropdownMenuBox(
-            expanded = tippTypeMenuExpanded,
-            onExpandedChange = { tippTypeMenuExpanded = it }
-        ) {
-            FormOutlinedTextField(
-                value = selectedTippType?.localizedLabel().orEmpty(),
-                onValueChange = {},
-                readOnly = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-                label = { Text(stringResource(R.string.add_match_tipp_type_label)) },
-                placeholder = { Text(stringResource(R.string.add_match_tipp_type_hint)) },
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = tippTypeMenuExpanded)
-                }
-            )
-            ExposedDropdownMenu(
-                expanded = tippTypeMenuExpanded,
-                onDismissRequest = { tippTypeMenuExpanded = false }
-            ) {
-                MatchTippType.entries.forEach { type ->
-                    DropdownMenuItem(
-                        text = { Text(type.localizedLabel()) },
-                        onClick = {
-                            selectedTippType = type
-                            tippTypeMenuExpanded = false
-                        }
-                    )
-                }
-            }
-        }
 
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -239,16 +207,36 @@ fun AddMatchSheet(
     }
 
     if (showDatePicker) {
-        val datePickerState = rememberDatePickerState()
-        DatePickerDialog(
+        val datePickerState = rememberDatePickerState(
+            selectableDates = remember(today) {
+                object : SelectableDates {
+                    override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                        val date = Instant.ofEpochMilli(utcTimeMillis)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                        return FunBettRepository.isMatchDateAllowed(date, today)
+                    }
+
+                    override fun isSelectableYear(year: Int): Boolean = year >= today.year
+                }
+            }
+        )
+        AlertDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        selectedDay = datePickerState.selectedDateMillis?.let { millis ->
+                        val picked = datePickerState.selectedDateMillis?.let { millis ->
                             Instant.ofEpochMilli(millis)
                                 .atZone(ZoneId.systemDefault())
                                 .toLocalDate()
+                        }
+                        if (picked != null && FunBettRepository.isMatchDateAllowed(picked, today)) {
+                            selectedDay = picked
+                            dayDateError = false
+                        } else if (picked != null) {
+                            selectedDay = null
+                            dayDateError = true
                         }
                         showDatePicker = false
                     }
@@ -260,10 +248,11 @@ fun AddMatchSheet(
                 TextButton(onClick = { showDatePicker = false }) {
                     Text(stringResource(R.string.cancel))
                 }
+            },
+            text = {
+                DatePicker(state = datePickerState)
             }
-        ) {
-            DatePicker(state = datePickerState)
-        }
+        )
     }
 
     if (showTimePicker) {

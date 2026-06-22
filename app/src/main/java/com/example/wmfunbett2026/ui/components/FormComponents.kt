@@ -4,13 +4,27 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.wmfunbett2026.ui.matchcenter.MatchTeamCountryCatalog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -67,6 +81,7 @@ fun FormOutlinedTextField(
     isError: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     OutlinedTextField(
@@ -81,10 +96,106 @@ fun FormOutlinedTextField(
         isError = isError,
         keyboardOptions = keyboardOptions,
         visualTransformation = visualTransformation,
+        leadingIcon = leadingIcon,
         trailingIcon = trailingIcon,
         shape = FormFieldShape,
         colors = formTextFieldColors(isError = isError)
     )
+}
+
+@Composable
+fun TeamFieldBadge(
+    flagEmoji: String?,
+    showFootballFallback: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(28.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f))
+            .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        when {
+            flagEmoji != null -> Text(text = flagEmoji, fontSize = 16.sp)
+            showFootballFallback -> Text(text = "⚽", fontSize = 14.sp)
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FormTeamField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    label: @Composable (() -> Unit)? = null
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    var isFocused by remember { mutableStateOf(false) }
+
+    val matchedCountry = remember(value) { MatchTeamCountryCatalog.find(value) }
+    val suggestions = remember(value, isFocused) {
+        if (isFocused) MatchTeamCountryCatalog.suggestions(value) else emptyList()
+    }
+    val showSuggestions = isFocused && value.isNotBlank() && suggestions.isNotEmpty()
+
+    ExposedDropdownMenuBox(
+        expanded = menuExpanded && showSuggestions,
+        onExpandedChange = { menuExpanded = it && showSuggestions },
+        modifier = modifier.fillMaxWidth()
+    ) {
+        FormOutlinedTextField(
+            value = value,
+            onValueChange = { input ->
+                onValueChange(input)
+                menuExpanded = true
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor()
+                .onFocusChanged { focusState ->
+                    isFocused = focusState.isFocused
+                    if (!focusState.isFocused && value.isNotBlank()) {
+                        onValueChange(MatchTeamCountryCatalog.normalizeForStorage(value))
+                        menuExpanded = false
+                    }
+                },
+            label = label,
+            leadingIcon = {
+                TeamFieldBadge(
+                    flagEmoji = matchedCountry?.flagEmoji,
+                    showFootballFallback = value.isNotBlank() && matchedCountry == null
+                )
+            }
+        )
+        ExposedDropdownMenu(
+            expanded = menuExpanded && showSuggestions,
+            onDismissRequest = { menuExpanded = false }
+        ) {
+            suggestions.forEach { country ->
+                DropdownMenuItem(
+                    text = {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = country.flagEmoji, fontSize = 18.sp)
+                            Text(
+                                text = country.name,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    onClick = {
+                        onValueChange(country.name)
+                        menuExpanded = false
+                    }
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -118,16 +229,26 @@ fun FormPickerField(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     label: @Composable (() -> Unit)? = null,
-    placeholder: @Composable (() -> Unit)? = null
+    placeholder: @Composable (() -> Unit)? = null,
+    isError: Boolean = false
 ) {
-    FormOutlinedTextField(
-        value = value,
-        onValueChange = {},
-        readOnly = true,
-        modifier = modifier.clickable(onClick = onClick),
-        label = label,
-        placeholder = placeholder
-    )
+    Box(modifier = modifier.fillMaxWidth()) {
+        FormOutlinedTextField(
+            value = value,
+            onValueChange = {},
+            readOnly = true,
+            isError = isError,
+            modifier = Modifier.fillMaxWidth(),
+            label = label,
+            placeholder = placeholder,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable(onClick = onClick)
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

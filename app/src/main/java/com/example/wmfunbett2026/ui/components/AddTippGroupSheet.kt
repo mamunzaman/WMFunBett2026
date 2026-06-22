@@ -8,6 +8,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,21 +21,33 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.MatchTippType
+import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.matchcenter.localizedLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTippGroupSheet(
+    gameId: String,
     onDismiss: () -> Unit,
     onCreate: (tippType: MatchTippType, entryAmount: Double, note: String?) -> Unit
 ) {
-    var selectedTippType by remember { mutableStateOf<MatchTippType?>(null) }
+    FunBettRepository.dataVersion.intValue
+    val availableTypes = remember(gameId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.availableMenuTippTypes(gameId)
+    }
+
+    var selectedTippType by remember(gameId, availableTypes) {
+        mutableStateOf<MatchTippType?>(null)
+    }
     var entryAmountInput by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var tippTypeMenuExpanded by remember { mutableStateOf(false) }
 
     val entryAmount = entryAmountInput.trim().toDoubleOrNull()
-    val canCreate = selectedTippType != null && entryAmount != null && entryAmount > 0.0
+    val canCreate = selectedTippType != null &&
+        selectedTippType in availableTypes &&
+        entryAmount != null &&
+        entryAmount > 0.0
 
     FormBottomSheet(
         title = stringResource(R.string.add_tipp_group),
@@ -49,6 +62,15 @@ fun AddTippGroupSheet(
         },
         primaryActionEnabled = canCreate
     ) {
+        if (availableTypes.isEmpty()) {
+            Text(
+                text = stringResource(R.string.no_tipp_type_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            return@FormBottomSheet
+        }
+
         ExposedDropdownMenuBox(
             expanded = tippTypeMenuExpanded,
             onExpandedChange = { tippTypeMenuExpanded = it }
@@ -60,8 +82,8 @@ fun AddTippGroupSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(),
-                label = { Text(stringResource(R.string.add_match_tipp_type_label)) },
-                placeholder = { Text(stringResource(R.string.add_match_tipp_type_hint)) },
+                label = { Text(stringResource(R.string.add_tipp_group_tipp_type_label)) },
+                placeholder = { Text(stringResource(R.string.add_tipp_group_tipp_type_hint)) },
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = tippTypeMenuExpanded)
                 }
@@ -70,7 +92,7 @@ fun AddTippGroupSheet(
                 expanded = tippTypeMenuExpanded,
                 onDismissRequest = { tippTypeMenuExpanded = false }
             ) {
-                MatchTippType.entries.forEach { type ->
+                availableTypes.forEach { type ->
                     DropdownMenuItem(
                         text = { Text(type.localizedLabel()) },
                         onClick = {
