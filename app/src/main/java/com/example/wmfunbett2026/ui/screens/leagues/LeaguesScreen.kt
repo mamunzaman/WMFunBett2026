@@ -19,7 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.repository.FunBettRepository
-import com.example.wmfunbett2026.ui.components.CreateRoundDialog
+import com.example.wmfunbett2026.ui.components.CreateRoundSheet
 import com.example.wmfunbett2026.ui.components.LeagueGridCard
 import com.example.wmfunbett2026.ui.components.MatchCenterHeader
 import com.example.wmfunbett2026.ui.components.screenContentPadding
@@ -40,7 +40,7 @@ fun LeaguesScreen(
     modifier: Modifier = Modifier
 ) {
     FunBettRepository.dataVersion.intValue
-    var showCreateRoundDialog by remember { mutableStateOf(false) }
+    var showCreateRoundSheet by remember { mutableStateOf(false) }
     val leagues = remember(FunBettRepository.dataVersion.intValue) { loadLeagueSummaries() }
     val leftLeagues = remember(leagues) { leagues.filterIndexed { index, _ -> index % 2 == 0 } }
     val rightLeagues = remember(leagues) { leagues.filterIndexed { index, _ -> index % 2 == 1 } }
@@ -68,7 +68,7 @@ fun LeaguesScreen(
                         leagues = leftLeagues,
                         onLeagueClick = { leagueId ->
                             if (leagueId == CustomLeagueId) {
-                                showCreateRoundDialog = true
+                                showCreateRoundSheet = true
                             } else {
                                 onLeagueClick(leagueId)
                             }
@@ -81,7 +81,7 @@ fun LeaguesScreen(
                         leagues = rightLeagues,
                         onLeagueClick = { leagueId ->
                             if (leagueId == CustomLeagueId) {
-                                showCreateRoundDialog = true
+                                showCreateRoundSheet = true
                             } else {
                                 onLeagueClick(leagueId)
                             }
@@ -97,12 +97,12 @@ fun LeaguesScreen(
         }
     }
 
-    if (showCreateRoundDialog) {
-        CreateRoundDialog(
-            onDismiss = { showCreateRoundDialog = false },
+    if (showCreateRoundSheet) {
+        CreateRoundSheet(
+            onDismiss = { showCreateRoundSheet = false },
             onCreate = { name ->
                 FunBettRepository.addRound(name, null)
-                showCreateRoundDialog = false
+                showCreateRoundSheet = false
             }
         )
     }

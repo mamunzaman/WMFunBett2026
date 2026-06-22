@@ -18,6 +18,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import com.example.wmfunbett2026.data.repository.FunBettRepository
+import com.example.wmfunbett2026.ui.components.CreateRoundSheet
 import com.example.wmfunbett2026.ui.components.MatchCenterBottomNav
 import com.example.wmfunbett2026.ui.components.ModalSheetBackdropOverlay
 import com.example.wmfunbett2026.ui.components.ModalSheetBackdropState
@@ -50,6 +52,7 @@ class MainActivity : ComponentActivity() {
 fun AppShell(modifier: Modifier = Modifier) {
     var selectedScreen by rememberSaveable { mutableStateOf(AppScreen.Matches) }
     var showTippsCenterSheet by remember { mutableStateOf(false) }
+    var showCreateRoundSheet by remember { mutableStateOf(false) }
     val matchesNavController = rememberNavController()
     val leaguesNavController = rememberNavController()
     val sheetBackdropActive = ModalSheetBackdropState.isActive
@@ -89,6 +92,22 @@ fun AppShell(modifier: Modifier = Modifier) {
     }
 
     if (showTippsCenterSheet) {
-        TippsCenterActionSheet(onDismiss = { showTippsCenterSheet = false })
+        TippsCenterActionSheet(
+            onDismiss = { showTippsCenterSheet = false },
+            onRoundClick = {
+                showTippsCenterSheet = false
+                showCreateRoundSheet = true
+            }
+        )
+    }
+
+    if (showCreateRoundSheet) {
+        CreateRoundSheet(
+            onDismiss = { showCreateRoundSheet = false },
+            onCreate = { name ->
+                FunBettRepository.addRound(name, null)
+                showCreateRoundSheet = false
+            }
+        )
     }
 }

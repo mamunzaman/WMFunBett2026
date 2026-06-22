@@ -1,10 +1,10 @@
 # Next Task
 
 ## Current Goal
-Add Day/Game to custom rounds, or wire Tipps center actions.
+Add Match creation from + menu when ready, or Day/Game in custom rounds.
 
 ## Verify Next
-- Matches tab: cards fade/slide in staggered on open
-- Switch away and back — animation replays
-- Back from game detail — animation replays
-- Upcoming badge subtle fade+scale after card lands
+- Tap + → Create sheet with 4 premium rows (staggered entrance)
+- Round → Create Round sheet → new card in Leagues grid
+- Match / Tipp Group / Entry → disabled, "Coming soon", no navigation
+- Custom League card still opens Create Round sheet

@@ -65,6 +65,16 @@
 
     <!-- Tipps center -->
     <string name="tipps_center_title">Tipps</string>
+    <string name="create_menu_title">Create</string>
+    <string name="create_menu_round">Round</string>
+    <string name="create_menu_round_description">Create a betting round</string>
+    <string name="create_menu_match">Match</string>
+    <string name="create_menu_match_description">Add a football match</string>
+    <string name="create_menu_tipp_group">Tipp Group</string>
+    <string name="create_menu_tipp_group_description">Create a prediction group</string>
+    <string name="create_menu_entry">Entry</string>
+    <string name="create_menu_entry_description">Add participant prediction</string>
+    <string name="coming_soon">Coming soon</string>
     <string name="action_add_league">Add League</string>
     <string name="action_add_match">Add Match</string>
     <string name="action_add_tipp_group">Add Tipp Group</string>

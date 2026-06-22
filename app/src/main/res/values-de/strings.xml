@@ -65,6 +65,16 @@
 
     <!-- Tipps center -->
     <string name="tipps_center_title">Tipps</string>
+    <string name="create_menu_title">Erstellen</string>
+    <string name="create_menu_round">Runde</string>
+    <string name="create_menu_round_description">Wett-Runde erstellen</string>
+    <string name="create_menu_match">Spiel</string>
+    <string name="create_menu_match_description">Fußballspiel hinzufügen</string>
+    <string name="create_menu_tipp_group">Tipp-Gruppe</string>
+    <string name="create_menu_tipp_group_description">Tipprunde erstellen</string>
+    <string name="create_menu_entry">Eintrag</string>
+    <string name="create_menu_entry_description">Teilnehmer-Tipp hinzufügen</string>
+    <string name="coming_soon">Demnächst</string>
     <string name="action_add_league">Liga hinzufügen</string>
     <string name="action_add_match">Spiel hinzufügen</string>
     <string name="action_add_tipp_group">Tipp-Gruppe hinzufügen</string>

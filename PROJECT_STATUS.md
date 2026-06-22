@@ -50,6 +50,8 @@
 - [x] League grid card premium M3 press interaction (scale, elevation, glow, ripple)
 - [x] Custom League Create Round dialog (in-memory rounds in grid)
 - [x] Matches screen staggered card entrance animation (fade + slide up)
+- [x] Premium Create menu bottom sheet (+ action flow)
+- [x] Create Round modal bottom sheet (replaces dialog)
 
 ## In Progress
 - None
@@ -62,4 +64,4 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 
 ## Last Update
-2026-06-21 — Matches screen staggered card entrance animation.
+2026-06-21 — Premium Create menu + Create Round bottom sheet.
