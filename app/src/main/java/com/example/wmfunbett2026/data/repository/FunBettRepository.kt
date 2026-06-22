@@ -19,6 +19,8 @@ import com.example.wmfunbett2026.data.model.TippGroup
 import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.tipp.TippScopeAvailability
+import com.example.wmfunbett2026.data.jackpot.JackpotCarryOverSummary
+import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import java.time.LocalDate
 
@@ -242,12 +244,33 @@ object FunBettRepository {
         if (gameId.isBlank() || tippGroupId.isBlank()) null else getGame(gameId)?.tippGroups?.find { it.id == tippGroupId }
 
     fun getTippGroupSettlementSummary(
+        roundId: String,
         gameId: String,
         tippGroupId: String
     ): TippGroupSettlementSummary? {
         val game = getGame(gameId) ?: return null
         val tippGroup = getTippGroupInGame(gameId, tippGroupId) ?: return null
-        return TippGroupWinnerEngine.settlementSummary(game, tippGroup)
+        val base = TippGroupWinnerEngine.settlementSummary(game, tippGroup)
+        val round = getRound(roundId) ?: return base
+        val jackpot = JackpotChainCalculator.calculateCarryOverSummary(round, game, tippGroup)
+        return base.copy(sharePerWinner = jackpot.sharePerWinner)
+    }
+
+    fun getJackpotCarryOverSummary(
+        roundId: String,
+        gameId: String,
+        tippGroupId: String
+    ): JackpotCarryOverSummary? {
+        val round = getRound(roundId) ?: return null
+        val game = getGame(gameId) ?: return null
+        val tippGroup = getTippGroupInGame(gameId, tippGroupId) ?: return null
+        return JackpotChainCalculator.calculateCarryOverSummary(round, game, tippGroup)
+    }
+
+    fun getGameIncomingJackpotMax(roundId: String, gameId: String): Double {
+        val round = getRound(roundId) ?: return 0.0
+        val game = getGame(gameId) ?: return 0.0
+        return JackpotChainCalculator.maxIncomingJackpotForGame(round, game)
     }
 
     fun getEntries(tippGroupId: String): List<Entry> =

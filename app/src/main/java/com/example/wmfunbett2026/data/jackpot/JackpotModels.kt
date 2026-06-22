@@ -14,3 +14,13 @@ data class EntryJoinBreakdown(
     val currentRoundEntryAmount: Double,
     val totalRequired: Double
 )
+
+data class JackpotCarryOverSummary(
+    val incomingJackpot: Double,
+    val currentCollected: Double,
+    val totalPot: Double,
+    val carriedOut: Double,
+    val hasWinner: Boolean,
+    val winnerCount: Int,
+    val sharePerWinner: Double
+)

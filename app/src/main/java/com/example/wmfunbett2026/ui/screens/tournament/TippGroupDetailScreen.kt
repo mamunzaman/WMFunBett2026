@@ -43,6 +43,7 @@ import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.TippGroup
+import com.example.wmfunbett2026.data.jackpot.JackpotCarryOverSummary
 import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.data.model.TippGroupSettlementStatus
 import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
@@ -126,8 +127,11 @@ fun TippGroupDetailScreen(
             emptyList()
         }
     }
-    val settlement = remember(gameId, tippGroupId, FunBettRepository.dataVersion.intValue) {
-        FunBettRepository.getTippGroupSettlementSummary(gameId, tippGroupId)
+    val settlement = remember(roundId, gameId, tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getTippGroupSettlementSummary(roundId, gameId, tippGroupId)
+    }
+    val jackpotSummary = remember(roundId, gameId, tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getJackpotCarryOverSummary(roundId, gameId, tippGroupId)
     }
     val matchdayLabel = remember(dayId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getDay(dayId)?.name ?: "Matchday"
@@ -178,12 +182,18 @@ fun TippGroupDetailScreen(
                             null -> showAddEntry = true
                             else -> showEntryBlockedInfo = entryBlockReason
                         }
-                    }
+                    },
+                    jackpotSummary = jackpotSummary
                 )
             }
             settlement?.let { summary ->
-                item(key = "settlement") {
-                    TippGroupSettlementSection(summary = summary)
+                jackpotSummary?.let { jackpot ->
+                    item(key = "settlement") {
+                        TippGroupSettlementSection(
+                            summary = summary,
+                            jackpot = jackpot
+                        )
+                    }
                 }
             }
             item(key = "section") { HierarchySectionHeader(title = "Entries") }
@@ -332,6 +342,7 @@ private fun TippGroupDetailHeaderSection(
     entryBlockReason: TippGroupEntryBlockReason?,
     canAddEntry: Boolean,
     onAddEntryClick: () -> Unit,
+    jackpotSummary: JackpotCarryOverSummary?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -342,7 +353,10 @@ private fun TippGroupDetailHeaderSection(
             game = game,
             matchdayLabel = matchdayLabel,
             tippGroupTitle = title,
-            collectedLabel = totalAmountLabel
+            collectedLabel = totalAmountLabel,
+            incomingJackpotLabel = jackpotSummary?.incomingJackpot
+                ?.takeIf { it > 0 }
+                ?.toEuroLabel()
         )
         Text(
             text = title,
@@ -388,6 +402,7 @@ private fun TippGroupDetailHeaderSection(
 @Composable
 private fun TippGroupSettlementSection(
     summary: TippGroupSettlementSummary,
+    jackpot: JackpotCarryOverSummary,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -401,8 +416,28 @@ private fun TippGroupSettlementSection(
             color = PrimaryText
         )
         TippGroupDetailPanel {
+            TippGroupDetailStatRow(
+                label = stringResource(R.string.settlement_incoming_jackpot),
+                value = jackpot.incomingJackpot.toEuroLabel(),
+                icon = Icons.Outlined.EmojiEvents,
+                highlightValue = jackpot.incomingJackpot > 0
+            )
+            TippGroupDetailStatDivider()
+            TippGroupDetailStatRow(
+                label = stringResource(R.string.settlement_collected),
+                value = jackpot.currentCollected.toEuroLabel(),
+                icon = Icons.Outlined.AccountBalanceWallet
+            )
             when (summary.status) {
                 TippGroupSettlementStatus.PENDING -> {
+                    TippGroupDetailStatDivider()
+                    TippGroupDetailStatRow(
+                        label = stringResource(R.string.settlement_total_pot),
+                        value = jackpot.totalPot.toEuroLabel(),
+                        icon = Icons.Outlined.Savings,
+                        highlightValue = true
+                    )
+                    TippGroupDetailStatDivider()
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -422,29 +457,35 @@ private fun TippGroupSettlementSection(
                         )
                     }
                 }
-                TippGroupSettlementStatus.NO_WINNERS,
-                TippGroupSettlementStatus.WINNERS -> {
+                TippGroupSettlementStatus.NO_WINNERS -> {
+                    TippGroupDetailStatDivider()
                     TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_collected),
-                        value = summary.totalCollected.toEuroLabel(),
-                        icon = Icons.Outlined.AccountBalanceWallet
+                        label = stringResource(R.string.settlement_carried_forward),
+                        value = jackpot.carriedOut.toEuroLabel(),
+                        icon = Icons.Outlined.Savings,
+                        highlightValue = true
+                    )
+                }
+                TippGroupSettlementStatus.WINNERS -> {
+                    TippGroupDetailStatDivider()
+                    TippGroupDetailStatRow(
+                        label = stringResource(R.string.settlement_total_pot),
+                        value = jackpot.totalPot.toEuroLabel(),
+                        icon = Icons.Outlined.Savings,
+                        highlightValue = true
                     )
                     TippGroupDetailStatDivider()
                     TippGroupDetailStatRow(
                         label = stringResource(R.string.settlement_winners),
-                        value = summary.winnerCount.toString(),
-                        icon = Icons.Outlined.EmojiEvents
+                        value = jackpot.winnerCount.toString(),
+                        icon = Icons.Outlined.Groups
                     )
                     TippGroupDetailStatDivider()
                     TippGroupDetailStatRow(
                         label = stringResource(R.string.settlement_share_per_winner),
-                        value = when (summary.status) {
-                            TippGroupSettlementStatus.WINNERS ->
-                                summary.sharePerWinner.toEuroLabel()
-                            else -> stringResource(R.string.settlement_no_winner)
-                        },
-                        icon = Icons.Outlined.Savings,
-                        highlightValue = summary.status == TippGroupSettlementStatus.WINNERS
+                        value = jackpot.sharePerWinner.toEuroLabel(),
+                        icon = Icons.Outlined.EmojiEvents,
+                        highlightValue = true
                     )
                 }
             }

@@ -102,6 +102,10 @@
     <string name="settlement_winners">Gewinner</string>
     <string name="settlement_share_per_winner">Anteil / Gewinner</string>
     <string name="settlement_no_winner">Kein Gewinner</string>
+    <string name="settlement_incoming_jackpot">Eingehender Jackpot</string>
+    <string name="settlement_total_pot">Gesamtpot</string>
+    <string name="settlement_carried_forward">Weitergegeben</string>
+    <string name="jackpot_incoming_chip">Jackpot %1$s</string>
     <string name="entry_winner_share">Anteil %1$s</string>
     <string name="add_entry_friend_already_joined">Dieser Freund ist bereits in dieser Tipp-Gruppe</string>
     <string name="friend_active_entries">%1$d aktive Einträge</string>

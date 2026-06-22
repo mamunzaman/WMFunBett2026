@@ -258,14 +258,16 @@ fun MatchCardContent(
     matchdayLabel: String,
     modifier: Modifier = Modifier,
     bottomMetaOverride: String? = null,
-    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.LIST
+    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.LIST,
+    incomingJackpotLabel: String? = null
 ) {
     when {
         shouldUseDetailUpcomingLayout(game, displayMode) -> {
             DetailUpcomingMatchCardContent(
                 game = game,
                 matchdayLabel = matchdayLabel,
-                modifier = modifier
+                modifier = modifier,
+                incomingJackpotLabel = incomingJackpotLabel
             )
         }
         isMatchCardExpandedLayout(game) -> {
@@ -274,7 +276,8 @@ fun MatchCardContent(
                 matchdayLabel = matchdayLabel,
                 modifier = modifier,
                 bottomMetaOverride = bottomMetaOverride,
-                displayMode = displayMode
+                displayMode = displayMode,
+                incomingJackpotLabel = incomingJackpotLabel
             )
         }
         else -> {
@@ -293,6 +296,7 @@ fun TippGroupDetailMatchCard(
     matchdayLabel: String,
     tippGroupTitle: String,
     collectedLabel: String,
+    incomingJackpotLabel: String? = null,
     modifier: Modifier = Modifier
 ) {
     MatchCardShell(
@@ -305,6 +309,7 @@ fun TippGroupDetailMatchCard(
             matchdayLabel = matchdayLabel,
             tippGroupTitle = tippGroupTitle,
             collectedLabel = collectedLabel,
+            incomingJackpotLabel = incomingJackpotLabel,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
         )
     }
@@ -316,6 +321,7 @@ fun TippGroupDetailMatchCardContent(
     matchdayLabel: String,
     tippGroupTitle: String,
     collectedLabel: String,
+    incomingJackpotLabel: String? = null,
     modifier: Modifier = Modifier
 ) {
     val winnerSide = game.matchCardWinnerSide()
@@ -327,10 +333,18 @@ fun TippGroupDetailMatchCardContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             MatchdayBadge(label = matchdayLabel)
-            MatchStatusBadge(
-                status = game.status,
-                style = MatchStatusBadgeStyle.Pill
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (incomingJackpotLabel != null) {
+                    JackpotIncomingChip(amountLabel = incomingJackpotLabel)
+                }
+                MatchStatusBadge(
+                    status = game.status,
+                    style = MatchStatusBadgeStyle.Pill
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(14.dp))
@@ -428,7 +442,8 @@ fun TippGroupDetailMatchCardContent(
 private fun DetailUpcomingMatchCardContent(
     game: Game,
     matchdayLabel: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    incomingJackpotLabel: String? = null
 ) {
     val statusBadge = resolveMatchStatusBadge(game, MatchCardDisplayMode.DETAIL)
 
@@ -439,7 +454,15 @@ private fun DetailUpcomingMatchCardContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             MatchdayBadge(label = matchdayLabel)
-            MatchStatusPill(badge = statusBadge)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (incomingJackpotLabel != null) {
+                    JackpotIncomingChip(amountLabel = incomingJackpotLabel)
+                }
+                MatchStatusPill(badge = statusBadge)
+            }
         }
 
         Spacer(modifier = Modifier.height(14.dp))
@@ -497,7 +520,8 @@ private fun ExpandedActiveMatchCardContent(
     matchdayLabel: String,
     modifier: Modifier = Modifier,
     bottomMetaOverride: String? = null,
-    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.LIST
+    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.LIST,
+    incomingJackpotLabel: String? = null
 ) {
     val outcomeBadge = resolveMatchStatusBadge(game, displayMode)
     val tippLabel = game.primaryTippLabel()
@@ -511,7 +535,15 @@ private fun ExpandedActiveMatchCardContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             MatchdayBadge(label = matchdayLabel)
-            MatchStatusPill(badge = outcomeBadge)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (incomingJackpotLabel != null) {
+                    JackpotIncomingChip(amountLabel = incomingJackpotLabel)
+                }
+                MatchStatusPill(badge = outcomeBadge)
+            }
         }
 
         Spacer(modifier = Modifier.height(14.dp))

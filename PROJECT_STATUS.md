@@ -88,7 +88,7 @@
 
 - [x] Tipp Group entry table winner highlighting (exact score match, multi-winner)
 
-- [x] Tipp Group match header uses existing game card layout
+- [x] Jackpot carry-over foundation (display-only, per tipp type)
 
 ## Last Update
-2026-06-21 — Tipp Group detail header reuses MatchCard expanded layout + MatchStatusBadge.
+2026-06-21 — JackpotCarryOverSummary + settlement UI with incoming pot / carried forward.

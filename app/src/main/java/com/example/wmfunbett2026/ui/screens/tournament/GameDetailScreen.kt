@@ -90,6 +90,9 @@ fun GameDetailScreen(
     val carryItems = remember(round, gameId, FunBettRepository.dataVersion.intValue) {
         if (round != null) JackpotChainCalculator.calculateCarryItems(round, gameId) else emptyList()
     }
+    val incomingJackpotMax = remember(roundId, gameId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getGameIncomingJackpotMax(roundId, gameId)
+    }
     val totalPeople = tippGroups.sumOf { it.entries.size }
     val totalMoney = game?.totalKasse ?: 0.0
 
@@ -127,6 +130,7 @@ fun GameDetailScreen(
                 GameMatchOverviewCard(
                     game = game,
                     dayLabel = day?.name,
+                    incomingJackpotLabel = incomingJackpotMax.takeIf { it > 0 }?.toEuroLabel(),
                     tippGroupCount = tippGroups.size,
                     totalPeople = totalPeople,
                     totalMoneyLabel = totalMoney.toEuroLabel(),
@@ -210,6 +214,7 @@ private const val TippsOverviewFadeOutDurationMs = 80
 private fun GameMatchOverviewCard(
     game: Game,
     dayLabel: String?,
+    incomingJackpotLabel: String?,
     tippGroupCount: Int,
     totalPeople: Int,
     totalMoneyLabel: String,
@@ -236,7 +241,8 @@ private fun GameMatchOverviewCard(
         ) {
             MatchCenterMatchCardBody(
                 game = game,
-                matchdayLabel = matchdayLabel
+                matchdayLabel = matchdayLabel,
+                incomingJackpotLabel = incomingJackpotLabel
             )
             Column(
                 modifier = Modifier

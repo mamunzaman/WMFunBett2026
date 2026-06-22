@@ -150,14 +150,16 @@ fun MatchCenterMatchCardBody(
     matchdayLabel: String,
     modifier: Modifier = Modifier,
     bottomMetaOverride: String? = null,
-    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.DETAIL
+    displayMode: MatchCardDisplayMode = MatchCardDisplayMode.DETAIL,
+    incomingJackpotLabel: String? = null
 ) {
     MatchCardContent(
         game = game,
         matchdayLabel = matchdayLabel,
         modifier = modifier.padding(horizontal = 16.dp, vertical = 16.dp),
         bottomMetaOverride = bottomMetaOverride,
-        displayMode = displayMode
+        displayMode = displayMode,
+        incomingJackpotLabel = incomingJackpotLabel
     )
 }
 
@@ -167,6 +169,7 @@ fun MatchCenterTippGroupDetailMatchCard(
     matchdayLabel: String,
     tippGroupTitle: String,
     collectedLabel: String,
+    incomingJackpotLabel: String? = null,
     modifier: Modifier = Modifier
 ) {
     TippGroupDetailMatchCard(
@@ -174,7 +177,25 @@ fun MatchCenterTippGroupDetailMatchCard(
         matchdayLabel = matchdayLabel,
         tippGroupTitle = tippGroupTitle,
         collectedLabel = collectedLabel,
+        incomingJackpotLabel = incomingJackpotLabel,
         modifier = modifier
+    )
+}
+
+@Composable
+fun JackpotIncomingChip(
+    amountLabel: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = stringResource(R.string.jackpot_incoming_chip, amountLabel),
+        modifier = modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(com.example.wmfunbett2026.ui.theme.JackpotGold.copy(alpha = 0.18f))
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.SemiBold,
+        color = com.example.wmfunbett2026.ui.theme.JackpotGold
     )
 }
 

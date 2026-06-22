@@ -1,8 +1,9 @@
 # Next Task
 
 ## Current Goal
-Manual verify Tipp Group match header matches game card style.
+Manual verify jackpot carry-over across two matches (same tipp type).
 
 ## Verify Next
-- Matchday + status badge, teams/scoreline, bottom meta row
-- Tipp title/pill + stats below unchanged
+- Match 1 FT no winner → Carried Forward €40
+- Match 2 FT incoming €40 + 2 winners → Share €30 each
+- Half Time jackpot stays separate
