@@ -1,8 +1,10 @@
 # Next Task
 
 ## Current Goal
-Commit Friends usability improvements after manual verification.
+Manual verify winner highlighting with exact score match on Tipp Group detail.
 
 ## Verify Next
-- Add 10+ friends → Add Entry search "ma" → Mamun selectable with checkmark
-- Friends card shows Mamun entry count + active amount after saving entry
+- Score 2:1 + Alex 2:1 → winner highlight + summary
+- John 1:1 → no highlight
+- Sarah 2:1 → both Alex + Sarah highlighted
+- Clear score → no winners highlighted

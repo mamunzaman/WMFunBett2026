@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,7 +23,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
-import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.TippGroup
 import com.example.wmfunbett2026.data.model.toEuroLabel
@@ -32,10 +30,12 @@ import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerOutcome
 import com.example.wmfunbett2026.ui.components.AddEntrySheet
+import com.example.wmfunbett2026.ui.components.AllFriendsJoinedInfoCard
+import com.example.wmfunbett2026.ui.components.AllFriendsJoinedInfoSheet
 import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.DetailStatusChip
+import com.example.wmfunbett2026.ui.components.TippGroupEntryTable
 import com.example.wmfunbett2026.ui.components.FormBottomSheet
-import com.example.wmfunbett2026.ui.components.GlassEntryCard
 import com.example.wmfunbett2026.ui.components.GlassPrimaryActionButton
 import com.example.wmfunbett2026.ui.components.GlassScopePill
 import com.example.wmfunbett2026.ui.components.GlassStatChip
@@ -47,6 +47,8 @@ import com.example.wmfunbett2026.ui.components.SampleDataNotice
 import com.example.wmfunbett2026.ui.components.WinnerShareSettingsDialog
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
 import com.example.wmfunbett2026.ui.matchcenter.teamFlagEmoji
+import com.example.wmfunbett2026.ui.matchcenter.tippGroupWinnerNames
+import com.example.wmfunbett2026.ui.matchcenter.tippGroupWinningEntryIds
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.PrimaryText
@@ -74,12 +76,14 @@ fun TippGroupDetailScreen(
     var showDeleteGroupDialog by remember { mutableStateOf(false) }
     var showWinnerShareDialog by remember { mutableStateOf(false) }
     var showAddEntry by remember { mutableStateOf(false) }
+    var showAllFriendsJoinedInfo by remember { mutableStateOf(false) }
     var selectedPersonName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(tippGroupId, gameId) {
         showDeleteGroupDialog = false
         showWinnerShareDialog = false
         showAddEntry = false
+        showAllFriendsJoinedInfo = false
         selectedPersonName = null
     }
 
@@ -88,11 +92,28 @@ fun TippGroupDetailScreen(
     val entries = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getTippGroupInGame(gameId, tippGroupId)?.entries.orEmpty()
     }
+    val canAddEntry = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.hasAvailableFriendsForTippGroup(tippGroupId)
+    }
     val winnerOutcome = remember(game, tippGroup, FunBettRepository.dataVersion.intValue) {
         if (game != null && tippGroup != null) {
             TippGroupWinnerEngine.calculate(game, tippGroup)
         } else {
             null
+        }
+    }
+    val winningEntryIds = remember(game, tippGroup, FunBettRepository.dataVersion.intValue) {
+        if (game != null && tippGroup != null) {
+            tippGroupWinningEntryIds(game, tippGroup)
+        } else {
+            emptySet()
+        }
+    }
+    val winnerNames = remember(game, tippGroup, FunBettRepository.dataVersion.intValue) {
+        if (game != null && tippGroup != null) {
+            tippGroupWinnerNames(game, tippGroup)
+        } else {
+            emptyList()
         }
     }
 
@@ -138,7 +159,10 @@ fun TippGroupDetailScreen(
                     entryAmountLabel = entryAmountLabel(tippGroup),
                     totalAmountLabel = tippGroup.totalAmount.toEuroLabel(),
                     winnerStatusLabel = winnerOutcome?.let { winnerStatusLabel(it) } ?: "Open",
-                    onAddEntryClick = { showAddEntry = true }
+                    canAddEntry = canAddEntry,
+                    onAddEntryClick = {
+                        if (canAddEntry) showAddEntry = true else showAllFriendsJoinedInfo = true
+                    }
                 )
             }
             item(key = "section") { HierarchySectionHeader(title = "Entries") }
@@ -151,18 +175,13 @@ fun TippGroupDetailScreen(
                     )
                 }
             } else {
-                items(entries, key = { it.id }) { entry ->
-                    GlassEntryCard(
-                        name = entry.friendName,
-                        prediction = entry.prediction,
-                        amountLabel = entry.amount.toEuroLabel(),
-                        statusLabel = entryStatusLabel(winnerOutcome, entry),
-                        note = entry.note,
-                        adjustmentNotice = entryAdjustmentNotice(entry, tippGroup),
-                        isWinner = winnerOutcome?.let { outcome ->
-                            TippGroupWinnerEngine.isWinningEntry(outcome, entry.id)
-                        } == true,
-                        onClick = { selectedPersonName = entry.friendName }
+                item(key = "entries_table") {
+                    TippGroupEntryTable(
+                        game = game,
+                        entries = entries,
+                        winningEntryIds = winningEntryIds,
+                        winnerNames = winnerNames,
+                        onEntryClick = { entry -> selectedPersonName = entry.friendName }
                     )
                 }
             }
@@ -183,6 +202,10 @@ fun TippGroupDetailScreen(
                 showAddEntry = false
             }
         )
+    }
+
+    if (showAllFriendsJoinedInfo) {
+        AllFriendsJoinedInfoSheet(onDismiss = { showAllFriendsJoinedInfo = false })
     }
 
     selectedPersonName?.let { personName ->
@@ -222,6 +245,7 @@ private fun TippGroupGlassHeaderCard(
     entryAmountLabel: String,
     totalAmountLabel: String,
     winnerStatusLabel: String,
+    canAddEntry: Boolean,
     onAddEntryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -275,10 +299,16 @@ private fun TippGroupGlassHeaderCard(
                     modifier = Modifier.weight(1f)
                 )
             }
-            GlassPrimaryActionButton(
-                label = stringResource(R.string.action_add_entry),
-                onClick = onAddEntryClick
-            )
+            if (canAddEntry) {
+                GlassPrimaryActionButton(
+                    label = stringResource(R.string.action_add_entry),
+                    onClick = onAddEntryClick
+                )
+            } else {
+                AllFriendsJoinedInfoCard(
+                    message = stringResource(R.string.add_entry_all_friends_joined)
+                )
+            }
         }
     }
 }
@@ -395,28 +425,10 @@ private fun entryAmountLabel(tippGroup: TippGroup): String {
     return amount?.toEuroLabel() ?: "—"
 }
 
-private fun standardRoundAmount(tippGroup: TippGroup): Double? =
-    tippGroup.entries.firstOrNull()?.currentRoundAmount
-
-private fun entryAdjustmentNotice(entry: Entry, tippGroup: TippGroup): String? {
-    val standard = standardRoundAmount(tippGroup) ?: return null
-    if (entry.currentRoundAmount == standard && entry.amount == standard) return null
-    return if (entry.amount > standard || entry.currentRoundAmount > standard) {
-        "Joined after carry-over"
-    } else {
-        "Later added / adjusted amount"
-    }
-}
-
 private fun winnerStatusLabel(outcome: TippGroupWinnerOutcome): String = when (outcome) {
     TippGroupWinnerOutcome.Pending -> "Open"
     TippGroupWinnerOutcome.NoWinner -> "No winner yet"
     is TippGroupWinnerOutcome.Winners -> "Winner split"
-}
-
-private fun entryStatusLabel(outcome: TippGroupWinnerOutcome?, entry: Entry): String {
-    if (outcome == null || outcome is TippGroupWinnerOutcome.Pending) return "Pending"
-    return if (TippGroupWinnerEngine.isWinningEntry(outcome, entry.id)) "Winner" else "Lost"
 }
 
 @Preview(showBackground = true)

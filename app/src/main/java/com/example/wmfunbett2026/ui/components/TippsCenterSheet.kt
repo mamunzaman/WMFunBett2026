@@ -76,7 +76,7 @@ private data class CreateMenuItem(
     val icon: ImageVector
 )
 
-private fun createMenuItems(context: CreateMenuContext): List<CreateMenuItem> {
+private fun createMenuItems(context: CreateMenuContext, canAddEntry: Boolean): List<CreateMenuItem> {
     return when (context) {
         CreateMenuContext.MatchesMain, CreateMenuContext.LeaguesMain -> listOf(
             CreateMenuItem(
@@ -108,14 +108,18 @@ private fun createMenuItems(context: CreateMenuContext): List<CreateMenuItem> {
                 Icons.Outlined.Groups
             )
         )
-        CreateMenuContext.TippGroupDetail -> listOf(
-            CreateMenuItem(
-                CreateMenuAction.Entry,
-                R.string.create_menu_entry,
-                R.string.create_menu_entry_description,
-                Icons.Outlined.EditNote
+        CreateMenuContext.TippGroupDetail -> if (canAddEntry) {
+            listOf(
+                CreateMenuItem(
+                    CreateMenuAction.Entry,
+                    R.string.create_menu_entry,
+                    R.string.create_menu_entry_description,
+                    Icons.Outlined.EditNote
+                )
             )
-        )
+        } else {
+            emptyList()
+        }
     }
 }
 
@@ -123,6 +127,7 @@ private fun createMenuItems(context: CreateMenuContext): List<CreateMenuItem> {
 @Composable
 fun TippsCenterActionSheet(
     context: CreateMenuContext,
+    canAddEntry: Boolean = true,
     onDismiss: () -> Unit,
     onRoundClick: () -> Unit,
     onMatchClick: () -> Unit,
@@ -130,7 +135,9 @@ fun TippsCenterActionSheet(
     onEntryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val menuItems = remember(context) { createMenuItems(context) }
+    val menuItems = remember(context, canAddEntry) { createMenuItems(context, canAddEntry) }
+    val showAllFriendsJoinedInfo =
+        context == CreateMenuContext.TippGroupDetail && !canAddEntry
 
     DisposableEffect(Unit) {
         ModalSheetBackdropState.push()
@@ -164,6 +171,12 @@ fun TippsCenterActionSheet(
                 color = TextPrimary,
                 modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
             )
+            if (showAllFriendsJoinedInfo) {
+                AllFriendsJoinedInfoCard(
+                    message = stringResource(R.string.add_entry_all_friends_joined),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
             menuItems.forEachIndexed { index, item ->
                 CreateMenuRowEntrance(staggerIndex = index) {
                     CreateMenuRow(

@@ -54,6 +54,20 @@
 
     <!-- Friends -->
     <string name="friends_count">%1$d Freunde</string>
+    <string name="friends_count_label">%1$d Freunde</string>
+    <string name="friends_count_filtered">%1$d von %2$d Freunden</string>
+    <string name="friends_subtitle">Verfolge Teilnahme und Einsätze in deinen Tipps.</string>
+    <string name="friends_summary_friends">Freunde</string>
+    <string name="friends_summary_entries">Aktive Einträge</string>
+    <string name="friends_summary_amount">Aktiver Betrag</string>
+    <string name="friends_sort_name_az">Name A-Z</string>
+    <string name="friends_sort_chip_az">A–Z</string>
+    <string name="friends_view_grid">Rasteransicht</string>
+    <string name="friends_view_list">Listenansicht</string>
+    <string name="friends_search_clear">Suche löschen</string>
+    <string name="friends_search_no_results_title">Keine Freunde gefunden</string>
+    <string name="friends_search_no_results_message">Versuche einen anderen Suchbegriff.</string>
+    <string name="friend_grid_entries">%1$d Einträge</string>
     <string name="friends_empty_title">Noch keine Freunde</string>
     <string name="friends_empty_message">Füge lokale Teilnehmer hinzu, um sie in Tipp-Einträgen zu verwenden.</string>
     <string name="add_friend">Freund hinzufügen</string>
@@ -65,8 +79,26 @@
     <string name="add_entry_more_friends">Mehr</string>
     <string name="add_entry_clear_friend">Freund entfernen</string>
     <string name="add_entry_no_friends">Füge zuerst Freunde hinzu, bevor du einen Eintrag erstellst.</string>
+    <string name="add_entry_all_friends_joined">Alle Freunde sind bereits in dieser Tipp-Gruppe.</string>
+    <string name="entry_status_pending">Ausstehend</string>
+    <string name="entry_table_pick">Tipp</string>
+    <string name="entry_table_predict">Prognose</string>
+    <string name="entry_table_current">Aktuell</string>
+    <string name="entry_table_stake">Einsatz</string>
+    <string name="entry_table_status_ft">Ende</string>
+    <string name="entry_table_score_dash">-</string>
+    <string name="entry_winner_badge">Gewinner</string>
+    <string name="tipp_group_winner_count_one">🏆 1 Gewinner</string>
+    <string name="tipp_group_winner_count_many">🏆 %1$d Gewinner</string>
+    <string name="add_entry_friend_already_joined">Dieser Freund ist bereits in dieser Tipp-Gruppe</string>
     <string name="friend_active_entries">%1$d aktive Einträge</string>
     <string name="friend_active_amount">%1$s aktiv</string>
+    <string name="friend_detail_active_entries">Aktive Einträge: %1$d</string>
+    <string name="friend_detail_active_amount">Aktiver Betrag: %1$s</string>
+    <string name="friend_detail_entry_history">Eintragsverlauf</string>
+    <string name="friend_detail_no_entries_title">Noch keine Einträge</string>
+    <string name="friend_detail_no_entries_message">Dieser Freund ist noch in keiner Tipp-Gruppe.</string>
+    <string name="friend_history_prediction">Tipp %1$s</string>
     <string name="friend_matches_count">%1$d Spiele</string>
     <string name="friend_total_tipped">%1$s getippt</string>
     <string name="friend_wins_placeholder">%1$d Siege (Beispiel)</string>

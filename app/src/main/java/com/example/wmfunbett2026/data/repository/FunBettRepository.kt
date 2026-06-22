@@ -7,6 +7,8 @@ import com.example.wmfunbett2026.data.local.FunBettLocalStore
 import com.example.wmfunbett2026.data.model.Day
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Friend
+import com.example.wmfunbett2026.data.model.FriendEntryHistoryItem
+import com.example.wmfunbett2026.data.model.FriendFinancialSummary
 import com.example.wmfunbett2026.data.model.FriendWithStats
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
@@ -61,28 +63,79 @@ object FunBettRepository {
 
     fun getFriends(): List<Friend> = friendsInternal.toList()
 
-    fun getFriendsWithStats(): List<FriendWithStats> {
-        val entryCountByFriendId = mutableMapOf<String, Int>()
-        val amountByFriendId = mutableMapOf<String, Double>()
+    fun getFriendsWithStats(): List<FriendWithStats> =
+        friendsInternal.mapNotNull { friend ->
+            getFriendFinancialSummary(friend.id)?.let { summary ->
+                FriendWithStats(
+                    friend = summary.friend,
+                    activeEntryCount = summary.activeEntryCount,
+                    activeAmountTotal = summary.activeAmountTotal
+                )
+            }
+        }.sortedBy { it.friend.name.lowercase() }
 
-        getAllGames().forEach { game ->
-            game.tippGroups.forEach { group ->
-                group.entries.forEach { entry ->
-                    entryCountByFriendId[entry.friendId] =
-                        (entryCountByFriendId[entry.friendId] ?: 0) + 1
-                    amountByFriendId[entry.friendId] =
-                        (amountByFriendId[entry.friendId] ?: 0.0) + entry.amount
+    fun getFriendEntries(friendId: String): List<FriendEntryHistoryItem> {
+        if (friendId.isBlank()) return emptyList()
+
+        val history = mutableListOf<FriendEntryHistoryItem>()
+        roundsInternal.forEach { round ->
+            round.days.forEach { day ->
+                day.games.forEach { game ->
+                    game.tippGroups.forEach { group ->
+                        group.entries
+                            .filter { it.friendId == friendId }
+                            .forEach { entry ->
+                                history.add(
+                                    FriendEntryHistoryItem(
+                                        entryId = entry.id,
+                                        leagueName = round.name,
+                                        matchName = game.displayName,
+                                        tippGroupName = group.title,
+                                        prediction = entry.prediction,
+                                        amount = entry.amount,
+                                        createdAtMs = parseEntrySortKey(entry.id)
+                                    )
+                                )
+                            }
+                    }
                 }
             }
         }
+        return history.sortedWith(
+            compareByDescending<FriendEntryHistoryItem> { it.createdAtMs }
+                .thenByDescending { it.entryId }
+        )
+    }
 
-        return friendsInternal.map { friend ->
-            FriendWithStats(
-                friend = friend,
-                activeEntryCount = entryCountByFriendId[friend.id] ?: 0,
-                activeAmountTotal = amountByFriendId[friend.id] ?: 0.0
-            )
-        }.sortedBy { it.friend.name.lowercase() }
+    fun getFriendFinancialSummary(friendId: String): FriendFinancialSummary? {
+        val friend = getFriend(friendId) ?: return null
+        val entries = getFriendEntries(friendId)
+        return FriendFinancialSummary(
+            friend = friend,
+            activeEntryCount = entries.size,
+            activeAmountTotal = entries.sumOf { it.amount }
+        )
+    }
+
+    private fun parseEntrySortKey(entryId: String): Long =
+        entryId.removePrefix("entry-").toLongOrNull() ?: 0L
+
+    fun getFriendIdsInTippGroup(tippGroupId: String): Set<String> =
+        getTippGroup(tippGroupId)
+            ?.entries
+            ?.map { it.friendId }
+            ?.toSet()
+            .orEmpty()
+
+    fun isFriendInTippGroup(tippGroupId: String, friendId: String): Boolean =
+        friendId.isNotBlank() && getFriendIdsInTippGroup(tippGroupId).contains(friendId)
+
+    fun hasAvailableFriendsForTippGroup(tippGroupId: String): Boolean {
+        if (tippGroupId.isBlank()) return false
+        val friends = getFriends()
+        if (friends.isEmpty()) return false
+        val joined = getFriendIdsInTippGroup(tippGroupId)
+        return friends.any { it.id !in joined }
     }
 
     fun getFriend(friendId: String): Friend? =
@@ -341,6 +394,7 @@ object FunBettRepository {
     ): Entry? {
         val tippGroup = getTippGroup(tippGroupId) ?: return null
         val friend = getFriend(friendId) ?: return null
+        if (isFriendInTippGroup(tippGroupId, friendId)) return null
         val entryAmount = tippGroup.entryAmount ?: return null
         if (entryAmount <= 0.0) return null
 

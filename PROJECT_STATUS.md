@@ -71,6 +71,10 @@
 - [x] Friends foundation: FriendEntity, FriendDao, local participants only
 - [x] Friends screen: count, list, empty state, Add Friend sheet
 - [x] Entry stores friendId + friendName; Add Entry uses friend selector
+- [x] Friend financial tracking: summary + entry history detail sheet
+- [x] EntryCard reusable component; Tipp Group entry table (Pick/Predict/Current/Stake)
+- [x] All-friends-joined gating: info card on Tipp Group detail, center + menu info
+- [x] Friends sort chip: compact A–Z control aligned with grid/list toggle
 
 ## In Progress
 - None
@@ -82,5 +86,7 @@
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 - [ ] Room migrations (when schema changes)
 
+- [x] Tipp Group entry table winner highlighting (exact score match, multi-winner)
+
 ## Last Update
-2026-06-21 — Searchable friend picker on Add Entry; Friends cards show active entry count and amount.
+2026-06-21 — Tipp Group entry winner highlighting and summary row.

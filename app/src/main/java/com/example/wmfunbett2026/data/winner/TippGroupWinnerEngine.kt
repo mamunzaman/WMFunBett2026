@@ -55,6 +55,20 @@ object TippGroupWinnerEngine {
             outcome.winningEntries.any { it.id == entryId }
     }
 
+    fun winningEntries(game: Game, tippGroup: TippGroup): List<Entry> {
+        if (!game.hasResult) return emptyList()
+        val resultKey = formatScoreKey(game.teamAScore!!, game.teamBScore!!)
+        return tippGroup.entries.filter { entry ->
+            normalizePrediction(entry.prediction) == resultKey
+        }
+    }
+
+    fun isWinningEntry(game: Game, entry: Entry): Boolean {
+        if (!game.hasResult) return false
+        val resultKey = formatScoreKey(game.teamAScore!!, game.teamBScore!!)
+        return normalizePrediction(entry.prediction) == resultKey
+    }
+
     private fun formatScoreKey(teamAScore: Int, teamBScore: Int): String = "$teamAScore-$teamBScore"
 
     private fun normalizePrediction(prediction: String): String =

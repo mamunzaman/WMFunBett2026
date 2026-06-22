@@ -1,21 +1,14 @@
 package com.example.wmfunbett2026.ui.components
 
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,9 +30,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Game
+import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.ui.matchcenter.MatchCardDisplayMode
 import com.example.wmfunbett2026.ui.matchcenter.MatchCenterOutcomeBadge
-import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.PrimaryBlueBright
 import com.example.wmfunbett2026.ui.theme.TextPrimary
@@ -173,7 +166,10 @@ fun MatchStatusPill(badge: MatchCenterOutcomeBadge?) {
     if (badge == null) return
 
     when (badge) {
-        MatchCenterOutcomeBadge.LIVE -> LiveStatusPill()
+        MatchCenterOutcomeBadge.LIVE -> MatchStatusBadge(
+            status = MatchStatus.LIVE,
+            style = MatchStatusBadgeStyle.Pill
+        )
         else -> {
             val (background, text, labelRes) = when (badge) {
                 MatchCenterOutcomeBadge.ACTIVE -> Triple(
@@ -257,40 +253,5 @@ private fun SubtleBadgeEntrance(content: @Composable () -> Unit) {
         }
     ) {
         content()
-    }
-}
-
-@Composable
-private fun LiveStatusPill(modifier: Modifier = Modifier) {
-    val pulse = rememberInfiniteTransition(label = "livePulse")
-    val dotAlpha by pulse.animateFloat(
-        initialValue = 0.45f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 900, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "liveDotAlpha"
-    )
-
-    Row(
-        modifier = modifier
-            .background(DangerRed.copy(alpha = 0.24f), RoundedCornerShape(999.dp))
-            .padding(horizontal = 12.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(DangerRed.copy(alpha = dotAlpha))
-        )
-        Text(
-            text = stringResource(R.string.status_live),
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = DangerRed
-        )
     }
 }

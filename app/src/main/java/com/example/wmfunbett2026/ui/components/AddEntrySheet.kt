@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -72,6 +71,12 @@ fun AddEntrySheet(
     val friends = remember(FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getFriends()
     }
+    val joinedFriendIds = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getFriendIdsInTippGroup(tippGroupId)
+    }
+    val availableFriends = remember(friends, joinedFriendIds) {
+        friends.filter { it.id !in joinedFriendIds }
+    }
     val entryAmount = tippGroup?.entryAmount
 
     var selectedFriend by remember { mutableStateOf<Friend?>(null) }
@@ -80,7 +85,9 @@ fun AddEntrySheet(
     var note by remember { mutableStateOf("") }
     val searchFocusRequester = remember { FocusRequester() }
 
+    val duplicateSelected = selectedFriend?.id?.let { it in joinedFriendIds } == true
     val canCreate = selectedFriend != null &&
+        !duplicateSelected &&
         prediction.isNotBlank() &&
         entryAmount != null &&
         entryAmount > 0.0
@@ -91,6 +98,7 @@ fun AddEntrySheet(
         primaryActionLabel = stringResource(R.string.create),
         onPrimaryAction = {
             val friend = selectedFriend ?: return@FormBottomSheet
+            if (FunBettRepository.isFriendInTippGroup(tippGroupId, friend.id)) return@FormBottomSheet
             FriendQuickPickRecents.record(friend.id)
             onCreate(
                 friend.id,
@@ -112,28 +120,40 @@ fun AddEntrySheet(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (friends.isEmpty()) {
-            Text(
-                text = stringResource(R.string.add_entry_no_friends),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        } else {
-            FriendQuickPickSection(
-                friends = friends,
-                searchQuery = friendSearchQuery,
-                onSearchQueryChange = { friendSearchQuery = it },
-                selectedFriend = selectedFriend,
-                onFriendSelected = {
-                    selectedFriend = it
-                    friendSearchQuery = ""
-                },
-                onClearSelection = {
-                    selectedFriend = null
-                    friendSearchQuery = ""
-                },
-                searchFocusRequester = searchFocusRequester
-            )
+        when {
+            friends.isEmpty() -> {
+                Text(
+                    text = stringResource(R.string.add_entry_no_friends),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            availableFriends.isEmpty() -> {
+                Text(
+                    text = stringResource(R.string.add_entry_all_friends_joined),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            else -> {
+                FriendQuickPickSection(
+                    friends = availableFriends,
+                    searchQuery = friendSearchQuery,
+                    onSearchQueryChange = { friendSearchQuery = it },
+                    selectedFriend = selectedFriend,
+                    onFriendSelected = { selectedFriend = it },
+                    onClearSelection = {
+                        selectedFriend = null
+                        friendSearchQuery = ""
+                    },
+                    searchFocusRequester = searchFocusRequester
+                )
+            }
+        }
+
+        if (duplicateSelected) {
+            Spacer(modifier = Modifier.height(8.dp))
+            FormErrorText(text = stringResource(R.string.add_entry_friend_already_joined))
         }
 
         Spacer(modifier = Modifier.height(12.dp))

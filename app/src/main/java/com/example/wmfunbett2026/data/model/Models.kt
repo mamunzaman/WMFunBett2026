@@ -46,6 +46,22 @@ data class FriendWithStats(
     val activeAmountTotal: Double
 )
 
+data class FriendFinancialSummary(
+    val friend: Friend,
+    val activeEntryCount: Int,
+    val activeAmountTotal: Double
+)
+
+data class FriendEntryHistoryItem(
+    val entryId: String,
+    val leagueName: String,
+    val matchName: String,
+    val tippGroupName: String,
+    val prediction: String,
+    val amount: Double,
+    val createdAtMs: Long
+)
+
 data class Entry(
     val id: String,
     val friendId: String,
@@ -85,6 +101,12 @@ data class Game(
     fun resultDisplayText(): String {
         if (!hasResult) return "No result yet"
         return "$teamA $teamAScore : $teamBScore $teamB"
+    }
+
+    fun compactScoreOrNull(): String? {
+        val scoreA = teamAScore ?: return null
+        val scoreB = teamBScore ?: return null
+        return "$scoreA:$scoreB"
     }
 }
 

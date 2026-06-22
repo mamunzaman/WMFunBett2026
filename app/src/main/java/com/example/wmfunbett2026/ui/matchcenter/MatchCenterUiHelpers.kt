@@ -7,6 +7,7 @@ import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.Round
+import com.example.wmfunbett2026.data.model.TippGroup
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
@@ -373,5 +374,11 @@ fun Game.matchCardWinnerSide(): MatchCardWinnerSide? {
         else -> MatchCardWinnerSide.DRAW
     }
 }
+
+fun tippGroupWinningEntryIds(game: Game, tippGroup: TippGroup): Set<String> =
+    TippGroupWinnerEngine.winningEntries(game, tippGroup).map { it.id }.toSet()
+
+fun tippGroupWinnerNames(game: Game, tippGroup: TippGroup): List<String> =
+    TippGroupWinnerEngine.winningEntries(game, tippGroup).map { it.friendName }
 
 fun FriendSummary.totalTippedLabel(): String = totalTipped.toEuroLabel()

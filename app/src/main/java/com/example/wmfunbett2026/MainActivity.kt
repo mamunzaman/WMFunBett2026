@@ -23,6 +23,7 @@ import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.components.AddEntrySheet
 import com.example.wmfunbett2026.ui.components.AddMatchSheet
 import com.example.wmfunbett2026.ui.components.AddTippGroupSheet
+import com.example.wmfunbett2026.ui.components.AllFriendsJoinedInfoSheet
 import com.example.wmfunbett2026.ui.components.CreateRoundSheet
 import com.example.wmfunbett2026.ui.components.MatchCenterBottomNav
 import com.example.wmfunbett2026.ui.components.ModalSheetBackdropOverlay
@@ -53,6 +54,7 @@ private sealed class CreateSheet {
     data class Match(val lockedLeagueId: String?) : CreateSheet()
     data class TippGroup(val gameId: String) : CreateSheet()
     data class Entry(val tippGroupId: String) : CreateSheet()
+    data object AllFriendsJoined : CreateSheet()
 }
 
 class MainActivity : ComponentActivity() {
@@ -95,6 +97,15 @@ fun AppShell(modifier: Modifier = Modifier) {
         resolveCreateNavigationState(selectedScreen, entry)
     }
 
+    val canAddEntryToActiveTippGroup = remember(
+        createNavState.activeTippGroupId,
+        FunBettRepository.dataVersion.intValue
+    ) {
+        createNavState.activeTippGroupId?.let { tippGroupId ->
+            FunBettRepository.hasAvailableFriendsForTippGroup(tippGroupId)
+        } ?: true
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -133,6 +144,7 @@ fun AppShell(modifier: Modifier = Modifier) {
         CreateSheet.Menu -> {
             TippsCenterActionSheet(
                 context = createNavState.context,
+                canAddEntry = canAddEntryToActiveTippGroup,
                 onDismiss = { activeCreateSheet = null },
                 onRoundClick = { activeCreateSheet = CreateSheet.Round },
                 onMatchClick = {
@@ -145,7 +157,11 @@ fun AppShell(modifier: Modifier = Modifier) {
                 },
                 onEntryClick = {
                     createNavState.activeTippGroupId?.let { tippGroupId ->
-                        activeCreateSheet = CreateSheet.Entry(tippGroupId)
+                        if (FunBettRepository.hasAvailableFriendsForTippGroup(tippGroupId)) {
+                            activeCreateSheet = CreateSheet.Entry(tippGroupId)
+                        } else {
+                            activeCreateSheet = CreateSheet.AllFriendsJoined
+                        }
                     }
                 }
             )
@@ -209,6 +225,9 @@ fun AppShell(modifier: Modifier = Modifier) {
                     activeCreateSheet = null
                 }
             )
+        }
+        CreateSheet.AllFriendsJoined -> {
+            AllFriendsJoinedInfoSheet(onDismiss = { activeCreateSheet = null })
         }
         null -> Unit
     }
