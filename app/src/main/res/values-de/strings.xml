@@ -146,6 +146,9 @@
     <string name="add_entry_no_group_amount">Für diese Tipp-Gruppe ist kein Einsatzbetrag festgelegt.</string>
     <string name="add_entry_prediction_hint">z. B. 2:1</string>
     <string name="tipp_group_entries_empty">Noch keine Einträge — Eintrag unten hinzufügen</string>
+    <string name="tipp_group_people">Personen</string>
+    <string name="tipp_group_entry_per_person">Einsatz / Person</string>
+    <string name="tipp_group_collected">Gesammelt</string>
     <string name="friend_detail_from_entries">Berechnet aus gespeicherten Einträgen</string>
     <string name="action_add_league">Liga hinzufügen</string>
     <string name="action_add_match">Spiel hinzufügen</string>

@@ -1,9 +1,9 @@
 # Next Task
 
 ## Current Goal
-Manual verify settlement card states and winner share labels on Tipp Group detail.
+Manual verify premium Tipp Group match header across match states.
 
 ## Verify Next
-- No result → Settlement pending message
-- Result, 0 winners → Collected + Winners 0 + No winner
-- 2 winners, €40 collected → Share / Winner €20 + row Share €20
+- Flags/initials + bold teams + centered score
+- LIVE / FT / NOT STARTED badge matches Game.status
+- Tipp title + pill + summary below unchanged

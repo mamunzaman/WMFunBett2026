@@ -146,6 +146,9 @@
     <string name="add_entry_no_group_amount">This Tipp Group has no entry amount set.</string>
     <string name="add_entry_prediction_hint">e.g. 2:1</string>
     <string name="tipp_group_entries_empty">No entries yet — use Add Entry below</string>
+    <string name="tipp_group_people">People</string>
+    <string name="tipp_group_entry_per_person">Entry / person</string>
+    <string name="tipp_group_collected">Collected</string>
     <string name="friend_detail_from_entries">Calculated from saved entries</string>
     <string name="action_add_league">Add League</string>
     <string name="action_add_match">Add Match</string>

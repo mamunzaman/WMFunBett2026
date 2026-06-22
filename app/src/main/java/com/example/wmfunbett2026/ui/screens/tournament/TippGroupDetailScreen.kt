@@ -1,12 +1,26 @@
 package com.example.wmfunbett2026.ui.screens.tournament
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AccountBalanceWallet
+import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Payments
+import androidx.compose.material.icons.outlined.Savings
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,10 +31,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
 import com.example.wmfunbett2026.data.model.Game
@@ -29,33 +48,36 @@ import com.example.wmfunbett2026.data.model.TippGroupSettlementStatus
 import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
-import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
-import com.example.wmfunbett2026.data.winner.TippGroupWinnerOutcome
 import com.example.wmfunbett2026.ui.components.AddEntrySheet
 import com.example.wmfunbett2026.ui.components.AllFriendsJoinedInfoCard
 import com.example.wmfunbett2026.ui.components.AllFriendsJoinedInfoSheet
 import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
-import com.example.wmfunbett2026.ui.components.DetailStatusChip
 import com.example.wmfunbett2026.ui.components.TippGroupEntryTable
 import com.example.wmfunbett2026.ui.components.FormBottomSheet
 import com.example.wmfunbett2026.ui.components.GlassPrimaryActionButton
 import com.example.wmfunbett2026.ui.components.GlassScopePill
-import com.example.wmfunbett2026.ui.components.GlassStatChip
-import com.example.wmfunbett2026.ui.components.GlassSurface
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
+import com.example.wmfunbett2026.ui.components.MatchStatusBadge
+import com.example.wmfunbett2026.ui.components.MatchStatusBadgeStyle
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
-import com.example.wmfunbett2026.ui.components.WinnerShareSettingsDialog
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
-import com.example.wmfunbett2026.ui.matchcenter.teamFlagEmoji
+import com.example.wmfunbett2026.ui.matchcenter.matchHeaderScoreText
+import com.example.wmfunbett2026.ui.matchcenter.matchStatusDetailSuffix
+import com.example.wmfunbett2026.ui.matchcenter.matchTeamFlagEmojiOrNull
+import com.example.wmfunbett2026.ui.matchcenter.matchTeamInitials
 import com.example.wmfunbett2026.ui.matchcenter.tippGroupWinnerNames
 import com.example.wmfunbett2026.ui.matchcenter.tippGroupWinningEntryIds
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
+import com.example.wmfunbett2026.ui.theme.Divider
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SecondaryText
+import com.example.wmfunbett2026.ui.theme.Surface
 import com.example.wmfunbett2026.ui.theme.WMFunBett2026Theme
+
+private val TippGroupDetailPanelShape = RoundedCornerShape(14.dp)
 
 private data class PersonGameTippRow(
     val tippTitle: String,
@@ -76,14 +98,12 @@ fun TippGroupDetailScreen(
 ) {
     FunBettRepository.dataVersion.intValue
     var showDeleteGroupDialog by remember { mutableStateOf(false) }
-    var showWinnerShareDialog by remember { mutableStateOf(false) }
     var showAddEntry by remember { mutableStateOf(false) }
     var showAllFriendsJoinedInfo by remember { mutableStateOf(false) }
     var selectedPersonName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(tippGroupId, gameId) {
         showDeleteGroupDialog = false
-        showWinnerShareDialog = false
         showAddEntry = false
         showAllFriendsJoinedInfo = false
         selectedPersonName = null
@@ -96,13 +116,6 @@ fun TippGroupDetailScreen(
     }
     val canAddEntry = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.hasAvailableFriendsForTippGroup(tippGroupId)
-    }
-    val winnerOutcome = remember(game, tippGroup, FunBettRepository.dataVersion.intValue) {
-        if (game != null && tippGroup != null) {
-            TippGroupWinnerEngine.calculate(game, tippGroup)
-        } else {
-            null
-        }
     }
     val winningEntryIds = remember(game, tippGroup, FunBettRepository.dataVersion.intValue) {
         if (game != null && tippGroup != null) {
@@ -126,7 +139,6 @@ fun TippGroupDetailScreen(
         title = tippGroup?.title ?: "Tipp Group",
         breadcrumbs = HierarchyLabels.forTippGroupDetail(roundId, gameId, tippGroupId),
         onBackClick = onBackClick,
-        onWinnerShareSettingsClick = if (tippGroup != null) {{ showWinnerShareDialog = true }} else null,
         onDeleteClick = if (tippGroup != null) {{ showDeleteGroupDialog = true }} else null,
         deleteEnabled = entries.isEmpty(),
         modifier = modifier
@@ -155,15 +167,13 @@ fun TippGroupDetailScreen(
         ) {
             item(key = "notice") { SampleDataNotice() }
             item(key = "summary") {
-                TippGroupGlassHeaderCard(
+                TippGroupDetailHeaderSection(
+                    game = game,
                     title = tippGroup.title,
-                    teamA = game.teamA,
-                    teamB = game.teamB,
                     scopeLabel = tippGroup.timeScope.label,
                     peopleCount = entries.size,
                     entryAmountLabel = entryAmountLabel(tippGroup),
                     totalAmountLabel = tippGroup.totalAmount.toEuroLabel(),
-                    winnerStatusLabel = winnerOutcome?.let { winnerStatusLabel(it) } ?: "Open",
                     canAddEntry = canAddEntry,
                     onAddEntryClick = {
                         if (canAddEntry) showAddEntry = true else showAllFriendsJoinedInfo = true
@@ -172,7 +182,7 @@ fun TippGroupDetailScreen(
             }
             settlement?.let { summary ->
                 item(key = "settlement") {
-                    TippGroupSettlementCard(summary = summary)
+                    TippGroupSettlementSection(summary = summary)
                 }
             }
             item(key = "section") { HierarchySectionHeader(title = "Entries") }
@@ -234,10 +244,6 @@ fun TippGroupDetailScreen(
         )
     }
 
-    if (showWinnerShareDialog) {
-        WinnerShareSettingsDialog(onDismiss = { showWinnerShareDialog = false })
-    }
-
     if (showDeleteGroupDialog) {
         DeleteConfirmDialog(
             onDismiss = { showDeleteGroupDialog = false },
@@ -252,143 +258,313 @@ fun TippGroupDetailScreen(
 }
 
 @Composable
-private fun TippGroupSettlementCard(
-    summary: TippGroupSettlementSummary,
+private fun TippGroupDetailPanel(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(TippGroupDetailPanelShape)
+            .background(Surface)
+            .border(1.dp, Divider.copy(alpha = 0.65f), TippGroupDetailPanelShape)
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        content = content
+    )
+}
+
+@Composable
+private fun TippGroupDetailStatRow(
+    label: String,
+    value: String,
+    icon: ImageVector,
+    highlightValue: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    GlassSurface(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = SecondaryText,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            text = label,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyMedium,
+            color = SecondaryText
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = if (highlightValue) JackpotGold else PrimaryText
+        )
+    }
+}
+
+@Composable
+private fun TippGroupDetailStatDivider() {
+    HorizontalDivider(color = Divider.copy(alpha = 0.45f))
+}
+
+@Composable
+private fun TippGroupMatchTeamMark(
+    teamName: String,
+    modifier: Modifier = Modifier
+) {
+    val flagEmoji = matchTeamFlagEmojiOrNull(teamName)
+    if (flagEmoji != null) {
+        Text(
+            text = flagEmoji,
+            modifier = modifier,
+            fontSize = 20.sp,
+            textAlign = TextAlign.Center
+        )
+    } else {
+        Box(
+            modifier = modifier
+                .size(28.dp)
+                .clip(CircleShape)
+                .background(SecondaryText.copy(alpha = 0.14f)),
+            contentAlignment = Alignment.Center
         ) {
             Text(
-                text = stringResource(R.string.settlement_title),
-                style = MaterialTheme.typography.titleLarge,
+                text = matchTeamInitials(teamName),
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                color = PrimaryText
+                color = SecondaryText
             )
-            when (summary.status) {
-                TippGroupSettlementStatus.PENDING -> {
-                    Text(
-                        text = stringResource(R.string.settlement_pending_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = PrimaryText
-                    )
-                    Text(
-                        text = stringResource(R.string.settlement_pending_message),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = SecondaryText
-                    )
-                }
-                TippGroupSettlementStatus.NO_WINNERS,
-                TippGroupSettlementStatus.WINNERS -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        GlassStatChip(
-                            label = stringResource(R.string.settlement_collected),
-                            value = summary.totalCollected.toEuroLabel(),
-                            modifier = Modifier.weight(1f)
-                        )
-                        GlassStatChip(
-                            label = stringResource(R.string.settlement_winners),
-                            value = summary.winnerCount.toString(),
-                            modifier = Modifier.weight(1f)
-                        )
-                        GlassStatChip(
-                            label = stringResource(R.string.settlement_share_per_winner),
-                            value = when (summary.status) {
-                                TippGroupSettlementStatus.WINNERS ->
-                                    summary.sharePerWinner.toEuroLabel()
-                                else -> stringResource(R.string.settlement_no_winner)
-                            },
-                            highlight = summary.status == TippGroupSettlementStatus.WINNERS,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
         }
     }
 }
 
 @Composable
-private fun TippGroupGlassHeaderCard(
+private fun TippGroupMatchTeamSide(
+    teamName: String,
+    flagAfterName: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(
+            space = 8.dp,
+            alignment = if (flagAfterName) Alignment.End else Alignment.Start
+        ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (flagAfterName) {
+            Text(
+                text = teamName,
+                modifier = Modifier.weight(1f, fill = false),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = PrimaryText,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.End
+            )
+            TippGroupMatchTeamMark(teamName = teamName)
+        } else {
+            TippGroupMatchTeamMark(teamName = teamName)
+            Text(
+                text = teamName,
+                modifier = Modifier.weight(1f, fill = false),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = PrimaryText,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun TippGroupPremiumMatchHeader(
+    game: Game,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TippGroupMatchTeamSide(
+                teamName = game.teamA,
+                flagAfterName = false,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = game.matchHeaderScoreText(),
+                modifier = Modifier.padding(horizontal = 10.dp),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = PrimaryText,
+                textAlign = TextAlign.Center
+            )
+            TippGroupMatchTeamSide(
+                teamName = game.teamB,
+                flagAfterName = true,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        TippGroupMatchStatusRow(game = game)
+    }
+}
+
+@Composable
+private fun TippGroupMatchStatusRow(
+    game: Game,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        MatchStatusBadge(
+            status = game.status,
+            style = MatchStatusBadgeStyle.Pill
+        )
+        Text(
+            text = "• ${game.matchStatusDetailSuffix()}",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = SecondaryText
+        )
+    }
+}
+
+@Composable
+private fun TippGroupDetailHeaderSection(
+    game: Game,
     title: String,
-    teamA: String,
-    teamB: String,
     scopeLabel: String,
     peopleCount: Int,
     entryAmountLabel: String,
     totalAmountLabel: String,
-    winnerStatusLabel: String,
     canAddEntry: Boolean,
     onAddEntryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    GlassSurface(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(
-                text = "${teamFlagEmoji(teamA)} $teamA  vs  ${teamFlagEmoji(teamB)} $teamB",
-                modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = SecondaryText
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        TippGroupPremiumMatchHeader(game = game)
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            color = PrimaryText
+        )
+        GlassScopePill(label = scopeLabel)
+        TippGroupDetailPanel {
+            TippGroupDetailStatRow(
+                label = stringResource(R.string.tipp_group_people),
+                value = peopleCount.toString(),
+                icon = Icons.Outlined.Groups
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                DetailStatusChip(label = winnerStatusLabel)
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = PrimaryText
-                )
-                GlassScopePill(label = scopeLabel)
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                GlassStatChip(
-                    label = "People",
-                    value = peopleCount.toString(),
-                    modifier = Modifier.weight(1f)
-                )
-                GlassStatChip(
-                    label = "Entry / person",
-                    value = entryAmountLabel,
-                    modifier = Modifier.weight(1f)
-                )
-                GlassStatChip(
-                    label = "Collected",
-                    value = totalAmountLabel,
-                    highlight = true,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            if (canAddEntry) {
-                GlassPrimaryActionButton(
-                    label = stringResource(R.string.action_add_entry),
-                    onClick = onAddEntryClick
-                )
-            } else {
-                AllFriendsJoinedInfoCard(
-                    message = stringResource(R.string.add_entry_all_friends_joined)
-                )
+            TippGroupDetailStatDivider()
+            TippGroupDetailStatRow(
+                label = stringResource(R.string.tipp_group_entry_per_person),
+                value = entryAmountLabel,
+                icon = Icons.Outlined.Payments
+            )
+            TippGroupDetailStatDivider()
+            TippGroupDetailStatRow(
+                label = stringResource(R.string.tipp_group_collected),
+                value = totalAmountLabel,
+                icon = Icons.Outlined.Savings,
+                highlightValue = true
+            )
+        }
+        if (canAddEntry) {
+            GlassPrimaryActionButton(
+                label = stringResource(R.string.action_add_entry),
+                onClick = onAddEntryClick
+            )
+        } else {
+            AllFriendsJoinedInfoCard(
+                message = stringResource(R.string.add_entry_all_friends_joined)
+            )
+        }
+    }
+}
+
+@Composable
+private fun TippGroupSettlementSection(
+    summary: TippGroupSettlementSummary,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.settlement_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = PrimaryText
+        )
+        TippGroupDetailPanel {
+            when (summary.status) {
+                TippGroupSettlementStatus.PENDING -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.settlement_pending_title),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = PrimaryText
+                        )
+                        Text(
+                            text = stringResource(R.string.settlement_pending_message),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = SecondaryText
+                        )
+                    }
+                }
+                TippGroupSettlementStatus.NO_WINNERS,
+                TippGroupSettlementStatus.WINNERS -> {
+                    TippGroupDetailStatRow(
+                        label = stringResource(R.string.settlement_collected),
+                        value = summary.totalCollected.toEuroLabel(),
+                        icon = Icons.Outlined.AccountBalanceWallet
+                    )
+                    TippGroupDetailStatDivider()
+                    TippGroupDetailStatRow(
+                        label = stringResource(R.string.settlement_winners),
+                        value = summary.winnerCount.toString(),
+                        icon = Icons.Outlined.EmojiEvents
+                    )
+                    TippGroupDetailStatDivider()
+                    TippGroupDetailStatRow(
+                        label = stringResource(R.string.settlement_share_per_winner),
+                        value = when (summary.status) {
+                            TippGroupSettlementStatus.WINNERS ->
+                                summary.sharePerWinner.toEuroLabel()
+                            else -> stringResource(R.string.settlement_no_winner)
+                        },
+                        icon = Icons.Outlined.Savings,
+                        highlightValue = summary.status == TippGroupSettlementStatus.WINNERS
+                    )
+                }
             }
         }
     }
@@ -504,12 +680,6 @@ private fun collectPersonGameTipps(game: Game, personName: String): List<PersonG
 private fun entryAmountLabel(tippGroup: TippGroup): String {
     val amount = JackpotChainCalculator.requiredPerPersonAmount(tippGroup)
     return amount?.toEuroLabel() ?: "—"
-}
-
-private fun winnerStatusLabel(outcome: TippGroupWinnerOutcome): String = when (outcome) {
-    TippGroupWinnerOutcome.Pending -> "Open"
-    TippGroupWinnerOutcome.NoWinner -> "No winner yet"
-    is TippGroupWinnerOutcome.Winners -> "Winner split"
 }
 
 @Preview(showBackground = true)

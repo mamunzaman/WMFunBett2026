@@ -14,6 +14,9 @@ import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerOutcome
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 data class FlatGameItem(
     val roundId: String,
@@ -317,6 +320,56 @@ fun resolveOutcomeBadge(game: Game): MatchCenterOutcomeBadge? {
 fun Game.centerScoreText(): String {
     if (teamAScore != null && teamBScore != null) return "$teamAScore:$teamBScore"
     return "- : -"
+}
+
+fun Game.matchHeaderScoreText(): String {
+    val scoreA = teamAScore
+    val scoreB = teamBScore
+    return if (scoreA != null && scoreB != null) {
+        "$scoreA : $scoreB"
+    } else {
+        "- : -"
+    }
+}
+
+fun Game.matchStatusDetailSuffix(): String = when (status) {
+    MatchStatus.NOT_STARTED -> kickoffDetailLabel()
+    MatchStatus.LIVE -> compactScoreOrNull() ?: "-:-"
+    MatchStatus.FINISHED -> compactScoreOrNull() ?: "-:-"
+}
+
+private fun Game.kickoffDetailLabel(): String {
+    val label = dateTimeLabel.trim()
+    if (label.isBlank()) return "—"
+
+    val timePart = label.substringAfter("·", missingDelimiterValue = "").trim()
+        .takeIf { it.isNotBlank() && it.contains(':') }
+    val datePart = label.substringBefore("·").trim()
+
+    val dayWord = when {
+        label.contains("tomorrow", ignoreCase = true) -> "Tomorrow"
+        label.contains("today", ignoreCase = true) -> "Today"
+        datePart.isNotBlank() -> {
+            val parsed = runCatching {
+                LocalDate.parse(
+                    "$datePart ${LocalDate.now().year}",
+                    DateTimeFormatter.ofPattern("EEE d MMM yyyy", Locale.getDefault())
+                )
+            }.getOrNull()
+            when (parsed) {
+                LocalDate.now() -> "Today"
+                LocalDate.now().plusDays(1) -> "Tomorrow"
+                else -> datePart
+            }
+        }
+        else -> "Today"
+    }
+
+    return when {
+        timePart != null -> "$dayWord $timePart"
+        label.contains(':') -> label
+        else -> dayWord
+    }
 }
 
 fun Game.primaryTippLabel(): String? =

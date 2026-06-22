@@ -54,3 +54,18 @@ object MatchTeamCountryCatalog {
                 }
             }
 }
+
+fun matchTeamFlagEmojiOrNull(teamName: String): String? {
+    MatchTeamCountryCatalog.find(teamName)?.flagEmoji?.let { return it }
+    val fallback = teamFlagEmoji(teamName)
+    return fallback.takeIf { it != "⚽" }
+}
+
+fun matchTeamInitials(teamName: String): String {
+    val words = teamName.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+    return when {
+        words.isEmpty() -> "?"
+        words.size == 1 -> words[0].take(2).uppercase(Locale.getDefault())
+        else -> "${words[0].first()}${words[1].first()}".uppercase(Locale.getDefault())
+    }
+}
