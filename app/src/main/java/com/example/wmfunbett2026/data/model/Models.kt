@@ -95,6 +95,11 @@ enum class TippGroupEntryBlockReason {
     ALL_FRIENDS_JOINED
 }
 
+enum class TippGroupCreationBlockReason {
+    MATCH_LIVE,
+    MATCH_FINISHED
+}
+
 data class TippGroupSettlementSummary(
     val status: TippGroupSettlementStatus,
     val totalCollected: Double,

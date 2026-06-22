@@ -89,6 +89,7 @@
 - [x] Tipp Group entry table winner highlighting (exact score match, multi-winner)
 
 - [x] Jackpot carry-over foundation (display-only, per tipp type)
+- [x] Add Tipp Group menu rules: NOT_STARTED unused types; LIVE/FINISHED blocked
 
 ## Last Update
-2026-06-21 — JackpotCarryOverSummary + settlement UI with incoming pot / carried forward.
+2026-06-21 — Fix Add Tipp Group availability: status-based rules, not minute windows.

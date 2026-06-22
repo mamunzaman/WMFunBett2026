@@ -1,9 +1,10 @@
 # Next Task
 
 ## Current Goal
-Manual verify jackpot carry-over across two matches (same tipp type).
+Manual verify Add Tipp Group on NOT_STARTED / LIVE / FINISHED matches.
 
 ## Verify Next
-- Match 1 FT no winner → Carried Forward €40
-- Match 2 FT incoming €40 + 2 winners → Share €30 each
-- Half Time jackpot stays separate
+- NOT_STARTED match → all 4 tipp types in picker
+- Create Half Time → reopen → 3 remaining types
+- All 4 created → “All Tipp types already created” message
+- LIVE or FINISHED → “Tipp creation closed” message

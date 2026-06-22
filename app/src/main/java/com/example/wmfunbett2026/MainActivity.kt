@@ -116,6 +116,24 @@ fun AppShell(modifier: Modifier = Modifier) {
         }
     }
 
+    val canCreateTippGroupForActiveGame = remember(
+        createNavState.activeGameId,
+        FunBettRepository.dataVersion.intValue
+    ) {
+        createNavState.activeGameId?.let { gameId ->
+            FunBettRepository.canCreateTippGroupForGame(gameId)
+        } ?: true
+    }
+
+    val activeTippGroupCreationBlockReason = remember(
+        createNavState.activeGameId,
+        FunBettRepository.dataVersion.intValue
+    ) {
+        createNavState.activeGameId?.let { gameId ->
+            FunBettRepository.getTippGroupCreationBlockReason(gameId)
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -155,7 +173,9 @@ fun AppShell(modifier: Modifier = Modifier) {
             TippsCenterActionSheet(
                 context = createNavState.context,
                 canAddEntry = canAddEntryToActiveTippGroup,
+                canCreateTippGroup = canCreateTippGroupForActiveGame,
                 entryBlockReason = activeTippGroupEntryBlockReason,
+                tippGroupCreationBlockReason = activeTippGroupCreationBlockReason,
                 onDismiss = { activeCreateSheet = null },
                 onRoundClick = { activeCreateSheet = CreateSheet.Round },
                 onMatchClick = {

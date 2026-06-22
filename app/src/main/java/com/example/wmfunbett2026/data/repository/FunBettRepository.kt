@@ -16,6 +16,7 @@ import com.example.wmfunbett2026.data.model.MatchTippType
 import com.example.wmfunbett2026.data.model.Round
 import com.example.wmfunbett2026.data.model.TimeScope
 import com.example.wmfunbett2026.data.model.TippGroup
+import com.example.wmfunbett2026.data.model.TippGroupCreationBlockReason
 import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.tipp.TippScopeAvailability
@@ -162,6 +163,24 @@ object FunBettRepository {
 
     fun canAddEntryToTippGroup(tippGroupId: String): Boolean =
         getTippGroupEntryBlockReason(tippGroupId) == null
+
+    fun getTippGroupCreationBlockReason(gameId: String): TippGroupCreationBlockReason? {
+        if (gameId.isBlank()) return null
+        val game = getGame(gameId) ?: return null
+        return TippScopeAvailability.getTippGroupCreationBlockReason(game)
+    }
+
+    fun canCreateTippGroupForGame(gameId: String): Boolean {
+        if (gameId.isBlank()) return false
+        val game = getGame(gameId) ?: return false
+        return TippScopeAvailability.canCreateTippGroupForGame(game)
+    }
+
+    fun allMenuTippTypesCreatedForGame(gameId: String): Boolean {
+        if (gameId.isBlank()) return false
+        val game = getGame(gameId) ?: return false
+        return TippScopeAvailability.allMenuTippTypesCreated(game)
+    }
 
     fun getFriend(friendId: String): Friend? =
         if (friendId.isBlank()) null else friendsInternal.find { it.id == friendId }
@@ -360,6 +379,7 @@ object FunBettRepository {
     ): TippGroup? {
         val game = getGame(gameId) ?: return null
         if (entryAmount <= 0.0) return null
+        if (!TippScopeAvailability.canCreateTippGroupForGame(game)) return null
         if (!TippScopeAvailability.canCreateMenuTippType(game, tippType)) return null
 
         val tippGroup = TippGroup(

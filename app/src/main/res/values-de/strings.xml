@@ -193,6 +193,9 @@
     <string name="set_result">Ergebnis setzen</string>
     <string name="winner_share_settings">Gewinner-Aufteilung</string>
     <string name="no_tipp_type_available">Kein Tipp-Typ verfügbar</string>
+    <string name="tipp_creation_closed_title">Tipp-Erstellung geschlossen</string>
+    <string name="tipp_creation_closed_message">Dieses Spiel läuft bereits oder ist beendet.</string>
+    <string name="all_tipp_types_created_message">Alle Tipp-Typen für dieses Spiel wurden bereits erstellt.</string>
 
     <!-- Actions -->
     <string name="save">Speichern</string>

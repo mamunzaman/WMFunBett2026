@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.data.model.TippGroupCreationBlockReason
 import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.ui.navigation.CreateMenuContext
 import com.example.wmfunbett2026.ui.theme.GlassBorder
@@ -79,7 +80,8 @@ private data class CreateMenuItem(
 
 private fun createMenuItems(
     context: CreateMenuContext,
-    canAddEntry: Boolean
+    canAddEntry: Boolean,
+    canCreateTippGroup: Boolean
 ): List<CreateMenuItem> {
     return when (context) {
         CreateMenuContext.MatchesMain, CreateMenuContext.LeaguesMain -> listOf(
@@ -104,14 +106,18 @@ private fun createMenuItems(
                 Icons.Outlined.SportsSoccer
             )
         )
-        CreateMenuContext.GameDetail -> listOf(
-            CreateMenuItem(
-                CreateMenuAction.TippGroup,
-                R.string.create_menu_tipp_group,
-                R.string.create_menu_tipp_group_description,
-                Icons.Outlined.Groups
+        CreateMenuContext.GameDetail -> if (canCreateTippGroup) {
+            listOf(
+                CreateMenuItem(
+                    CreateMenuAction.TippGroup,
+                    R.string.create_menu_tipp_group,
+                    R.string.create_menu_tipp_group_description,
+                    Icons.Outlined.Groups
+                )
             )
-        )
+        } else {
+            emptyList()
+        }
         CreateMenuContext.TippGroupDetail -> if (canAddEntry) {
             listOf(
                 CreateMenuItem(
@@ -132,7 +138,9 @@ private fun createMenuItems(
 fun TippsCenterActionSheet(
     context: CreateMenuContext,
     canAddEntry: Boolean = true,
+    canCreateTippGroup: Boolean = true,
     entryBlockReason: TippGroupEntryBlockReason? = null,
+    tippGroupCreationBlockReason: TippGroupCreationBlockReason? = null,
     onDismiss: () -> Unit,
     onRoundClick: () -> Unit,
     onMatchClick: () -> Unit,
@@ -140,7 +148,9 @@ fun TippsCenterActionSheet(
     onEntryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val menuItems = remember(context, canAddEntry) { createMenuItems(context, canAddEntry) }
+    val menuItems = remember(context, canAddEntry, canCreateTippGroup) {
+        createMenuItems(context, canAddEntry, canCreateTippGroup)
+    }
 
     DisposableEffect(Unit) {
         ModalSheetBackdropState.push()
@@ -180,6 +190,11 @@ fun TippsCenterActionSheet(
                         reason = reason,
                         modifier = Modifier.fillMaxWidth()
                     )
+                }
+            }
+            if (context == CreateMenuContext.GameDetail) {
+                tippGroupCreationBlockReason?.let {
+                    TippCreationClosedInfoCard(modifier = Modifier.fillMaxWidth())
                 }
             }
             menuItems.forEachIndexed { index, item ->

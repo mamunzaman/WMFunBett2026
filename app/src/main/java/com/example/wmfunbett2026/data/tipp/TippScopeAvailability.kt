@@ -5,6 +5,7 @@ import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.MatchTippType
 import com.example.wmfunbett2026.data.model.TimeScope
+import com.example.wmfunbett2026.data.model.TippGroupCreationBlockReason
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -23,28 +24,33 @@ object TippScopeAvailability {
     private val timeFormatter = DateTimeFormatter.ofPattern("H:mm", Locale.ENGLISH)
     private val timeOnlyPattern = Regex("""^\d{1,2}:\d{2}$""")
 
-    fun getAvailableMenuTippTypes(
-        game: Game,
-        now: LocalDateTime = LocalDateTime.now()
-    ): List<MatchTippType> =
-        MatchTippType.entries.filter { canCreateMenuTippType(game, it, now) }
+    fun getAvailableMenuTippTypes(game: Game): List<MatchTippType> =
+        MatchTippType.entries.filter { canCreateMenuTippType(game, it) }
+
+    fun canCreateTippGroupForGame(game: Game): Boolean =
+        game.status == MatchStatus.NOT_STARTED
+
+    fun getTippGroupCreationBlockReason(game: Game): TippGroupCreationBlockReason? =
+        when (game.status) {
+            MatchStatus.LIVE -> TippGroupCreationBlockReason.MATCH_LIVE
+            MatchStatus.FINISHED -> TippGroupCreationBlockReason.MATCH_FINISHED
+            MatchStatus.NOT_STARTED -> null
+        }
 
     fun canCreateMenuTippType(
         game: Game,
-        tippType: MatchTippType,
-        now: LocalDateTime = LocalDateTime.now()
+        tippType: MatchTippType
     ): Boolean {
+        if (!canCreateTippGroupForGame(game)) return false
         val scope = tippType.toTimeScope()
-        if (game.tippGroups.any { it.timeScope == scope }) return false
-
-        val matchStart = parseMatchStartSafe(game.dateTimeLabel, now)
-        if (game.status == MatchStatus.NOT_STARTED && (matchStart == null || now.isBefore(matchStart))) {
-            return true
-        }
-        if (matchStart == null) return true
-
-        return isScopeOpenAtSafe(scope, now, matchStart)
+        return game.tippGroups.none { it.timeScope == scope }
     }
+
+    fun allMenuTippTypesCreated(game: Game): Boolean =
+        canCreateTippGroupForGame(game) &&
+            MatchTippType.entries.all { type ->
+                game.tippGroups.any { it.timeScope == type.toTimeScope() }
+            }
 
     fun getAvailableScopes(
         game: Game,

@@ -32,8 +32,45 @@ fun AddTippGroupSheet(
     onCreate: (tippType: MatchTippType, entryAmount: Double, note: String?) -> Unit
 ) {
     FunBettRepository.dataVersion.intValue
+    val creationBlockReason = remember(gameId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getTippGroupCreationBlockReason(gameId)
+    }
+    val allTypesCreated = remember(gameId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.allMenuTippTypesCreatedForGame(gameId)
+    }
     val availableTypes = remember(gameId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.availableMenuTippTypes(gameId)
+    }
+
+    when {
+        creationBlockReason != null -> {
+            FormBottomSheet(
+                title = stringResource(R.string.tipp_creation_closed_title),
+                onDismiss = onDismiss,
+                primaryActionLabel = stringResource(R.string.ok),
+                onPrimaryAction = onDismiss,
+                showCancel = false
+            ) {
+                TippCreationClosedInfoCard(modifier = Modifier.fillMaxWidth())
+            }
+            return
+        }
+        allTypesCreated -> {
+            FormBottomSheet(
+                title = stringResource(R.string.add_tipp_group),
+                onDismiss = onDismiss,
+                primaryActionLabel = stringResource(R.string.ok),
+                onPrimaryAction = onDismiss,
+                showCancel = false
+            ) {
+                Text(
+                    text = stringResource(R.string.all_tipp_types_created_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            return
+        }
     }
 
     var selectedTippType by remember(gameId, availableTypes) {

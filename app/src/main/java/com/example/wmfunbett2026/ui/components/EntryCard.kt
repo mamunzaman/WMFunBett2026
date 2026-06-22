@@ -471,6 +471,18 @@ fun AllFriendsJoinedInfoCard(
 }
 
 @Composable
+fun TippCreationClosedInfoCard(
+    modifier: Modifier = Modifier
+) {
+    EntryStatusInfoCard(
+        title = stringResource(R.string.tipp_creation_closed_title),
+        message = stringResource(R.string.tipp_creation_closed_message),
+        icon = Icons.Outlined.Lock,
+        modifier = modifier
+    )
+}
+
+@Composable
 fun EntryClosedInfoCard(
     reason: TippGroupEntryBlockReason,
     modifier: Modifier = Modifier
