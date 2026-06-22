@@ -16,6 +16,7 @@ import com.example.wmfunbett2026.data.model.MatchTippType
 import com.example.wmfunbett2026.data.model.Round
 import com.example.wmfunbett2026.data.model.TimeScope
 import com.example.wmfunbett2026.data.model.TippGroup
+import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.tipp.TippScopeAvailability
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
@@ -139,6 +140,26 @@ object FunBettRepository {
         val joined = getFriendIdsInTippGroup(tippGroupId)
         return friends.any { it.id !in joined }
     }
+
+    fun getGameForTippGroup(tippGroupId: String): Game? {
+        if (tippGroupId.isBlank()) return null
+        return getAllGames().find { game -> game.tippGroups.any { it.id == tippGroupId } }
+    }
+
+    fun getTippGroupEntryBlockReason(tippGroupId: String): TippGroupEntryBlockReason? {
+        if (tippGroupId.isBlank()) return null
+        val game = getGameForTippGroup(tippGroupId) ?: return null
+        return when {
+            game.status == MatchStatus.LIVE -> TippGroupEntryBlockReason.MATCH_LIVE
+            game.status == MatchStatus.FINISHED -> TippGroupEntryBlockReason.MATCH_FINISHED
+            !hasAvailableFriendsForTippGroup(tippGroupId) ->
+                TippGroupEntryBlockReason.ALL_FRIENDS_JOINED
+            else -> null
+        }
+    }
+
+    fun canAddEntryToTippGroup(tippGroupId: String): Boolean =
+        getTippGroupEntryBlockReason(tippGroupId) == null
 
     fun getFriend(friendId: String): Friend? =
         if (friendId.isBlank()) null else friendsInternal.find { it.id == friendId }
@@ -403,6 +424,8 @@ object FunBettRepository {
         prediction: String,
         note: String?
     ): Entry? {
+        val game = getGameForTippGroup(tippGroupId) ?: return null
+        if (!TippScopeAvailability.canAddEntryToGame(game)) return null
         val tippGroup = getTippGroup(tippGroupId) ?: return null
         val friend = getFriend(friendId) ?: return null
         if (isFriendInTippGroup(tippGroupId, friendId)) return null

@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.ui.navigation.CreateMenuContext
 import com.example.wmfunbett2026.ui.theme.GlassBorder
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
@@ -76,7 +77,10 @@ private data class CreateMenuItem(
     val icon: ImageVector
 )
 
-private fun createMenuItems(context: CreateMenuContext, canAddEntry: Boolean): List<CreateMenuItem> {
+private fun createMenuItems(
+    context: CreateMenuContext,
+    canAddEntry: Boolean
+): List<CreateMenuItem> {
     return when (context) {
         CreateMenuContext.MatchesMain, CreateMenuContext.LeaguesMain -> listOf(
             CreateMenuItem(
@@ -128,6 +132,7 @@ private fun createMenuItems(context: CreateMenuContext, canAddEntry: Boolean): L
 fun TippsCenterActionSheet(
     context: CreateMenuContext,
     canAddEntry: Boolean = true,
+    entryBlockReason: TippGroupEntryBlockReason? = null,
     onDismiss: () -> Unit,
     onRoundClick: () -> Unit,
     onMatchClick: () -> Unit,
@@ -136,8 +141,6 @@ fun TippsCenterActionSheet(
     modifier: Modifier = Modifier
 ) {
     val menuItems = remember(context, canAddEntry) { createMenuItems(context, canAddEntry) }
-    val showAllFriendsJoinedInfo =
-        context == CreateMenuContext.TippGroupDetail && !canAddEntry
 
     DisposableEffect(Unit) {
         ModalSheetBackdropState.push()
@@ -171,11 +174,13 @@ fun TippsCenterActionSheet(
                 color = TextPrimary,
                 modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
             )
-            if (showAllFriendsJoinedInfo) {
-                AllFriendsJoinedInfoCard(
-                    message = stringResource(R.string.add_entry_all_friends_joined),
-                    modifier = Modifier.fillMaxWidth()
-                )
+            if (context == CreateMenuContext.TippGroupDetail) {
+                entryBlockReason?.let { reason ->
+                    EntryClosedInfoCard(
+                        reason = reason,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
             menuItems.forEachIndexed { index, item ->
                 CreateMenuRowEntrance(staggerIndex = index) {

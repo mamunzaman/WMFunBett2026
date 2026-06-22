@@ -79,7 +79,12 @@
     <string name="add_entry_more_friends">More</string>
     <string name="add_entry_clear_friend">Clear friend</string>
     <string name="add_entry_no_friends">Add friends first before creating an entry.</string>
-    <string name="add_entry_all_friends_joined">All friends already joined this Tipp Group.</string>
+    <string name="add_entry_all_friends_joined">Every friend is already in this Tipp Group.</string>
+    <string name="add_entry_all_friends_joined_title">All friends joined</string>
+    <string name="add_entry_all_friends_joined_message">Every friend is already in this Tipp Group.</string>
+    <string name="entry_closed_title">Entry closed</string>
+    <string name="entry_closed_live_message">This match is already live. New entries are no longer allowed.</string>
+    <string name="entry_closed_finished_message">This match is finished. New entries are no longer allowed.</string>
     <string name="entry_status_pending">Pending</string>
     <string name="entry_table_pick">Pick</string>
     <string name="entry_table_predict">Predict</string>

@@ -19,12 +19,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.components.AddEntrySheet
 import com.example.wmfunbett2026.ui.components.AddMatchSheet
 import com.example.wmfunbett2026.ui.components.AddTippGroupSheet
-import com.example.wmfunbett2026.ui.components.AllFriendsJoinedInfoSheet
 import com.example.wmfunbett2026.ui.components.CreateRoundSheet
+import com.example.wmfunbett2026.ui.components.EntryBlockedInfoSheet
 import com.example.wmfunbett2026.ui.components.MatchCenterBottomNav
 import com.example.wmfunbett2026.ui.components.ModalSheetBackdropOverlay
 import com.example.wmfunbett2026.ui.components.ModalSheetBackdropState
@@ -54,7 +55,7 @@ private sealed class CreateSheet {
     data class Match(val lockedLeagueId: String?) : CreateSheet()
     data class TippGroup(val gameId: String) : CreateSheet()
     data class Entry(val tippGroupId: String) : CreateSheet()
-    data object AllFriendsJoined : CreateSheet()
+    data class EntryBlocked(val reason: TippGroupEntryBlockReason) : CreateSheet()
 }
 
 class MainActivity : ComponentActivity() {
@@ -102,8 +103,17 @@ fun AppShell(modifier: Modifier = Modifier) {
         FunBettRepository.dataVersion.intValue
     ) {
         createNavState.activeTippGroupId?.let { tippGroupId ->
-            FunBettRepository.hasAvailableFriendsForTippGroup(tippGroupId)
+            FunBettRepository.canAddEntryToTippGroup(tippGroupId)
         } ?: true
+    }
+
+    val activeTippGroupEntryBlockReason = remember(
+        createNavState.activeTippGroupId,
+        FunBettRepository.dataVersion.intValue
+    ) {
+        createNavState.activeTippGroupId?.let { tippGroupId ->
+            FunBettRepository.getTippGroupEntryBlockReason(tippGroupId)
+        }
     }
 
     Box(
@@ -145,6 +155,7 @@ fun AppShell(modifier: Modifier = Modifier) {
             TippsCenterActionSheet(
                 context = createNavState.context,
                 canAddEntry = canAddEntryToActiveTippGroup,
+                entryBlockReason = activeTippGroupEntryBlockReason,
                 onDismiss = { activeCreateSheet = null },
                 onRoundClick = { activeCreateSheet = CreateSheet.Round },
                 onMatchClick = {
@@ -157,10 +168,9 @@ fun AppShell(modifier: Modifier = Modifier) {
                 },
                 onEntryClick = {
                     createNavState.activeTippGroupId?.let { tippGroupId ->
-                        if (FunBettRepository.hasAvailableFriendsForTippGroup(tippGroupId)) {
-                            activeCreateSheet = CreateSheet.Entry(tippGroupId)
-                        } else {
-                            activeCreateSheet = CreateSheet.AllFriendsJoined
+                        when (val reason = FunBettRepository.getTippGroupEntryBlockReason(tippGroupId)) {
+                            null -> activeCreateSheet = CreateSheet.Entry(tippGroupId)
+                            else -> activeCreateSheet = CreateSheet.EntryBlocked(reason)
                         }
                     }
                 }
@@ -226,8 +236,11 @@ fun AppShell(modifier: Modifier = Modifier) {
                 }
             )
         }
-        CreateSheet.AllFriendsJoined -> {
-            AllFriendsJoinedInfoSheet(onDismiss = { activeCreateSheet = null })
+        is CreateSheet.EntryBlocked -> {
+            EntryBlockedInfoSheet(
+                reason = sheet.reason,
+                onDismiss = { activeCreateSheet = null }
+            )
         }
         null -> Unit
     }

@@ -162,6 +162,23 @@ fun MatchCenterMatchCardBody(
 }
 
 @Composable
+fun MatchCenterTippGroupDetailMatchCard(
+    game: Game,
+    matchdayLabel: String,
+    tippGroupTitle: String,
+    collectedLabel: String,
+    modifier: Modifier = Modifier
+) {
+    TippGroupDetailMatchCard(
+        game = game,
+        matchdayLabel = matchdayLabel,
+        tippGroupTitle = tippGroupTitle,
+        collectedLabel = collectedLabel,
+        modifier = modifier
+    )
+}
+
+@Composable
 fun MatchStatusPill(badge: MatchCenterOutcomeBadge?) {
     if (badge == null) return
 

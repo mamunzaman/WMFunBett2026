@@ -78,6 +78,9 @@ object TippScopeAvailability {
         }
     }
 
+    fun canAddEntryToGame(game: Game): Boolean =
+        game.status == MatchStatus.NOT_STARTED
+
     private fun unusedScopesOnly(game: Game): List<TimeScope> {
         val existing = game.tippGroups.map { it.timeScope }.toSet()
         return TimeScope.entries.filter { it !in existing }

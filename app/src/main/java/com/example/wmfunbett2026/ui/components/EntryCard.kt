@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.EmojiEvents
+import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -33,6 +37,7 @@ import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
+import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.ui.matchcenter.shouldShowEntryWinnerShare
@@ -40,6 +45,7 @@ import com.example.wmfunbett2026.ui.theme.Divider
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.MatchCardCompactSurface
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
+import com.example.wmfunbett2026.ui.theme.PrimaryBlueBright
 import com.example.wmfunbett2026.ui.theme.Surface
 import com.example.wmfunbett2026.ui.theme.TextPrimary
 import com.example.wmfunbett2026.ui.theme.TextSecondary
@@ -381,23 +387,140 @@ private fun EntryCurrentColumnCell(
     }
 }
 
+private val EntryInfoCardShape = RoundedCornerShape(14.dp)
+
 @Composable
-fun AllFriendsJoinedInfoCard(
+private fun EntryStatusInfoCard(
+    title: String,
     message: String,
-    modifier: Modifier = Modifier
+    icon: ImageVector,
+    modifier: Modifier = Modifier,
+    accentGold: Boolean = false
 ) {
-    Text(
-        text = message,
+    val backgroundColor = if (accentGold) {
+        JackpotGold.copy(alpha = 0.12f)
+    } else {
+        PrimaryBlue.copy(alpha = 0.14f)
+    }
+    val borderColor = if (accentGold) {
+        JackpotGold.copy(alpha = 0.38f)
+    } else {
+        PrimaryBlue.copy(alpha = 0.34f)
+    }
+    val iconBackground = if (accentGold) {
+        JackpotGold.copy(alpha = 0.2f)
+    } else {
+        PrimaryBlue.copy(alpha = 0.24f)
+    }
+    val iconTint = if (accentGold) JackpotGold else PrimaryBlueBright
+
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(PrimaryBlue.copy(alpha = 0.1f))
-            .border(1.dp, PrimaryBlue.copy(alpha = 0.24f), RoundedCornerShape(12.dp))
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        style = MaterialTheme.typography.bodyMedium,
-        color = TextSecondary,
-        textAlign = TextAlign.Center
+            .clip(EntryInfoCardShape)
+            .background(backgroundColor)
+            .border(1.dp, borderColor, EntryInfoCardShape)
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(iconBackground),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary
+            )
+        }
+    }
+}
+
+@Composable
+fun AllFriendsJoinedInfoCard(
+    modifier: Modifier = Modifier
+) {
+    EntryStatusInfoCard(
+        title = stringResource(R.string.add_entry_all_friends_joined_title),
+        message = stringResource(R.string.add_entry_all_friends_joined_message),
+        icon = Icons.Outlined.Groups,
+        modifier = modifier,
+        accentGold = true
     )
+}
+
+@Composable
+fun EntryClosedInfoCard(
+    reason: TippGroupEntryBlockReason,
+    modifier: Modifier = Modifier
+) {
+    when (reason) {
+        TippGroupEntryBlockReason.MATCH_LIVE -> {
+            EntryStatusInfoCard(
+                title = stringResource(R.string.entry_closed_title),
+                message = stringResource(R.string.entry_closed_live_message),
+                icon = Icons.Outlined.Lock,
+                modifier = modifier
+            )
+        }
+        TippGroupEntryBlockReason.MATCH_FINISHED -> {
+            EntryStatusInfoCard(
+                title = stringResource(R.string.entry_closed_title),
+                message = stringResource(R.string.entry_closed_finished_message),
+                icon = Icons.Outlined.Lock,
+                modifier = modifier
+            )
+        }
+        TippGroupEntryBlockReason.ALL_FRIENDS_JOINED -> {
+            AllFriendsJoinedInfoCard(modifier = modifier)
+        }
+    }
+}
+
+@Composable
+fun EntryBlockedInfoSheet(
+    reason: TippGroupEntryBlockReason,
+    onDismiss: () -> Unit
+) {
+    val sheetTitle = when (reason) {
+        TippGroupEntryBlockReason.MATCH_LIVE,
+        TippGroupEntryBlockReason.MATCH_FINISHED -> stringResource(R.string.entry_closed_title)
+        TippGroupEntryBlockReason.ALL_FRIENDS_JOINED ->
+            stringResource(R.string.add_entry_all_friends_joined_title)
+    }
+    FormBottomSheet(
+        title = sheetTitle,
+        onDismiss = onDismiss,
+        primaryActionLabel = stringResource(R.string.ok),
+        onPrimaryAction = onDismiss,
+        showCancel = false
+    ) {
+        EntryClosedInfoCard(
+            reason = reason,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 
 @Composable
@@ -405,15 +528,12 @@ fun AllFriendsJoinedInfoSheet(
     onDismiss: () -> Unit
 ) {
     FormBottomSheet(
-        title = stringResource(R.string.add_entry),
+        title = stringResource(R.string.add_entry_all_friends_joined_title),
         onDismiss = onDismiss,
         primaryActionLabel = stringResource(R.string.ok),
         onPrimaryAction = onDismiss,
         showCancel = false
     ) {
-        AllFriendsJoinedInfoCard(
-            message = stringResource(R.string.add_entry_all_friends_joined),
-            modifier = Modifier.fillMaxWidth()
-        )
+        AllFriendsJoinedInfoCard(modifier = Modifier.fillMaxWidth())
     }
 }

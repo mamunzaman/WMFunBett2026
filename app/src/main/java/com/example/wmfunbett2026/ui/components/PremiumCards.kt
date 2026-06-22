@@ -288,6 +288,143 @@ fun MatchCardContent(
 }
 
 @Composable
+fun TippGroupDetailMatchCard(
+    game: Game,
+    matchdayLabel: String,
+    tippGroupTitle: String,
+    collectedLabel: String,
+    modifier: Modifier = Modifier
+) {
+    MatchCardShell(
+        game = game,
+        displayMode = MatchCardDisplayMode.DETAIL,
+        modifier = modifier
+    ) {
+        TippGroupDetailMatchCardContent(
+            game = game,
+            matchdayLabel = matchdayLabel,
+            tippGroupTitle = tippGroupTitle,
+            collectedLabel = collectedLabel,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+        )
+    }
+}
+
+@Composable
+fun TippGroupDetailMatchCardContent(
+    game: Game,
+    matchdayLabel: String,
+    tippGroupTitle: String,
+    collectedLabel: String,
+    modifier: Modifier = Modifier
+) {
+    val winnerSide = game.matchCardWinnerSide()
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            MatchdayBadge(label = matchdayLabel)
+            MatchStatusBadge(
+                status = game.status,
+                style = MatchStatusBadgeStyle.Pill
+            )
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                ActiveTeamRow(
+                    teamName = game.teamA,
+                    highlighted = winnerSide == MatchCardWinnerSide.TEAM_A
+                )
+                ActiveTeamRow(
+                    teamName = game.teamB,
+                    highlighted = winnerSide == MatchCardWinnerSide.TEAM_B
+                )
+            }
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.match_card_scoreline),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextMuted,
+                    letterSpacing = 0.8.sp
+                )
+                Text(
+                    text = game.centerScoreText(),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(14.dp))
+        HorizontalDivider(color = GlassBorder, thickness = 1.dp)
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = tippGroupTitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = " · ",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+                Text(
+                    text = collectedLabel,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = JackpotGold
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.CalendarMonth,
+                    contentDescription = null,
+                    tint = TextSecondary,
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .size(16.dp)
+                )
+                Text(
+                    text = game.dateTimeLabel,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun DetailUpcomingMatchCardContent(
     game: Game,
     matchdayLabel: String,

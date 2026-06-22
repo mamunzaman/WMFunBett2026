@@ -79,7 +79,12 @@
     <string name="add_entry_more_friends">Mehr</string>
     <string name="add_entry_clear_friend">Freund entfernen</string>
     <string name="add_entry_no_friends">Füge zuerst Freunde hinzu, bevor du einen Eintrag erstellst.</string>
-    <string name="add_entry_all_friends_joined">Alle Freunde sind bereits in dieser Tipp-Gruppe.</string>
+    <string name="add_entry_all_friends_joined">Jeder Freund ist bereits in dieser Tipp-Gruppe.</string>
+    <string name="add_entry_all_friends_joined_title">Alle Freunde beigetreten</string>
+    <string name="add_entry_all_friends_joined_message">Jeder Freund ist bereits in dieser Tipp-Gruppe.</string>
+    <string name="entry_closed_title">Eintrag geschlossen</string>
+    <string name="entry_closed_live_message">Dieses Spiel läuft bereits. Neue Einträge sind nicht mehr erlaubt.</string>
+    <string name="entry_closed_finished_message">Dieses Spiel ist beendet. Neue Einträge sind nicht mehr erlaubt.</string>
     <string name="entry_status_pending">Ausstehend</string>
     <string name="entry_table_pick">Tipp</string>
     <string name="entry_table_predict">Prognose</string>

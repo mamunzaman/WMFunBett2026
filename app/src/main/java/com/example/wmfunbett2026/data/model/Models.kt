@@ -89,6 +89,12 @@ enum class TippGroupSettlementStatus {
     WINNERS
 }
 
+enum class TippGroupEntryBlockReason {
+    MATCH_LIVE,
+    MATCH_FINISHED,
+    ALL_FRIENDS_JOINED
+}
+
 data class TippGroupSettlementSummary(
     val status: TippGroupSettlementStatus,
     val totalCollected: Double,

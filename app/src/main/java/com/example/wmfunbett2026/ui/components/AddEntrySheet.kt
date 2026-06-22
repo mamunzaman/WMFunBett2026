@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Friend
+import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.theme.TextSecondary
@@ -65,6 +66,14 @@ fun AddEntrySheet(
     onCreate: (friendId: String, prediction: String, note: String?) -> Unit
 ) {
     FunBettRepository.dataVersion.intValue
+    val entryBlockReason = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getTippGroupEntryBlockReason(tippGroupId)
+    }
+    if (entryBlockReason != null) {
+        EntryBlockedInfoSheet(reason = entryBlockReason, onDismiss = onDismiss)
+        return
+    }
+
     val tippGroup = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getTippGroup(tippGroupId)
     }

@@ -88,7 +88,7 @@
 
 - [x] Tipp Group entry table winner highlighting (exact score match, multi-winner)
 
-- [x] Tipp Group premium match header with flags and centered score
+- [x] Tipp Group match header uses existing game card layout
 
 ## Last Update
-2026-06-21 — Tipp Group match header: flags, centered score, pill status row.
+2026-06-21 — Tipp Group detail header reuses MatchCard expanded layout + MatchStatusBadge.
