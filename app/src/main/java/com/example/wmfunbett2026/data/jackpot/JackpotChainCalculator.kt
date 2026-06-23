@@ -5,6 +5,8 @@ import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.Round
 import com.example.wmfunbett2026.data.model.TippGroup
+import com.example.wmfunbett2026.data.model.TippGroupSettlementStatus
+import com.example.wmfunbett2026.data.winner.SplitTippGroupWinnerOutcome
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerOutcome
 
@@ -303,20 +305,60 @@ object JackpotChainCalculator {
             .sumOf { it.currentRoundAmount + it.jackpotCatchUpAmount }
 
     /**
-     * Future split carry-over summary (not wired).
+     * Split carry-over summary for entry-participation settlement (not wired to repository or UI).
      *
-     * [LocalPotSummary]: local winners share [localCurrentCollected] only; no auto carry.
-     * [JackpotPotSummary]: jackpot winners share incoming + [jackpotCurrentCollected];
-     * [JackpotPotSummary.carriedOut] when no jackpot winner.
-     *
-     * TODO Phase 3: integrate with split winner engine.
+     * Local pot never carries; jackpot [JackpotPotSummary.carriedOut] when no JACKPOT winner.
+     * Only JACKPOT winners reset the chain for the next game.
      */
-    @Suppress("UNUSED_PARAMETER")
     fun previewSplitCarryOverSummary(
         round: Round,
         game: Game,
         tippGroup: TippGroup
-    ): SplitTippGroupSettlementSummary? = null
+    ): SplitTippGroupSettlementSummary? {
+        if (!game.hasResult || game.status != MatchStatus.FINISHED) {
+            return null
+        }
+
+        val incoming = calculateIncomingJackpotEntryAware(round, game, tippGroup)
+        val split = TippGroupWinnerEngine.calculateSplit(game, tippGroup, incoming)
+        if (split !is SplitTippGroupWinnerOutcome.Resolved) {
+            return null
+        }
+
+        val localSummary = LocalPotSummary(
+            pot = split.localPot,
+            winnerCount = split.localWinners.size,
+            sharePerWinner = split.localSharePerWinner,
+            closed = split.localWinners.isEmpty() && split.localPot > 0.0
+        )
+
+        val jackpotCarriedOut = if (split.jackpotWinners.isEmpty()) {
+            split.jackpotTotalPot
+        } else {
+            0.0
+        }
+
+        val jackpotSummary = JackpotPotSummary(
+            incomingJackpot = split.incomingJackpot,
+            currentCollected = split.jackpotCurrentCollected,
+            totalPot = split.jackpotTotalPot,
+            carriedOut = jackpotCarriedOut,
+            winnerCount = split.jackpotWinners.size,
+            sharePerWinner = split.jackpotSharePerWinner
+        )
+
+        val status = when {
+            split.localWinners.isNotEmpty() || split.jackpotWinners.isNotEmpty() ->
+                TippGroupSettlementStatus.WINNERS
+            else -> TippGroupSettlementStatus.NO_WINNERS
+        }
+
+        return SplitTippGroupSettlementSummary(
+            status = status,
+            local = localSummary,
+            jackpot = jackpotSummary
+        )
+    }
 
     // endregion
 }

@@ -102,6 +102,7 @@
 - [x] Catch-up slot counting: `calculateCatchUpSlots` + `buildJackpotCatchUpContext` (not wired to UI/repo)
 - [x] Entry-aware incoming jackpot: `calculateIncomingJackpotEntryAware` (not wired to UI/repo)
 - [x] Split winner engine: `calculateSplit` + `previewSplitPayouts` (not wired to UI/repo)
+- [x] Split carry-over summary: `previewSplitCarryOverSummary` (not wired to UI/repo)
 
 ## Last Update
-2026-06-21 — Implemented split local/jackpot winner calculation in TippGroupWinnerEngine.
+2026-06-21 — Implemented split carry-over settlement preview in JackpotChainCalculator.
