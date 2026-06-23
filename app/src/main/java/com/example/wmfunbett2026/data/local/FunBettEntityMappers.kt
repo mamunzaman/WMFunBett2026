@@ -7,6 +7,7 @@ import com.example.wmfunbett2026.data.local.entity.MatchEntity
 import com.example.wmfunbett2026.data.local.entity.TippGroupEntity
 import com.example.wmfunbett2026.data.model.Day
 import com.example.wmfunbett2026.data.model.Entry
+import com.example.wmfunbett2026.data.model.EntryParticipation
 import com.example.wmfunbett2026.data.model.Friend
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
@@ -107,7 +108,9 @@ fun Entry.toEntity(tippGroupId: String): EntryEntity = EntryEntity(
     prediction = prediction,
     amount = amount,
     currentRoundAmount = currentRoundAmount,
-    note = note
+    note = note,
+    participation = participation.name,
+    jackpotCatchUpAmount = jackpotCatchUpAmount
 )
 
 fun EntryEntity.toEntry(): Entry = Entry(
@@ -117,7 +120,10 @@ fun EntryEntity.toEntry(): Entry = Entry(
     prediction = prediction,
     amount = amount,
     currentRoundAmount = currentRoundAmount,
-    note = note
+    note = note,
+    participation = runCatching { EntryParticipation.valueOf(participation) }
+        .getOrDefault(EntryParticipation.LOCAL_ONLY),
+    jackpotCatchUpAmount = jackpotCatchUpAmount
 )
 
 fun Friend.toEntity(): FriendEntity = FriendEntity(

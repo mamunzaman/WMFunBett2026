@@ -25,5 +25,7 @@ data class EntryEntity(
     val prediction: String,
     val amount: Double,
     val currentRoundAmount: Double,
-    val note: String?
+    val note: String?,
+    val participation: String,
+    val jackpotCatchUpAmount: Double
 )

@@ -97,6 +97,7 @@
 - [x] Entry participation foundation (Phase 1): `EntryParticipation`, Entry fields, split settlement read models
 - [x] Jackpot calculator architecture (Phase 2): participation helpers, catch-up models, split summary docs (not wired)
 - [x] Split winner engine architecture (Phase 3): split outcome models, payout pools, chain-break signal (not wired)
+- [x] Entry participation persistence (Phase 4A): Room v3 migration, entity + mapper fields
 
 ## Last Update
-2026-06-21 — Phase 3 split winner engine architecture added (legacy winner logic unchanged).
+2026-06-21 — Phase 4A: Entry participation + catch-up persisted in Room (v2→v3 migration).
