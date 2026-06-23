@@ -98,6 +98,7 @@
 - [x] Jackpot calculator architecture (Phase 2): participation helpers, catch-up models, split summary docs (not wired)
 - [x] Split winner engine architecture (Phase 3): split outcome models, payout pools, chain-break signal (not wired)
 - [x] Entry participation persistence (Phase 4A): Room v3 migration, entity + mapper fields
+- [x] Entry participation repository wiring (Phase 4B): LOCAL_ONLY add, safe updateEntry, payment snapshot helper
 
 ## Last Update
-2026-06-21 — Phase 4A: Entry participation + catch-up persisted in Room (v2→v3 migration).
+2026-06-21 — Phase 4B: repository preserves participation payment fields on add/update.

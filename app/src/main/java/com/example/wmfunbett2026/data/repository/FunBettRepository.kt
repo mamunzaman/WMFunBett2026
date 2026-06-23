@@ -6,6 +6,8 @@ import com.example.wmfunbett2026.data.local.FunBettDatabase
 import com.example.wmfunbett2026.data.local.FunBettLocalStore
 import com.example.wmfunbett2026.data.model.Day
 import com.example.wmfunbett2026.data.model.Entry
+import com.example.wmfunbett2026.data.model.EntryParticipation
+import com.example.wmfunbett2026.data.model.EntryPaymentSnapshot
 import com.example.wmfunbett2026.data.model.EntryUpdateRequest
 import com.example.wmfunbett2026.data.model.Friend
 import com.example.wmfunbett2026.data.model.formatPersonFullName
@@ -503,7 +505,9 @@ object FunBettRepository {
         prediction: String,
         totalPaid: Double,
         currentRoundAmount: Double,
-        note: String?
+        note: String?,
+        participation: EntryParticipation = EntryParticipation.LOCAL_ONLY,
+        jackpotCatchUpAmount: Double = 0.0
     ): Entry? {
         if (getTippGroup(tippGroupId) == null) return null
 
@@ -514,7 +518,9 @@ object FunBettRepository {
             prediction = prediction.trim(),
             amount = totalPaid,
             currentRoundAmount = currentRoundAmount,
-            note = note?.trim()?.takeIf { it.isNotEmpty() }
+            note = note?.trim()?.takeIf { it.isNotEmpty() },
+            participation = participation,
+            jackpotCatchUpAmount = jackpotCatchUpAmount
         )
 
         roundsInternal = roundsInternal.map { round ->
@@ -558,14 +564,18 @@ object FunBettRepository {
         val trimmedPrediction = prediction.trim()
         if (trimmedPrediction.isEmpty()) return null
 
+        val payment = buildEntryPaymentSnapshot(tippGroup, EntryParticipation.LOCAL_ONLY) ?: return null
+
         return addEntry(
             tippGroupId = tippGroupId,
             friendId = friend.id,
             friendName = friend.name,
             prediction = trimmedPrediction,
-            totalPaid = entryAmount,
-            currentRoundAmount = entryAmount,
-            note = note
+            totalPaid = payment.totalPaid,
+            currentRoundAmount = payment.currentRoundAmount,
+            note = note,
+            participation = payment.participation,
+            jackpotCatchUpAmount = payment.jackpotCatchUpAmount
         )
     }
 
@@ -593,14 +603,24 @@ object FunBettRepository {
         }
         if (friendTaken) return null
 
-        val updatedEntry = existing.copy(
-            friendId = friend.id,
-            friendName = friend.name,
-            prediction = trimmedPrediction,
-            amount = request.amount,
-            currentRoundAmount = request.amount,
-            note = request.note?.trim()?.takeIf { it.isNotEmpty() }
-        )
+        val updatedEntry = when (existing.participation) {
+            EntryParticipation.LOCAL_ONLY -> existing.copy(
+                friendId = friend.id,
+                friendName = friend.name,
+                prediction = trimmedPrediction,
+                amount = request.amount,
+                currentRoundAmount = request.amount,
+                participation = EntryParticipation.LOCAL_ONLY,
+                jackpotCatchUpAmount = 0.0,
+                note = request.note?.trim()?.takeIf { it.isNotEmpty() }
+            )
+            EntryParticipation.JACKPOT -> existing.copy(
+                friendId = friend.id,
+                friendName = friend.name,
+                prediction = trimmedPrediction,
+                note = request.note?.trim()?.takeIf { it.isNotEmpty() }
+            )
+        }
 
         roundsInternal = roundsInternal.map { round ->
             round.copy(
@@ -760,6 +780,39 @@ object FunBettRepository {
 
     private fun notifyChanged() {
         dataVersion.intValue++
+    }
+
+    /**
+     * Future-ready payment breakdown for new entries.
+     * Add Entry UI still uses LOCAL_ONLY only; JACKPOT catch-up not activated yet.
+     *
+     * TODO Phase 5: JACKPOT catchUp = missedJackpotRounds × entryAmount
+     */
+    private fun buildEntryPaymentSnapshot(
+        tippGroup: TippGroup,
+        participation: EntryParticipation
+    ): EntryPaymentSnapshot? {
+        val entryAmount = tippGroup.entryAmount ?: return null
+        if (entryAmount <= 0.0) return null
+
+        return when (participation) {
+            EntryParticipation.LOCAL_ONLY -> EntryPaymentSnapshot(
+                participation = EntryParticipation.LOCAL_ONLY,
+                currentRoundAmount = entryAmount,
+                jackpotCatchUpAmount = 0.0,
+                totalPaid = entryAmount
+            )
+            EntryParticipation.JACKPOT -> {
+                // TODO Phase 5: catchUp = missedJackpotRounds × entryAmount
+                val catchUp = 0.0
+                EntryPaymentSnapshot(
+                    participation = EntryParticipation.JACKPOT,
+                    currentRoundAmount = entryAmount,
+                    jackpotCatchUpAmount = catchUp,
+                    totalPaid = entryAmount + catchUp
+                )
+            }
+        }
     }
 
     private fun getAllGames(): List<Game> =

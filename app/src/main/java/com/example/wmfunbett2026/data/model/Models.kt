@@ -117,6 +117,10 @@ data class Entry(
     val jackpotCatchUpAmount: Double = 0.0
 )
 
+/**
+ * Payment breakdown for a new entry at join time.
+ * Future JACKPOT catch-up: missedJackpotRounds × currentRoundAmount.
+ */
 data class EntryPaymentSnapshot(
     val participation: EntryParticipation,
     val currentRoundAmount: Double,

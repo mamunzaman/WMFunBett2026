@@ -1,9 +1,10 @@
 # Next Task
 
 ## Current Goal
-Phase 4B: repository wiring for participation on add/update entry.
+Phase 5: AddEntrySheet participation selector + catch-up UI (JACKPOT path).
 
 ## Verify Next
-- Upgrade v2 DB → v3 keeps existing entries as LOCAL_ONLY / 0 catch-up
-- Fresh install creates entries table with new columns
-- Restart app — entries reload with persisted participation fields
+- Add Entry → restart → LOCAL_ONLY persisted
+- Edit prediction/note → payment fields unchanged
+- Edit amount on LOCAL_ONLY entry still works
+- JACKPOT entries (if seeded) keep amount/catch-up on edit
