@@ -116,6 +116,12 @@
     <string name="jackpot_incoming_chip">Jackpot %1$s</string>
     <string name="entry_winner_share">Share %1$s</string>
     <string name="add_entry_friend_already_joined">This friend already joined this Tipp Group</string>
+    <string name="add_entry_participation_label">Participation</string>
+    <string name="add_entry_participation_local">Local Only</string>
+    <string name="add_entry_participation_jackpot">Jackpot</string>
+    <string name="add_entry_payment_current_round">Current Round:</string>
+    <string name="add_entry_payment_catch_up">Catch-up:</string>
+    <string name="add_entry_payment_total">Total:</string>
     <string name="friend_active_entries">%1$d active entries</string>
     <string name="friend_active_amount">%1$s active</string>
     <string name="friend_detail_active_entries">Active Entries: %1$d</string>

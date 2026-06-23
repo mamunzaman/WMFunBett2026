@@ -105,6 +105,7 @@
 - [x] Split carry-over summary: `previewSplitCarryOverSummary` (not wired to UI/repo)
 - [x] Repository jackpot read APIs (Phase 5B.1): join breakdown, split carry-over, entry win payout
 - [x] JACKPOT entry create support (Phase 5B.2): addEntryToTippGroup participation + catch-up snapshot
+- [x] Add Entry participation selector + live payment preview (Phase 5B.3)
 
 ## Last Update
-2026-06-21 — Phase 5B.2: repository can create JACKPOT entries with catch-up payment fields.
+2026-06-21 — Add Entry sheet: Local/Jackpot selector with live join breakdown preview.

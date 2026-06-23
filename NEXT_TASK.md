@@ -1,9 +1,9 @@
 # Next Task
 
 ## Current Goal
-Wire Add Entry UI to participation selector + `getEntryJoinBreakdown` (Phase 5B.3).
+Wire Tipp Group settlement UI to split carry-over + entry payouts (Phase 5C).
 
 ## Verify Next
-- Add Entry sheet passes `EntryParticipation.JACKPOT` when selected
-- JACKPOT entry persists catch-up + total amount
-- Default add (no participation arg) still LOCAL_ONLY
+- JACKPOT entry shows catch-up in Add Entry preview and persists on create
+- Default Local Only unchanged
+- Settlement screens still use legacy APIs until 5C
