@@ -20,15 +20,17 @@ import com.example.wmfunbett2026.ui.theme.DangerRed
 @Composable
 fun AddFriendSheet(
     onDismiss: () -> Unit,
-    onCreate: (name: String, note: String?) -> Unit
+    onCreate: (firstName: String, lastName: String, note: String?) -> Unit
 ) {
     FunBettRepository.dataVersion.intValue
-    var name by remember { mutableStateOf("") }
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
-    val trimmedName = name.trim()
-    val duplicateName = trimmedName.isNotEmpty() &&
-        FunBettRepository.friendNameExists(trimmedName)
-    val canCreate = trimmedName.isNotEmpty() && !duplicateName
+    val trimmedFirst = firstName.trim()
+    val trimmedLast = lastName.trim()
+    val duplicateName = trimmedFirst.isNotEmpty() &&
+        FunBettRepository.friendNameExists(trimmedFirst, trimmedLast)
+    val canCreate = trimmedFirst.isNotEmpty() && !duplicateName
 
     FormBottomSheet(
         title = stringResource(R.string.add_friend),
@@ -36,17 +38,80 @@ fun AddFriendSheet(
         primaryActionLabel = stringResource(R.string.create),
         onPrimaryAction = {
             onCreate(
-                trimmedName,
+                trimmedFirst,
+                trimmedLast,
                 note.trim().takeIf { it.isNotEmpty() }
             )
         },
         primaryActionEnabled = canCreate
     ) {
+        PersonNameFields(
+            firstName = firstName,
+            onFirstNameChange = { firstName = it },
+            lastName = lastName,
+            onLastNameChange = { lastName = it }
+        )
+
+        if (duplicateName) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.add_friend_duplicate_error),
+                style = MaterialTheme.typography.bodySmall,
+                color = DangerRed
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
         FormOutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
+            value = note,
+            onValueChange = { note = it },
             modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.name)) }
+            label = { Text(stringResource(R.string.note_optional)) },
+            singleLine = false,
+            minLines = 2
+        )
+    }
+}
+
+@Composable
+fun EditFriendSheet(
+    friendId: String,
+    onDismiss: () -> Unit,
+    onSave: (firstName: String, lastName: String, note: String?) -> Unit
+) {
+    FunBettRepository.dataVersion.intValue
+    val friend = remember(friendId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getFriend(friendId)
+    } ?: return
+
+    var firstName by remember(friendId) { mutableStateOf(friend.firstName) }
+    var lastName by remember(friendId) { mutableStateOf(friend.lastName) }
+    var note by remember(friendId) { mutableStateOf(friend.note.orEmpty()) }
+    val trimmedFirst = firstName.trim()
+    val trimmedLast = lastName.trim()
+    val duplicateName = trimmedFirst.isNotEmpty() &&
+        FunBettRepository.friendNameExists(trimmedFirst, trimmedLast, excludeFriendId = friendId)
+    val canSave = trimmedFirst.isNotEmpty() && !duplicateName
+
+    FormBottomSheet(
+        title = stringResource(R.string.edit_friend),
+        onDismiss = onDismiss,
+        primaryActionLabel = stringResource(R.string.save),
+        onPrimaryAction = {
+            onSave(
+                trimmedFirst,
+                trimmedLast,
+                note.trim().takeIf { it.isNotEmpty() }
+            )
+        },
+        primaryActionEnabled = canSave
+    ) {
+        PersonNameFields(
+            firstName = firstName,
+            onFirstNameChange = { firstName = it },
+            lastName = lastName,
+            onLastNameChange = { lastName = it }
         )
 
         if (duplicateName) {

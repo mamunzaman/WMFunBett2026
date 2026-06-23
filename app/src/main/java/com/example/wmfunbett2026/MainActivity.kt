@@ -245,10 +245,11 @@ fun AppShell(modifier: Modifier = Modifier) {
             AddEntrySheet(
                 tippGroupId = sheet.tippGroupId,
                 onDismiss = { activeCreateSheet = null },
-                onCreate = { friendId, prediction, note ->
+                onCreate = { firstName, lastName, prediction, note ->
                     FunBettRepository.addEntryToTippGroup(
                         tippGroupId = sheet.tippGroupId,
-                        friendId = friendId,
+                        firstName = firstName,
+                        lastName = lastName,
                         prediction = prediction,
                         note = note
                     )

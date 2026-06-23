@@ -68,9 +68,17 @@
     <string name="friends_search_no_results_title">Keine Freunde gefunden</string>
     <string name="friends_search_no_results_message">Versuche einen anderen Suchbegriff.</string>
     <string name="friend_grid_entries">%1$d Einträge</string>
+    <string name="friend_grid_active_tipps">%1$d Tipps</string>
+    <string name="friend_grid_all_tipps">ALLE TIPPS</string>
+    <string name="friend_grid_wins">GEWINNE</string>
     <string name="friends_empty_title">Noch keine Freunde</string>
     <string name="friends_empty_message">Füge lokale Teilnehmer hinzu, um sie in Tipp-Einträgen zu verwenden.</string>
     <string name="add_friend">Freund hinzufügen</string>
+    <string name="edit_friend">Freund bearbeiten</string>
+    <string name="action_edit_friend">Freund bearbeiten</string>
+    <string name="action_delete_friend">Freund löschen</string>
+    <string name="delete_friend_confirm_title">Freund löschen?</string>
+    <string name="delete_friend_confirm_message">Möchtest du diesen Freund wirklich entfernen?</string>
     <string name="add_friend_duplicate_error">Ein Freund mit diesem Namen existiert bereits.</string>
     <string name="add_entry_friend_label">Freund</string>
     <string name="add_entry_search_friend">Freund suchen</string>
@@ -163,6 +171,12 @@
     <string name="action_add_match">Spiel hinzufügen</string>
     <string name="action_add_tipp_group">Tipp-Gruppe hinzufügen</string>
     <string name="action_add_entry">Eintrag hinzufügen</string>
+    <string name="action_edit_entry">Eintrag bearbeiten</string>
+    <string name="action_delete_entry">Eintrag löschen</string>
+    <string name="edit_entry">Eintrag bearbeiten</string>
+    <string name="edit_entry_amount_label">Betrag</string>
+    <string name="delete_entry_confirm_title">Eintrag löschen?</string>
+    <string name="delete_entry_confirm_message">Möchtest du diesen Eintrag wirklich entfernen?</string>
 
     <!-- Match center -->
     <string name="total_jackpot">Gesamt-Jackpot</string>
@@ -207,6 +221,8 @@
 
     <!-- Fields -->
     <string name="name">Name</string>
+    <string name="person_first_name">Vorname</string>
+    <string name="person_last_name">Nachname</string>
     <string name="note_optional">Notiz (optional)</string>
     <string name="team_a">Team A</string>
     <string name="team_b">Team B</string>

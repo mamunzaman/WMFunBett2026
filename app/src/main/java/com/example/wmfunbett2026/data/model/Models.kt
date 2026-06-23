@@ -33,17 +33,55 @@ enum class MatchTippType(val label: String) {
     fun defaultTippTitle(): String = toTimeScope().defaultTippTitle()
 }
 
+fun parsePersonName(storedName: String): Pair<String, String> {
+    val trimmed = storedName.trim()
+    if (trimmed.isEmpty()) return "" to ""
+    val parts = trimmed.split(Regex("\\s+")).filter { it.isNotEmpty() }
+    return when {
+        parts.size == 1 -> parts[0] to ""
+        else -> parts.first() to parts.drop(1).joinToString(" ")
+    }
+}
+
+fun formatPersonFullName(firstName: String, lastName: String = ""): String {
+    val first = firstName.trim()
+    val last = lastName.trim()
+    return when {
+        first.isEmpty() && last.isEmpty() -> ""
+        first.isEmpty() -> last
+        last.isEmpty() -> first
+        else -> "$first $last"
+    }
+}
+
 data class Friend(
     val id: String,
-    val name: String,
+    val firstName: String,
+    val lastName: String = "",
     val note: String? = null,
     val createdAt: Long
-)
+) {
+    val name: String get() = formatPersonFullName(firstName, lastName)
+
+    companion object {
+        fun fromStoredName(
+            id: String,
+            storedName: String,
+            note: String?,
+            createdAt: Long
+        ): Friend {
+            val (first, last) = parsePersonName(storedName)
+            return Friend(id, first, last, note, createdAt)
+        }
+    }
+}
 
 data class FriendWithStats(
     val friend: Friend,
     val activeEntryCount: Int,
-    val activeAmountTotal: Double
+    val activeAmountTotal: Double,
+    val totalTipps: Int,
+    val winCount: Int = 0
 )
 
 data class FriendFinancialSummary(
@@ -70,6 +108,15 @@ data class Entry(
     val amount: Double,
     val currentRoundAmount: Double,
     val note: String? = null
+)
+
+data class EntryUpdateRequest(
+    val friendId: String,
+    val firstName: String,
+    val lastName: String,
+    val prediction: String,
+    val amount: Double,
+    val note: String?
 )
 
 data class TippGroup(

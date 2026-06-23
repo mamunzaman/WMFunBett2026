@@ -6,7 +6,9 @@ import com.example.wmfunbett2026.data.local.FunBettDatabase
 import com.example.wmfunbett2026.data.local.FunBettLocalStore
 import com.example.wmfunbett2026.data.model.Day
 import com.example.wmfunbett2026.data.model.Entry
+import com.example.wmfunbett2026.data.model.EntryUpdateRequest
 import com.example.wmfunbett2026.data.model.Friend
+import com.example.wmfunbett2026.data.model.formatPersonFullName
 import com.example.wmfunbett2026.data.model.FriendEntryHistoryItem
 import com.example.wmfunbett2026.data.model.FriendFinancialSummary
 import com.example.wmfunbett2026.data.model.FriendWithStats
@@ -75,7 +77,9 @@ object FunBettRepository {
                 FriendWithStats(
                     friend = summary.friend,
                     activeEntryCount = summary.activeEntryCount,
-                    activeAmountTotal = summary.activeAmountTotal
+                    activeAmountTotal = summary.activeAmountTotal,
+                    totalTipps = summary.activeEntryCount,
+                    winCount = 0
                 )
             }
         }.sortedBy { it.friend.name.lowercase() }
@@ -185,19 +189,27 @@ object FunBettRepository {
     fun getFriend(friendId: String): Friend? =
         if (friendId.isBlank()) null else friendsInternal.find { it.id == friendId }
 
-    fun friendNameExists(name: String): Boolean {
-        val trimmed = name.trim()
-        if (trimmed.isEmpty()) return false
-        return friendsInternal.any { it.name.equals(trimmed, ignoreCase = true) }
+    fun friendNameExists(
+        firstName: String,
+        lastName: String = "",
+        excludeFriendId: String? = null
+    ): Boolean {
+        val full = formatPersonFullName(firstName, lastName)
+        if (full.isEmpty()) return false
+        return friendsInternal.any {
+            it.name.equals(full, ignoreCase = true) && it.id != excludeFriendId
+        }
     }
 
-    fun addFriend(name: String, note: String?): Friend? {
-        val trimmed = name.trim()
-        if (trimmed.isEmpty() || friendNameExists(trimmed)) return null
+    fun addFriend(firstName: String, lastName: String, note: String?): Friend? {
+        val trimmedFirst = firstName.trim()
+        val trimmedLast = lastName.trim()
+        if (trimmedFirst.isEmpty() || friendNameExists(trimmedFirst, trimmedLast)) return null
 
         val friend = Friend(
             id = "friend-${System.currentTimeMillis()}",
-            name = trimmed,
+            firstName = trimmedFirst,
+            lastName = trimmedLast,
             note = note?.trim()?.takeIf { it.isNotEmpty() },
             createdAt = System.currentTimeMillis()
         )
@@ -205,6 +217,87 @@ object FunBettRepository {
         localStore.persistFriend(friend)
         notifyChanged()
         return friend
+    }
+
+    fun updateFriend(friendId: String, firstName: String, lastName: String, note: String?): Friend? {
+        if (friendId.isBlank()) return null
+        val trimmedFirst = firstName.trim()
+        val trimmedLast = lastName.trim()
+        if (trimmedFirst.isEmpty() || friendNameExists(trimmedFirst, trimmedLast, excludeFriendId = friendId)) {
+            return null
+        }
+
+        val existing = getFriend(friendId) ?: return null
+        val fullName = formatPersonFullName(trimmedFirst, trimmedLast)
+        val updatedFriend = existing.copy(
+            firstName = trimmedFirst,
+            lastName = trimmedLast,
+            note = note?.trim()?.takeIf { it.isNotEmpty() }
+        )
+
+        friendsInternal = friendsInternal.map { friend ->
+            if (friend.id == friendId) updatedFriend else friend
+        }
+
+        roundsInternal = roundsInternal.map { round ->
+            round.copy(
+                days = round.days.map { day ->
+                    day.copy(
+                        games = day.games.map { game ->
+                            game.copy(
+                                tippGroups = game.tippGroups.map { group ->
+                                    group.copy(
+                                        entries = group.entries.map { entry ->
+                                            if (entry.friendId == friendId) {
+                                                entry.copy(friendName = fullName)
+                                            } else {
+                                                entry
+                                            }
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    )
+                }
+            )
+        }
+
+        localStore.persistFriend(updatedFriend)
+        roundsInternal.forEach { round ->
+            round.days.forEach { day ->
+                day.games.forEach { game ->
+                    game.tippGroups.forEach { group ->
+                        group.entries
+                            .filter { it.friendId == friendId }
+                            .forEach { entry -> localStore.persistEntry(group.id, entry) }
+                    }
+                }
+            }
+        }
+        notifyChanged()
+        return updatedFriend
+    }
+
+    fun findOrCreateFriend(firstName: String, lastName: String, note: String? = null): Friend? {
+        val trimmedFirst = firstName.trim()
+        val trimmedLast = lastName.trim()
+        if (trimmedFirst.isEmpty()) return null
+
+        friendsInternal.find {
+            it.firstName.equals(trimmedFirst, ignoreCase = true) &&
+                it.lastName.equals(trimmedLast, ignoreCase = true)
+        }?.let { return it }
+
+        return addFriend(trimmedFirst, trimmedLast, note)
+    }
+
+    fun deleteFriend(friendId: String): Boolean {
+        if (friendId.isBlank() || getFriend(friendId) == null) return false
+        friendsInternal = friendsInternal.filterNot { it.id == friendId }
+        localStore.deleteFriend(friendId)
+        notifyChanged()
+        return true
     }
 
     fun getSampleLeagueRoundId(leagueId: String): String? = sampleLeagueRoundIds[leagueId]
@@ -463,6 +556,22 @@ object FunBettRepository {
 
     fun addEntryToTippGroup(
         tippGroupId: String,
+        firstName: String,
+        lastName: String,
+        prediction: String,
+        note: String?
+    ): Entry? {
+        val friend = findOrCreateFriend(firstName, lastName) ?: return null
+        return addEntryToTippGroup(
+            tippGroupId = tippGroupId,
+            friendId = friend.id,
+            prediction = prediction,
+            note = note
+        )
+    }
+
+    fun addEntryToTippGroup(
+        tippGroupId: String,
         friendId: String,
         prediction: String,
         note: String?
@@ -487,6 +596,73 @@ object FunBettRepository {
             currentRoundAmount = entryAmount,
             note = note
         )
+    }
+
+    fun getEntry(tippGroupId: String, entryId: String): Entry? {
+        if (tippGroupId.isBlank() || entryId.isBlank()) return null
+        return getTippGroup(tippGroupId)?.entries?.find { it.id == entryId }
+    }
+
+    fun updateEntry(
+        tippGroupId: String,
+        entryId: String,
+        request: EntryUpdateRequest
+    ): Entry? {
+        if (tippGroupId.isBlank() || entryId.isBlank()) return null
+        val trimmedFirst = request.firstName.trim()
+        val trimmedLast = request.lastName.trim()
+        val trimmedPrediction = request.prediction.trim()
+        if (trimmedFirst.isEmpty() || trimmedPrediction.isEmpty()) return null
+        if (request.amount <= 0.0) return null
+
+        val tippGroup = getTippGroup(tippGroupId) ?: return null
+        val existing = tippGroup.entries.find { it.id == entryId } ?: return null
+        val friend = getFriend(request.friendId) ?: return null
+
+        val friendTaken = tippGroup.entries.any {
+            it.id != entryId && it.friendId == friend.id
+        }
+        if (friendTaken) return null
+
+        val nameChanged = !friend.firstName.equals(trimmedFirst, ignoreCase = true) ||
+            !friend.lastName.equals(trimmedLast, ignoreCase = true)
+        if (nameChanged) {
+            updateFriend(request.friendId, trimmedFirst, trimmedLast, friend.note) ?: return null
+        }
+
+        val fullName = formatPersonFullName(trimmedFirst, trimmedLast)
+        val updatedEntry = existing.copy(
+            friendId = friend.id,
+            friendName = fullName,
+            prediction = trimmedPrediction,
+            amount = request.amount,
+            currentRoundAmount = request.amount,
+            note = request.note?.trim()?.takeIf { it.isNotEmpty() }
+        )
+
+        roundsInternal = roundsInternal.map { round ->
+            round.copy(
+                days = round.days.map { day ->
+                    day.copy(
+                        games = day.games.map { game ->
+                            game.copy(
+                                tippGroups = game.tippGroups.map { group ->
+                                    if (group.id != tippGroupId) return@map group
+                                    group.copy(
+                                        entries = group.entries.map { entry ->
+                                            if (entry.id == entryId) updatedEntry else entry
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    )
+                }
+            )
+        }
+        localStore.persistEntry(tippGroupId, updatedEntry)
+        notifyChanged()
+        return updatedEntry
     }
 
     fun updateGameResult(
@@ -628,8 +804,8 @@ object FunBettRepository {
         roundsInternal.flatMap { it.days }.flatMap { it.games }
 
     private fun buildSampleFriends(): List<Friend> = listOf(
-        Friend(id = FRIEND_ID_ALEX, name = "Alex", createdAt = 0L),
-        Friend(id = FRIEND_ID_JOHN, name = "John", createdAt = 0L)
+        Friend(id = FRIEND_ID_ALEX, firstName = "Alex", createdAt = 0L),
+        Friend(id = FRIEND_ID_JOHN, firstName = "John", createdAt = 0L)
     )
 
     private fun buildSampleRound(): Round {

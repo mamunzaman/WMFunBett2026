@@ -127,9 +127,9 @@ fun Friend.toEntity(): FriendEntity = FriendEntity(
     createdAt = createdAt
 )
 
-fun FriendEntity.toFriend(): Friend = Friend(
+fun FriendEntity.toFriend(): Friend = Friend.fromStoredName(
     id = id,
-    name = name,
+    storedName = name,
     note = note,
     createdAt = createdAt
 )

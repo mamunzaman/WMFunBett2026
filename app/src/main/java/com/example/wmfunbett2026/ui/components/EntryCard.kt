@@ -15,14 +15,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +49,7 @@ import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.ui.matchcenter.shouldShowEntryWinnerShare
+import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.Divider
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.MatchCardCompactSurface
@@ -60,6 +69,7 @@ private val PickColumnWeight = 1.2f
 private val PredictColumnWeight = 0.85f
 private val CurrentColumnWeight = 1f
 private val StakeColumnWeight = 0.75f
+private val MenuColumnWeight = 0.28f
 
 @Composable
 fun TippGroupEntryTable(
@@ -69,6 +79,8 @@ fun TippGroupEntryTable(
     winnerNames: List<String>,
     settlement: TippGroupSettlementSummary,
     onEntryClick: (Entry) -> Unit,
+    onEditEntry: (Entry) -> Unit,
+    onDeleteEntry: (Entry) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val matchStatus = game.status
@@ -111,7 +123,9 @@ fun TippGroupEntryTable(
                 isFirstRow = index == 0,
                 isLastRow = index == entries.lastIndex,
                 showDivider = index < entries.lastIndex,
-                onClick = { onEntryClick(entry) }
+                onClick = { onEntryClick(entry) },
+                onEditClick = { onEditEntry(entry) },
+                onDeleteClick = { onDeleteEntry(entry) }
             )
         }
     }
@@ -204,6 +218,8 @@ fun EntryCard(
     isLastRow: Boolean = false,
     showDivider: Boolean = false,
     onClick: (() -> Unit)? = null,
+    onEditClick: (() -> Unit)? = null,
+    onDeleteClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val predictionColor = if (isWinner) JackpotGold else TextPrimary
@@ -319,6 +335,17 @@ fun EntryCard(
                     textAlign = TextAlign.End
                 )
             }
+            if (onEditClick != null || onDeleteClick != null) {
+                Box(
+                    modifier = Modifier.weight(MenuColumnWeight),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    EntryRowOverflowMenu(
+                        onEdit = onEditClick,
+                        onDelete = onDeleteClick
+                    )
+                }
+            }
         }
         }
         if (showDivider) {
@@ -326,6 +353,57 @@ fun EntryCard(
                 modifier = Modifier.padding(horizontal = 12.dp),
                 color = Divider.copy(alpha = 0.55f)
             )
+        }
+    }
+}
+
+@Composable
+private fun EntryRowOverflowMenu(
+    onEdit: (() -> Unit)?,
+    onDelete: (() -> Unit)?,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        IconButton(
+            onClick = { expanded = true },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = null,
+                tint = TextSecondary,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            onEdit?.let { edit ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.action_edit_entry)) },
+                    onClick = {
+                        expanded = false
+                        edit()
+                    }
+                )
+            }
+            onDelete?.let { delete ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(R.string.action_delete_entry),
+                            color = DangerRed
+                        )
+                    },
+                    onClick = {
+                        expanded = false
+                        delete()
+                    }
+                )
+            }
         }
     }
 }

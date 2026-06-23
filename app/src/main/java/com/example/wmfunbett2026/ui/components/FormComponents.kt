@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
@@ -369,6 +370,31 @@ fun FormMatchdaySelectCard(
 }
 
 @Composable
+fun PersonNameFields(
+    firstName: String,
+    onFirstNameChange: (String) -> Unit,
+    lastName: String,
+    onLastNameChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        FormOutlinedTextField(
+            value = firstName,
+            onValueChange = onFirstNameChange,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.person_first_name)) }
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        FormOutlinedTextField(
+            value = lastName,
+            onValueChange = onLastNameChange,
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.person_last_name)) }
+        )
+    }
+}
+
+@Composable
 fun FormSectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
@@ -386,47 +412,6 @@ fun FormErrorText(text: String, modifier: Modifier = Modifier) {
         style = MaterialTheme.typography.bodySmall,
         color = DangerRed
     )
-}
-
-fun friendDisplayInitials(name: String): String {
-    val parts = name.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
-    return when {
-        parts.isEmpty() -> "?"
-        parts.size == 1 -> parts[0].take(2).uppercase()
-        else -> "${parts.first().first()}${parts[1].first()}".uppercase()
-    }
-}
-
-@Composable
-fun FriendInitialsAvatar(
-    initials: String,
-    modifier: Modifier = Modifier,
-    selected: Boolean = false,
-    size: Dp = 44.dp
-) {
-    val background = if (selected) {
-        PrimaryBlue.copy(alpha = 0.35f)
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
-    }
-    val borderColor = if (selected) PrimaryBlue else MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)
-
-    Box(
-        modifier = modifier
-            .size(size)
-            .clip(CircleShape)
-            .background(background)
-            .border(1.5.dp, borderColor, CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = initials,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = if (selected) SheetOnSurface else SheetOnSurfaceVariant,
-            fontSize = if (size <= 36.dp) 11.sp else 13.sp
-        )
-    }
 }
 
 @Composable

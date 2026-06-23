@@ -68,9 +68,17 @@
     <string name="friends_search_no_results_title">No friends found</string>
     <string name="friends_search_no_results_message">Try a different search term.</string>
     <string name="friend_grid_entries">%1$d entries</string>
+    <string name="friend_grid_active_tipps">%1$d Tipps</string>
+    <string name="friend_grid_all_tipps">ALL TIPPS</string>
+    <string name="friend_grid_wins">WINS</string>
     <string name="friends_empty_title">No friends yet</string>
     <string name="friends_empty_message">Add local participants to use them in tipp entries.</string>
     <string name="add_friend">Add Friend</string>
+    <string name="edit_friend">Edit Friend</string>
+    <string name="action_edit_friend">Edit Friend</string>
+    <string name="action_delete_friend">Delete Friend</string>
+    <string name="delete_friend_confirm_title">Delete Friend?</string>
+    <string name="delete_friend_confirm_message">Are you sure you want to remove this friend?</string>
     <string name="add_friend_duplicate_error">A friend with this name already exists.</string>
     <string name="add_entry_friend_label">Friend</string>
     <string name="add_entry_search_friend">Search friend</string>
@@ -163,6 +171,12 @@
     <string name="action_add_match">Add Match</string>
     <string name="action_add_tipp_group">Add Tipp Group</string>
     <string name="action_add_entry">Add Entry</string>
+    <string name="action_edit_entry">Edit Entry</string>
+    <string name="action_delete_entry">Delete Entry</string>
+    <string name="edit_entry">Edit Entry</string>
+    <string name="edit_entry_amount_label">Amount</string>
+    <string name="delete_entry_confirm_title">Delete Entry?</string>
+    <string name="delete_entry_confirm_message">Are you sure you want to remove this entry?</string>
 
     <!-- Match center -->
     <string name="total_jackpot">Total Jackpot</string>
@@ -207,6 +221,8 @@
 
     <!-- Fields -->
     <string name="name">Name</string>
+    <string name="person_first_name">First name</string>
+    <string name="person_last_name">Last name</string>
     <string name="note_optional">Note (optional)</string>
     <string name="team_a">Team A</string>
     <string name="team_b">Team B</string>

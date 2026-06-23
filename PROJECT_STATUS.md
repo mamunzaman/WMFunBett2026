@@ -90,6 +90,9 @@
 
 - [x] Jackpot carry-over foundation (display-only, per tipp type)
 - [x] Add Tipp Group menu rules: NOT_STARTED unused types; LIVE/FINISHED blocked
+- [x] Entry edit/delete: row menu, EditEntrySheet, repository updateEntry/deleteEntry
+- [x] Friends screen compact FIFA style; friend detail edit/delete menu
+- [x] Friend/person first + last name (Vorname/Nachname): forms, display rules, backward compat
 
 ## Last Update
-2026-06-21 — Fix Add Tipp Group availability: status-based rules, not minute windows.
+2026-06-21 — Friend/person names split into Vorname + Nachname with display helpers and no DB migration.

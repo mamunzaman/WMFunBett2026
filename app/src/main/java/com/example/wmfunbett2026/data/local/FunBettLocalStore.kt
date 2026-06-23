@@ -27,6 +27,10 @@ class FunBettLocalStore(
         friendDao.insert(friend.toEntity())
     }
 
+    fun deleteFriend(friendId: String) {
+        friendDao.deleteById(friendId)
+    }
+
     fun persistFriends(friends: List<Friend>) {
         friends.forEach { persistFriend(it) }
     }

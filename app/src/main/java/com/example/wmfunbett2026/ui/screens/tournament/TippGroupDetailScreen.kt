@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
+import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.TippGroup
 import com.example.wmfunbett2026.data.jackpot.JackpotCarryOverSummary
@@ -51,6 +52,7 @@ import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.components.AddEntrySheet
 import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
+import com.example.wmfunbett2026.ui.components.EditEntrySheet
 import com.example.wmfunbett2026.ui.components.EntryBlockedInfoSheet
 import com.example.wmfunbett2026.ui.components.EntryClosedInfoCard
 import com.example.wmfunbett2026.ui.components.TippGroupEntryTable
@@ -95,12 +97,16 @@ fun TippGroupDetailScreen(
     var showDeleteGroupDialog by remember { mutableStateOf(false) }
     var showAddEntry by remember { mutableStateOf(false) }
     var showEntryBlockedInfo by remember { mutableStateOf<TippGroupEntryBlockReason?>(null) }
+    var editingEntry by remember { mutableStateOf<Entry?>(null) }
+    var deletingEntry by remember { mutableStateOf<Entry?>(null) }
     var selectedPersonName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(tippGroupId, gameId) {
         showDeleteGroupDialog = false
         showAddEntry = false
         showEntryBlockedInfo = null
+        editingEntry = null
+        deletingEntry = null
         selectedPersonName = null
     }
 
@@ -218,21 +224,54 @@ fun TippGroupDetailScreen(
                             winnerCount = 0,
                             sharePerWinner = 0.0
                         ),
-                        onEntryClick = { entry -> selectedPersonName = entry.friendName }
+                        onEntryClick = { entry -> selectedPersonName = entry.friendName },
+                        onEditEntry = { entry -> editingEntry = entry },
+                        onDeleteEntry = { entry -> deletingEntry = entry }
                     )
                 }
             }
         }
     }
 
+    editingEntry?.let { entry ->
+        EditEntrySheet(
+            tippGroupId = tippGroupId,
+            entry = entry,
+            onDismiss = { editingEntry = null },
+            onSave = { request ->
+                if (FunBettRepository.updateEntry(
+                        tippGroupId = tippGroupId,
+                        entryId = entry.id,
+                        request = request
+                    ) != null
+                ) {
+                    editingEntry = null
+                }
+            }
+        )
+    }
+
+    deletingEntry?.let { entry ->
+        DeleteConfirmDialog(
+            titleRes = R.string.delete_entry_confirm_title,
+            messageRes = R.string.delete_entry_confirm_message,
+            onDismiss = { deletingEntry = null },
+            onConfirm = {
+                deletingEntry = null
+                FunBettRepository.deleteEntry(tippGroupId, entry.id)
+            }
+        )
+    }
+
     if (showAddEntry) {
         AddEntrySheet(
             tippGroupId = tippGroupId,
             onDismiss = { showAddEntry = false },
-            onCreate = { friendId, prediction, note ->
+            onCreate = { firstName, lastName, prediction, note ->
                 if (FunBettRepository.addEntryToTippGroup(
                         tippGroupId = tippGroupId,
-                        friendId = friendId,
+                        firstName = firstName,
+                        lastName = lastName,
                         prediction = prediction,
                         note = note
                     ) != null

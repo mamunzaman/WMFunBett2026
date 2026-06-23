@@ -12,14 +12,16 @@ import com.example.wmfunbett2026.ui.theme.DangerRed
 @Composable
 fun DeleteConfirmDialog(
     onDismiss: () -> Unit,
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
+    titleRes: Int = R.string.delete_confirm_title,
+    messageRes: Int = R.string.delete_confirm_message
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.delete_confirm_title)) },
+        title = { Text(stringResource(titleRes)) },
         text = {
             Text(
-                text = stringResource(R.string.delete_confirm_message),
+                text = stringResource(messageRes),
                 style = MaterialTheme.typography.bodyMedium
             )
         },
