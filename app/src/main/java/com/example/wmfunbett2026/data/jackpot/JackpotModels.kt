@@ -60,7 +60,8 @@ data class JackpotCatchUpContext(
 
 /**
  * Legacy single-pot summary used by current UI and repository.
- * Future screens should use [SplitTippGroupSettlementSummary].
+ * Future screens should use [SplitTippGroupSettlementSummary] with
+ * [JackpotChainCalculator.calculateIncomingJackpotEntryAware].
  */
 data class JackpotCarryOverSummary(
     val incomingJackpot: Double,

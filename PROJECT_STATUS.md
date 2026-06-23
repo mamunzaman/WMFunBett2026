@@ -100,6 +100,7 @@
 - [x] Entry participation persistence (Phase 4A): Room v3 migration, entity + mapper fields
 - [x] Entry participation repository wiring (Phase 4B): LOCAL_ONLY add, safe updateEntry, payment snapshot helper
 - [x] Catch-up slot counting: `calculateCatchUpSlots` + `buildJackpotCatchUpContext` (not wired to UI/repo)
+- [x] Entry-aware incoming jackpot: `calculateIncomingJackpotEntryAware` (not wired to UI/repo)
 
 ## Last Update
-2026-06-21 — Implemented missed jackpot round slot counting in JackpotChainCalculator.
+2026-06-21 — Implemented chronological entry-aware incoming jackpot accumulation.

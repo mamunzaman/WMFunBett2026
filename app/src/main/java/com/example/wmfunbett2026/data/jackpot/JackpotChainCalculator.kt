@@ -200,22 +200,39 @@ object JackpotChainCalculator {
         if (slots <= 0 || entryAmount <= 0.0) 0.0 else slots * entryAmount
 
     /**
-     * Future entry-aware incoming jackpot (not wired; legacy [calculateIncomingJackpot] unchanged).
+     * Entry-aware incoming jackpot for [game] (not wired; legacy [calculateIncomingJackpot] unchanged).
      *
-     * Planned rules:
-     * - Chronological game order only (no TimeScope linking)
-     * - Only FINISHED games affect the chain
-     * - Only JACKPOT entry money accumulates ([jackpotCurrentCollected])
-     * - Chain breaks when a prior game has a jackpot winner (not any local winner)
-     * - LOCAL_ONLY money never carries forward
-     *
-     * TODO Phase 3: implement; wire via repository when winner engine supports split outcomes.
+     * Walks FINISHED prior games in chronological order (no TimeScope).
+     * Accumulates JACKPOT entry money only: currentRoundAmount + jackpotCatchUpAmount per entry.
+     * Stops when a prior game has a JACKPOT winner in any tipp group.
      */
+    @Suppress("UNUSED_PARAMETER")
     fun calculateIncomingJackpotEntryAware(
         round: Round,
         game: Game,
         tippGroup: TippGroup
-    ): Double = 0.0
+    ): Double {
+        val games = gamesInChronologicalOrder(round)
+        val currentIndex = games.indexOfFirst { it.id == game.id }
+        if (currentIndex <= 0) return 0.0
+
+        var incoming = 0.0
+
+        for (index in currentIndex - 1 downTo 0) {
+            val previousGame = games[index]
+            if (!isFinishedGame(previousGame)) continue
+
+            if (gameHasJackpotWinner(previousGame)) {
+                return incoming
+            }
+
+            if (gameHasJackpotActiveTippGroup(previousGame)) {
+                incoming += gameJackpotContribution(previousGame)
+            }
+        }
+
+        return incoming
+    }
 
     /**
      * Future Add Entry breakdown for LOCAL_ONLY vs JACKPOT (not wired).
@@ -274,6 +291,16 @@ object JackpotChainCalculator {
                 EntryParticipation.JACKPOT
             ).isNotEmpty()
         }
+
+    /** Sum of JACKPOT entry stakes (current round + catch-up) across all tipp groups in one game. */
+    private fun gameJackpotContribution(game: Game): Double =
+        game.tippGroups.sumOf { group -> jackpotEntryContribution(group) }
+
+    private fun jackpotEntryContribution(tippGroup: TippGroup): Double =
+        tippGroup.entries
+            .asSequence()
+            .filter { it.participation == EntryParticipation.JACKPOT }
+            .sumOf { it.currentRoundAmount + it.jackpotCatchUpAmount }
 
     /**
      * Future split carry-over summary (not wired).

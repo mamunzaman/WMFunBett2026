@@ -1,9 +1,9 @@
 # Next Task
 
 ## Current Goal
-Implement `calculateIncomingJackpotEntryAware` (jackpot money carry chain).
+Wire repository settlement to entry-aware calculator OR Add Entry JACKPOT UI.
 
 ## Verify Next
-- 3 FINISHED prior games with JACKPOT entries, no jackpot winner → slots = 3
-- Prior game with JACKPOT winner anywhere → chain stops (Game 4 = 0 slots)
-- No TimeScope filter; game-level chronological walk only
+- Game 1–3 JACKPOT money, no jackpot winner → Game 4 incoming = sum of contributions
+- Game 3 JACKPOT winner → Game 4 incoming = 0
+- LOCAL_ONLY entries never contribute; legacy `calculateIncomingJackpot` unchanged
