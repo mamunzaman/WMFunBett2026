@@ -1,9 +1,9 @@
 # Next Task
 
 ## Current Goal
-Phase 2: jackpot chain calculator entry-participation support (design + pure functions).
+Phase 3: split winner engine (local vs jackpot outcomes).
 
 ## Verify Next
-- `EntryParticipation` defaults on existing entries (`LOCAL_ONLY`, catch-up `0`)
-- New read models compile but remain unused
-- No runtime behavior change until repository/calculator wired
+- Legacy `calculateIncomingJackpot` / `calculateCarryOverSummary` unchanged
+- New helpers compile but are not called from repository or UI
+- `calculateCatchUpSlots` returns 0 until Phase 3 chain walk
