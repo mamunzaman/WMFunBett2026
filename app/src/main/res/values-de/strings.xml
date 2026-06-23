@@ -78,7 +78,9 @@
     <string name="action_edit_friend">Freund bearbeiten</string>
     <string name="action_delete_friend">Freund löschen</string>
     <string name="delete_friend_confirm_title">Freund löschen?</string>
-    <string name="delete_friend_confirm_message">Möchtest du diesen Freund wirklich entfernen?</string>
+    <string name="delete_friend_confirm_message">Dieser Freund wird aus der Freundesliste entfernt.</string>
+    <string name="delete_friend_has_entries_message">Dieser Freund hat bereits Tippeinträge und kann nicht gelöscht werden.</string>
+    <string name="friend_actions_title">Freund</string>
     <string name="add_friend_duplicate_error">Ein Freund mit diesem Namen existiert bereits.</string>
     <string name="add_entry_friend_label">Freund</string>
     <string name="add_entry_search_friend">Freund suchen</string>

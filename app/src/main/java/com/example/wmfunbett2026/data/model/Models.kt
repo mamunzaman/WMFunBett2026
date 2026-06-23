@@ -100,6 +100,10 @@ data class FriendEntryHistoryItem(
     val createdAtMs: Long
 )
 
+enum class FriendDeleteBlockReason {
+    HAS_ENTRIES
+}
+
 enum class EntryParticipation {
     LOCAL_ONLY,
     JACKPOT

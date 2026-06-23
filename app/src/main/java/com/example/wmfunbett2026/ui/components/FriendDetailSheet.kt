@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -19,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -74,17 +76,36 @@ fun FriendDetailSheet(
     }
 
     if (showDeleteDialog) {
-        DeleteConfirmDialog(
-            titleRes = R.string.delete_friend_confirm_title,
-            messageRes = R.string.delete_friend_confirm_message,
-            onDismiss = { showDeleteDialog = false },
-            onConfirm = {
-                showDeleteDialog = false
-                if (FunBettRepository.deleteFriend(friendId)) {
-                    onDeleted()
+        val blockReason = FunBettRepository.getFriendDeleteBlockReason(friendId)
+        if (blockReason != null) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text(stringResource(R.string.delete_friend_confirm_title)) },
+                text = {
+                    Text(
+                        text = stringResource(R.string.delete_friend_has_entries_message),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text(stringResource(R.string.ok))
+                    }
                 }
-            }
-        )
+            )
+        } else {
+            DeleteConfirmDialog(
+                titleRes = R.string.delete_friend_confirm_title,
+                messageRes = R.string.delete_friend_confirm_message,
+                onDismiss = { showDeleteDialog = false },
+                onConfirm = {
+                    showDeleteDialog = false
+                    if (FunBettRepository.deleteFriend(friendId)) {
+                        onDeleted()
+                    }
+                }
+            )
+        }
     }
 
     FormBottomSheet(

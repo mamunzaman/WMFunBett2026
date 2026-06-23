@@ -78,7 +78,9 @@
     <string name="action_edit_friend">Edit Friend</string>
     <string name="action_delete_friend">Delete Friend</string>
     <string name="delete_friend_confirm_title">Delete Friend?</string>
-    <string name="delete_friend_confirm_message">Are you sure you want to remove this friend?</string>
+    <string name="delete_friend_confirm_message">This friend will be removed from the friends list.</string>
+    <string name="delete_friend_has_entries_message">This friend already has betting entries and cannot be deleted.</string>
+    <string name="friend_actions_title">Friend</string>
     <string name="add_friend_duplicate_error">A friend with this name already exists.</string>
     <string name="add_entry_friend_label">Friend</string>
     <string name="add_entry_search_friend">Search friend</string>

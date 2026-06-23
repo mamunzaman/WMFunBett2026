@@ -11,6 +11,7 @@ import com.example.wmfunbett2026.data.model.EntryPaymentSnapshot
 import com.example.wmfunbett2026.data.model.EntryUpdateRequest
 import com.example.wmfunbett2026.data.model.Friend
 import com.example.wmfunbett2026.data.model.formatPersonFullName
+import com.example.wmfunbett2026.data.model.FriendDeleteBlockReason
 import com.example.wmfunbett2026.data.model.FriendEntryHistoryItem
 import com.example.wmfunbett2026.data.model.FriendFinancialSummary
 import com.example.wmfunbett2026.data.model.FriendWithStats
@@ -284,11 +285,32 @@ object FunBettRepository {
 
     fun deleteFriend(friendId: String): Boolean {
         if (friendId.isBlank() || getFriend(friendId) == null) return false
+        if (getFriendDeleteBlockReason(friendId) != null) return false
         friendsInternal = friendsInternal.filterNot { it.id == friendId }
         localStore.deleteFriend(friendId)
         notifyChanged()
         return true
     }
+
+    fun getFriendEntryCount(friendId: String): Int {
+        if (friendId.isBlank()) return 0
+        return getAllGames()
+            .flatMap { it.tippGroups }
+            .flatMap { it.entries }
+            .count { it.friendId == friendId }
+    }
+
+    fun getFriendDeleteBlockReason(friendId: String): FriendDeleteBlockReason? {
+        if (friendId.isBlank() || getFriend(friendId) == null) return null
+        return if (getFriendEntryCount(friendId) > 0) {
+            FriendDeleteBlockReason.HAS_ENTRIES
+        } else {
+            null
+        }
+    }
+
+    fun canDeleteFriend(friendId: String): Boolean =
+        getFriendDeleteBlockReason(friendId) == null
 
     fun getSampleLeagueRoundId(leagueId: String): String? = sampleLeagueRoundIds[leagueId]
 

@@ -2,6 +2,7 @@ package com.example.wmfunbett2026.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,22 +35,33 @@ import com.example.wmfunbett2026.ui.theme.TextSecondary
 
 private val FriendListRowShape = RoundedCornerShape(12.dp)
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun FriendListRow(
     item: FriendWithStats,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null
 ) {
     val friend = item.friend
+    val shape = FriendListRowShape
 
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(56.dp)
-            .clip(FriendListRowShape)
+            .clip(shape)
             .background(MatchCardCompactSurface)
-            .border(1.dp, Divider.copy(alpha = 0.65f), FriendListRowShape)
-            .clickable(onClick = onClick)
+            .border(1.dp, Divider.copy(alpha = 0.65f), shape)
+            .then(
+                when {
+                    onLongClick != null -> Modifier.combinedClickable(
+                        onClick = onClick,
+                        onLongClick = onLongClick
+                    )
+                    else -> Modifier.clickable(onClick = onClick)
+                }
+            )
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)

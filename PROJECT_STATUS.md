@@ -81,7 +81,7 @@
 
 ## Pending Tasks
 - [ ] ViewModels and repositories
-- [ ] Edit actions (friends, entries)
+- [ ] Edit actions (entries)
 - [ ] Jackpot management business logic
 - [ ] Winner and scoring logic (jackpot carry-forward, paid status)
 - [ ] Room migrations (when schema changes)
@@ -92,6 +92,7 @@
 - [x] Add Tipp Group menu rules: NOT_STARTED unused types; LIVE/FINISHED blocked
 - [x] Entry edit/delete: row menu, EditEntrySheet, repository updateEntry/deleteEntry
 - [x] Friends screen compact FIFA style; friend detail edit/delete menu
+- [x] Friends screen tap/long-press action sheet: edit friend, delete with entry guard
 - [x] Friend/person first + last name (Vorname/Nachname): forms, display rules, backward compat
 - [x] Add/Edit Entry score prediction UI (Design B): match preview + dual score inputs
 - [x] Entry participation foundation (Phase 1): `EntryParticipation`, Entry fields, split settlement read models
@@ -101,6 +102,7 @@
 - [x] Entry participation repository wiring (Phase 4B): LOCAL_ONLY add, safe updateEntry, payment snapshot helper
 - [x] Match edit/delete via long-press cards; bulk entry delete selection mode
 - [x] Add Entry participation selector (Local only / Join jackpot) with amount preview
+- [x] Friends screen edit/delete via tap/long-press action sheet; delete blocked when friend has entries
 
 ## Last Update
-2026-06-21 — Add Entry sheet: participation radio rows + live catch-up/total preview.
+2026-06-21 — Friends screen: edit/delete action sheet, entry-guarded delete, name propagation on edit.

@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -193,21 +194,32 @@ fun FriendOverviewStatCard(
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun FriendGridCard(
     item: FriendWithStats,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null
 ) {
     val friend = item.friend
+    val shape = FriendGridCardShape
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(FriendGridCardShape)
-            .border(1.dp, Divider.copy(alpha = 0.7f), FriendGridCardShape)
+            .clip(shape)
+            .border(1.dp, Divider.copy(alpha = 0.7f), shape)
+            .then(
+                when {
+                    onLongClick != null -> Modifier.combinedClickable(
+                        onClick = onClick,
+                        onLongClick = onLongClick
+                    )
+                    else -> Modifier.clickable(onClick = onClick)
+                }
+            )
             .background(Surface)
-            .clickable(onClick = onClick)
     ) {
         Column(
             modifier = Modifier
@@ -294,4 +306,27 @@ private fun FriendGridStatCell(
             maxLines = 1
         )
     }
+}
+
+@Composable
+fun FriendRowActionSheet(
+    onDismiss: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    FormActionMenuSheet(
+        title = stringResource(R.string.friend_actions_title),
+        onDismiss = onDismiss,
+        actions = listOf(
+            FormActionMenuItem(
+                label = stringResource(R.string.action_edit_friend),
+                onClick = onEdit
+            ),
+            FormActionMenuItem(
+                label = stringResource(R.string.action_delete_friend),
+                onClick = onDelete,
+                destructive = true
+            )
+        )
+    )
 }

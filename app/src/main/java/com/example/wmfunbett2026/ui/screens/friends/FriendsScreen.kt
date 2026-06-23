@@ -23,12 +23,14 @@ import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SortByAlpha
 import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,11 +47,13 @@ import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.components.AddFriendSheet
+import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
+import com.example.wmfunbett2026.ui.components.EditFriendSheet
 import com.example.wmfunbett2026.ui.components.FormOutlinedTextField
-import com.example.wmfunbett2026.ui.components.FriendDetailSheet
 import com.example.wmfunbett2026.ui.components.FriendGridCard
 import com.example.wmfunbett2026.ui.components.FriendListRow
 import com.example.wmfunbett2026.ui.components.FriendOverviewStatCard
+import com.example.wmfunbett2026.ui.components.FriendRowActionSheet
 import com.example.wmfunbett2026.ui.components.FriendsContentStaggerStart
 import com.example.wmfunbett2026.ui.components.FriendsEntranceHost
 import com.example.wmfunbett2026.ui.components.FriendsToolbarButton
@@ -73,7 +77,10 @@ private enum class FriendsSortMode { NameAsc }
 fun FriendsScreen(modifier: Modifier = Modifier) {
     FunBettRepository.dataVersion.intValue
     var showAddFriendSheet by remember { mutableStateOf(false) }
-    var selectedFriendId by remember { mutableStateOf<String?>(null) }
+    var friendActionTargetId by remember { mutableStateOf<String?>(null) }
+    var editingFriendId by remember { mutableStateOf<String?>(null) }
+    var deletingFriendId by remember { mutableStateOf<String?>(null) }
+    var showDeleteBlockedDialog by remember { mutableStateOf(false) }
     var searchActive by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     var viewMode by remember { mutableStateOf(FriendsViewMode.Grid) }
@@ -105,6 +112,10 @@ fun FriendsScreen(modifier: Modifier = Modifier) {
             friendsWithStats.sumOf { it.activeEntryCount },
             friendsWithStats.sumOf { it.activeAmountTotal }
         )
+    }
+
+    val openFriendActions: (String) -> Unit = { friendId ->
+        friendActionTargetId = friendId
     }
 
     Column(
@@ -242,7 +253,8 @@ fun FriendsScreen(modifier: Modifier = Modifier) {
                                             ) {
                                                 FriendGridCard(
                                                     item = item,
-                                                    onClick = { selectedFriendId = item.friend.id },
+                                                    onClick = { openFriendActions(item.friend.id) },
+                                                    onLongClick = { openFriendActions(item.friend.id) },
                                                     modifier = Modifier.fillMaxWidth()
                                                 )
                                             }
@@ -266,7 +278,8 @@ fun FriendsScreen(modifier: Modifier = Modifier) {
                                 ) {
                                     FriendListRow(
                                         item = item,
-                                        onClick = { selectedFriendId = item.friend.id }
+                                        onClick = { openFriendActions(item.friend.id) },
+                                        onLongClick = { openFriendActions(item.friend.id) }
                                     )
                                 }
                             }
@@ -288,11 +301,67 @@ fun FriendsScreen(modifier: Modifier = Modifier) {
         )
     }
 
-    selectedFriendId?.let { friendId ->
-        FriendDetailSheet(
+    editingFriendId?.let { friendId ->
+        EditFriendSheet(
             friendId = friendId,
-            onDismiss = { selectedFriendId = null },
-            onDeleted = { selectedFriendId = null }
+            onDismiss = { editingFriendId = null },
+            onSave = { firstName, lastName, note ->
+                if (FunBettRepository.updateFriend(friendId, firstName, lastName, note) != null) {
+                    editingFriendId = null
+                }
+            }
+        )
+    }
+
+    if (friendActionTargetId != null) {
+        FriendRowActionSheet(
+            onDismiss = { friendActionTargetId = null },
+            onEdit = {
+                val friendId = friendActionTargetId
+                friendActionTargetId = null
+                editingFriendId = friendId
+            },
+            onDelete = {
+                val friendId = friendActionTargetId
+                friendActionTargetId = null
+                if (friendId != null) {
+                    if (FunBettRepository.canDeleteFriend(friendId)) {
+                        deletingFriendId = friendId
+                    } else {
+                        showDeleteBlockedDialog = true
+                    }
+                }
+            }
+        )
+    }
+
+    deletingFriendId?.let { friendId ->
+        DeleteConfirmDialog(
+            titleRes = R.string.delete_friend_confirm_title,
+            messageRes = R.string.delete_friend_confirm_message,
+            onDismiss = { deletingFriendId = null },
+            onConfirm = {
+                deletingFriendId = null
+                FunBettRepository.deleteFriend(friendId)
+            }
+        )
+    }
+
+    if (showDeleteBlockedDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteBlockedDialog = false },
+            title = { Text(stringResource(R.string.delete_friend_confirm_title)) },
+            text = {
+                Text(
+                    text = stringResource(R.string.delete_friend_has_entries_message),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showDeleteBlockedDialog = false }) {
+                    Text(stringResource(R.string.ok))
+                }
+            }
         )
     }
 }
