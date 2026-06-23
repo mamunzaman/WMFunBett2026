@@ -101,6 +101,7 @@
 - [x] Entry participation repository wiring (Phase 4B): LOCAL_ONLY add, safe updateEntry, payment snapshot helper
 - [x] Catch-up slot counting: `calculateCatchUpSlots` + `buildJackpotCatchUpContext` (not wired to UI/repo)
 - [x] Entry-aware incoming jackpot: `calculateIncomingJackpotEntryAware` (not wired to UI/repo)
+- [x] Split winner engine: `calculateSplit` + `previewSplitPayouts` (not wired to UI/repo)
 
 ## Last Update
-2026-06-21 — Implemented chronological entry-aware incoming jackpot accumulation.
+2026-06-21 — Implemented split local/jackpot winner calculation in TippGroupWinnerEngine.

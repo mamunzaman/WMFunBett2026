@@ -1,6 +1,7 @@
 package com.example.wmfunbett2026.data.winner
 
 import com.example.wmfunbett2026.data.jackpot.JackpotChainBreakSignal
+import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.EntryParticipation
 import com.example.wmfunbett2026.data.model.EntryWinPayout
@@ -50,7 +51,7 @@ sealed class SplitTippGroupWinnerOutcome {
  *
  * **Legacy (wired):** [calculate], [winningEntries], [settlementSummary].
  *
- * **Future (not wired):** [calculateSplit], [previewSplitPayouts], participation filters.
+ * **Split (not wired to UI):** [calculateSplit], [previewSplitPayouts], participation filters.
  */
 object TippGroupWinnerEngine {
 
@@ -158,23 +159,61 @@ object TippGroupWinnerEngine {
         entry.participation == EntryParticipation.LOCAL_ONLY && isWinningEntry(game, entry)
 
     /**
-     * Future split calculation (not wired).
+     * Split local vs jackpot winner calculation (not wired to repository or UI).
      *
-     * Planned rules:
-     * - LOCAL_ONLY winners share [localPot] only
-     * - JACKPOT winners share incoming + jackpot current pot
-     * - Both winner types can coexist in the same tipp group
-     * - Only jackpot winners break the carry chain
-     *
-     * TODO Phase 4: implement using [JackpotChainCalculator.jackpotCurrentCollected] and
-     * [JackpotChainCalculator.localCurrentCollected].
+     * LOCAL_ONLY winners share [localPot] only.
+     * JACKPOT winners share [incomingJackpot] + [jackpotCurrentCollected] (current round stakes only).
+     * Only jackpot winners break the carry chain ([jackpotChainBreakSignal]).
      */
-    @Suppress("UNUSED_PARAMETER")
     fun calculateSplit(
         game: Game,
         tippGroup: TippGroup,
         incomingJackpot: Double
-    ): SplitTippGroupWinnerOutcome = SplitTippGroupWinnerOutcome.Pending
+    ): SplitTippGroupWinnerOutcome {
+        if (!game.hasResult || game.status != MatchStatus.FINISHED) {
+            return SplitTippGroupWinnerOutcome.Pending
+        }
+
+        val localWinners = winningEntriesByParticipation(
+            game,
+            tippGroup,
+            EntryParticipation.LOCAL_ONLY
+        )
+        val jackpotWinners = winningEntriesByParticipation(
+            game,
+            tippGroup,
+            EntryParticipation.JACKPOT
+        )
+
+        val localPot = JackpotChainCalculator.localCurrentCollected(tippGroup)
+        val jackpotCurrentCollected = JackpotChainCalculator.jackpotCurrentCollected(tippGroup)
+        val jackpotTotalPot = incomingJackpot + jackpotCurrentCollected
+
+        val localSharePerWinner = if (localWinners.isNotEmpty()) {
+            localPot / localWinners.size
+        } else {
+            0.0
+        }
+        val jackpotSharePerWinner = if (jackpotWinners.isNotEmpty()) {
+            jackpotTotalPot / jackpotWinners.size
+        } else {
+            0.0
+        }
+
+        val resolved = SplitTippGroupWinnerOutcome.Resolved(
+            localWinners = localWinners,
+            jackpotWinners = jackpotWinners,
+            localPot = localPot,
+            localSharePerWinner = localSharePerWinner,
+            incomingJackpot = incomingJackpot,
+            jackpotCurrentCollected = jackpotCurrentCollected,
+            jackpotTotalPot = jackpotTotalPot,
+            jackpotSharePerWinner = jackpotSharePerWinner,
+            payoutsByEntryId = emptyMap()
+        )
+
+        return resolved.copy(payoutsByEntryId = buildEntryPayoutMap(resolved))
+    }
 
     fun buildEntryPayoutMap(resolved: SplitTippGroupWinnerOutcome.Resolved): Map<String, EntryWinPayout> {
         val payouts = LinkedHashMap<String, EntryWinPayout>(resolved.payoutsByEntryId.size)
@@ -248,16 +287,15 @@ object TippGroupWinnerEngine {
         }
     }
 
-    /**
-     * Future split settlement status (not wired).
-     * TODO Phase 4: map to [SplitTippGroupSettlementSummary] via jackpot calculator.
-     */
-    @Suppress("UNUSED_PARAMETER")
     fun previewSplitPayouts(
         game: Game,
         tippGroup: TippGroup,
         incomingJackpot: Double
-    ): TippGroupSplitPayouts? = null
+    ): TippGroupSplitPayouts? =
+        when (val outcome = calculateSplit(game, tippGroup, incomingJackpot)) {
+            is SplitTippGroupWinnerOutcome.Resolved -> toSplitPayouts(outcome)
+            SplitTippGroupWinnerOutcome.Pending -> null
+        }
 
     // endregion
 }
