@@ -103,6 +103,7 @@
 - [x] Entry-aware incoming jackpot: `calculateIncomingJackpotEntryAware` (not wired to UI/repo)
 - [x] Split winner engine: `calculateSplit` + `previewSplitPayouts` (not wired to UI/repo)
 - [x] Split carry-over summary: `previewSplitCarryOverSummary` (not wired to UI/repo)
+- [x] Repository jackpot read APIs (Phase 5B.1): join breakdown, split carry-over, entry win payout
 
 ## Last Update
-2026-06-21 — Implemented split carry-over settlement preview in JackpotChainCalculator.
+2026-06-21 — Phase 5B.1: parallel repository APIs for Add Entry jackpot UI (no UI wiring yet).

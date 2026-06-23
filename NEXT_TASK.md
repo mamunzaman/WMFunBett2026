@@ -1,9 +1,9 @@
 # Next Task
 
 ## Current Goal
-Wire repository settlement to split engine OR Add Entry JACKPOT UI.
+Wire Add Entry UI to `getEntryJoinBreakdown` + JACKPOT participation create (Phase 5B.2).
 
 ## Verify Next
-- FINISHED + no winners → `carriedOut = jackpotTotalPot`, `local.closed` if localPot > 0
-- JACKPOT winner → `carriedOut = 0`; local winner only does not reset jackpot carry
-- Legacy `JackpotCarryOverSummary` / UI unchanged
+- Add Entry sheet shows LOCAL vs JACKPOT breakdown from `getEntryJoinBreakdown`
+- `addEntryToTippGroup` still LOCAL_ONLY until 5B.2 enables JACKPOT create
+- Legacy settlement APIs unchanged
