@@ -2,7 +2,20 @@
 
 Authoritative rules for mixed **LOCAL_ONLY** and **JACKPOT** participants in one Tipp Group round.
 
-**Status:** Documented only. Calculation engine not yet fully aligned to every V2 carry edge case.
+**Status:** Final business logic approved (2026-06-21). `JackpotV2Calculator` implemented and unit-tested.
+
+---
+
+## Final Rules (Approved)
+
+- Current Tipp pot is shared by **all** correct winners.
+- Jackpot pot is shared only by correct **jackpot-qualified** winners.
+- Local players never win jackpot money.
+- Jackpot-qualified players can win **both** current pot and jackpot pot.
+- Local money never carries automatically to jackpot.
+- In a no-winner mixed round, local money is **returned/closed** (not added to jackpot).
+- Jackpot participant money **carries forward** when there is no jackpot-qualified winner.
+- Late jackpot join requires paying **all missed chain Tipp amounts** plus the **current Tipp amount**.
 
 ---
 
@@ -126,6 +139,137 @@ Local-only money is **never** automatically added to the jackpot carry.
 
 ---
 
+## Final Approved Scenarios
+
+All amounts use **current Tipp amount = €5** per participant unless noted.
+
+### Scenario 1 — Jackpot starts
+
+**Tipp 1**
+
+| Player | Type | Stake |
+|---|---|---|
+| Ole | JACKPOT | €5 |
+| Thomas | JACKPOT | €5 |
+| Bello | JACKPOT | €5 |
+
+**Result:** No winner
+
+**Jackpot carry:** **€15**
+
+---
+
+### Scenario 2 — Jackpot grows
+
+**Tipp 2** (after Tipp 1 carry €15)
+
+| Player | Type | Stake |
+|---|---|---|
+| Ole | JACKPOT | €5 |
+| Thomas | JACKPOT | €5 |
+| Bello | JACKPOT | €5 |
+
+**Result:** No winner
+
+**Jackpot carry:** €15 + €15 = **€30**
+
+---
+
+### Scenario 3 — Local + Jackpot winners
+
+**Previous jackpot:** €30
+
+**Current Tipp**
+
+| Player | Type | Stake |
+|---|---|---|
+| Ole | JACKPOT | €5 |
+| Thomas | JACKPOT | €5 |
+| Mamun | LOCAL_ONLY | €5 |
+
+**Current pot:** €15  
+**Winners:** Ole + Mamun (Thomas wrong)
+
+**Current pot split:** €15 ÷ 2 = **€7.50 each**
+
+**Jackpot:** €30 → Ole only (sole jackpot-qualified winner)
+
+| Player | Current | Jackpot | **Total** |
+|---|---|---|---|
+| Ole | €7.50 | €30.00 | **€37.50** |
+| Mamun | €7.50 | — | **€7.50** |
+
+**Jackpot carry after:** €0
+
+---
+
+### Scenario 4 — Local winner only
+
+**Previous jackpot:** €30  
+**Current pot:** €15 (same 3-player mix as Scenario 3)
+
+**Winner:** Mamun (LOCAL_ONLY) only
+
+| Player | Payout |
+|---|---|
+| Mamun | **€15** (full current pot) |
+
+**Jackpot carry after:** **€30** (unchanged — no jackpot-qualified winner)
+
+---
+
+### Scenario 5 — Jackpot winner only
+
+**Previous jackpot:** €30  
+**Current pot:** €15
+
+**Winner:** Ole (JACKPOT) only
+
+| Component | Amount |
+|---|---|
+| Current pot | €15 |
+| Jackpot | €30 |
+| **Ole total** | **€45** |
+
+**Jackpot carry after:** **€0**
+
+---
+
+### Scenario 6 — No winner in mixed round
+
+**Previous jackpot:** €30
+
+**Current Tipp**
+
+| Player | Type | Stake |
+|---|---|---|
+| Ole | JACKPOT | €5 |
+| Thomas | JACKPOT | €5 |
+| Mamun | LOCAL_ONLY | €5 |
+
+**Result:** Nobody correct
+
+| Pool | Outcome |
+|---|---|
+| Mamun local €5 | Returned / closed |
+| Ole + Thomas jackpot stakes | €10 added to jackpot carry |
+
+**New jackpot:** €30 + €10 = **€40**
+
+---
+
+### Scenario 7 — Late jackpot join
+
+**Previous chain:** Tipp 1 €5 + Tipp 2 €5 (no jackpot winner yet)  
+**Current Tipp 3 amount:** €5
+
+| Join type | Pays | Reason |
+|---|---|---|
+| **Jackpot (late)** | **€15** | €5 + €5 catch-up + €5 current |
+| **Local only** | **€5** | Current Tipp amount only |
+
+---
+
 ## Carry Rules Summary
 
 | Situation | Jackpot carry after round |
@@ -146,10 +290,11 @@ jackpotWinnerPayout = currentShare + jackpotShare
 
 ---
 
-## Out of Scope (V2 doc only)
+## Out of Scope (this document)
 
-- UI layout and settlement label text
+- Kotlin calculator implementation
+- UI / repository changes
 - Room schema / persistence
 - Friends, match edit/delete, hierarchy changes
 
-Implementation must follow this document in a future calculation pass.
+Next step: implement calculator to match **Final Approved Scenarios** above.

@@ -108,6 +108,9 @@
 - [x] Cases A–E: mixed local/jackpot payout + carry (local winner keeps prior carry; no winner adds jackpot stakes)
 - [x] Settlement panel split labels: current share vs jackpot share; fallback share fixed
 - [x] Jackpot Rules V2 documented (`docs/JACKPOT_RULES_V2.md`)
+- [x] Jackpot V2 final approved scenarios (Scenarios 1–7) — business logic locked
+- [x] `JackpotV2Calculator` + 6 scenario unit tests (Scenarios 1–6)
+- [x] `TippGroupWinnerEngine.calculateSplit` delegates to V2 calculator
 
 ## Last Update
-2026-06-21 — Jackpot Rules V2 spec written (doc only, no calc changes).
+2026-06-21 — Jackpot V2 calculator implemented; all unit tests pass.

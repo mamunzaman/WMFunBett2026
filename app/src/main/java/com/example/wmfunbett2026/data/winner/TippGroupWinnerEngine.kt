@@ -1,6 +1,9 @@
 package com.example.wmfunbett2026.data.winner
 
 import com.example.wmfunbett2026.data.jackpot.JackpotChainBreakSignal
+import com.example.wmfunbett2026.data.jackpot.JackpotV2Calculator
+import com.example.wmfunbett2026.data.jackpot.JackpotV2EntryInput
+import com.example.wmfunbett2026.data.jackpot.JackpotV2RoundInput
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.EntryParticipation
 import com.example.wmfunbett2026.data.model.EntryWinPayout
@@ -169,31 +172,63 @@ object TippGroupWinnerEngine {
      * TODO Phase 4: implement using [JackpotChainCalculator.jackpotCurrentCollected] and
      * [JackpotChainCalculator.localCurrentCollected].
      */
-    @Suppress("UNUSED_PARAMETER")
     fun calculateSplit(
         game: Game,
         tippGroup: TippGroup,
         incomingJackpot: Double
-    ): SplitTippGroupWinnerOutcome = SplitTippGroupWinnerOutcome.Pending
+    ): SplitTippGroupWinnerOutcome {
+        if (!game.hasResult || game.status != MatchStatus.FINISHED) {
+            return SplitTippGroupWinnerOutcome.Pending
+        }
 
-    fun buildEntryPayoutMap(resolved: SplitTippGroupWinnerOutcome.Resolved): Map<String, EntryWinPayout> {
-        val payouts = LinkedHashMap<String, EntryWinPayout>(resolved.payoutsByEntryId.size)
-        resolved.localWinners.forEach { entry ->
-            payouts[entry.id] = EntryWinPayout(
+        val entries = tippGroup.entries.map { entry ->
+            JackpotV2EntryInput(
                 entryId = entry.id,
-                participation = EntryParticipation.LOCAL_ONLY,
-                winAmount = resolved.localSharePerWinner
+                participation = entry.participation,
+                currentRoundAmount = entry.currentRoundAmount,
+                isCorrect = isWinningEntry(game, entry)
             )
         }
-        resolved.jackpotWinners.forEach { entry ->
-            payouts[entry.id] = EntryWinPayout(
-                entryId = entry.id,
-                participation = EntryParticipation.JACKPOT,
-                winAmount = resolved.jackpotSharePerWinner
+
+        val v2 = JackpotV2Calculator.calculate(
+            JackpotV2RoundInput(incomingJackpot = incomingJackpot, entries = entries)
+        )
+
+        val localWinners = tippGroup.entries.filter {
+            it.participation == EntryParticipation.LOCAL_ONLY && isWinningEntry(game, it)
+        }
+        val jackpotWinners = tippGroup.entries.filter {
+            it.participation == EntryParticipation.JACKPOT && isWinningEntry(game, it)
+        }
+
+        val payoutsByEntryId = v2.payoutsByEntryId.mapValues { (entryId, amount) ->
+            val entry = tippGroup.entries.first { it.id == entryId }
+            EntryWinPayout(
+                entryId = entryId,
+                participation = entry.participation,
+                winAmount = amount
             )
         }
-        return payouts
+
+        return SplitTippGroupWinnerOutcome.Resolved(
+            localWinners = localWinners,
+            jackpotWinners = jackpotWinners,
+            localPot = v2.currentPot,
+            localSharePerWinner = v2.currentSharePerWinner,
+            incomingJackpot = incomingJackpot,
+            jackpotCurrentCollected = tippGroup.entries
+                .filter { it.participation == EntryParticipation.JACKPOT }
+                .sumOf { it.currentRoundAmount },
+            jackpotTotalPot = incomingJackpot + tippGroup.entries
+                .filter { it.participation == EntryParticipation.JACKPOT }
+                .sumOf { it.currentRoundAmount },
+            jackpotSharePerWinner = v2.jackpotSharePerWinner,
+            payoutsByEntryId = payoutsByEntryId
+        )
     }
+
+    fun buildEntryPayoutMap(resolved: SplitTippGroupWinnerOutcome.Resolved): Map<String, EntryWinPayout> =
+        resolved.payoutsByEntryId
 
     fun toLocalWinnerPool(resolved: SplitTippGroupWinnerOutcome.Resolved): LocalWinnerPool? {
         if (resolved.localWinners.isEmpty()) return null
@@ -252,12 +287,18 @@ object TippGroupWinnerEngine {
      * Future split settlement status (not wired).
      * TODO Phase 4: map to [SplitTippGroupSettlementSummary] via jackpot calculator.
      */
-    @Suppress("UNUSED_PARAMETER")
     fun previewSplitPayouts(
         game: Game,
         tippGroup: TippGroup,
         incomingJackpot: Double
-    ): TippGroupSplitPayouts? = null
+    ): TippGroupSplitPayouts? {
+        val outcome = calculateSplit(game, tippGroup, incomingJackpot)
+        return if (outcome is SplitTippGroupWinnerOutcome.Resolved) {
+            toSplitPayouts(outcome)
+        } else {
+            null
+        }
+    }
 
     // endregion
 }

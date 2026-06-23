@@ -110,3 +110,29 @@ data class JackpotChainBreakSignal(
     val hasJackpotWinner: Boolean,
     val jackpotWinnerEntryIds: List<String> = emptyList()
 )
+
+/** One entry in a V2 settlement round (pure calculator input). */
+data class JackpotV2EntryInput(
+    val entryId: String,
+    val participation: EntryParticipation,
+    val currentRoundAmount: Double,
+    val isCorrect: Boolean
+)
+
+data class JackpotV2RoundInput(
+    val incomingJackpot: Double,
+    val entries: List<JackpotV2EntryInput>
+)
+
+/** Result of [JackpotV2Calculator.calculate]. */
+data class JackpotV2Result(
+    val currentPot: Double,
+    val jackpotPot: Double,
+    val currentWinners: List<String>,
+    val jackpotWinners: List<String>,
+    val currentSharePerWinner: Double,
+    val jackpotSharePerWinner: Double,
+    val payoutsByEntryId: Map<String, Double>,
+    val carryForwardJackpot: Double,
+    val localReturnedAmount: Double
+)
