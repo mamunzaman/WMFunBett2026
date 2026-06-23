@@ -62,6 +62,7 @@ fun LeaguesNavGraph(
             val leagueId = backStackEntry.arguments?.getString("leagueId").orEmpty()
             LeagueMatchesScreen(
                 leagueId = leagueId,
+                navController = navController,
                 onBackClick = { navController.popBackStack() },
                 onGameClick = { item ->
                     navController.navigate(

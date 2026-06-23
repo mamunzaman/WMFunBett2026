@@ -1,8 +1,10 @@
 package com.example.wmfunbett2026.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -91,11 +93,13 @@ fun MatchCardShell(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 private fun MatchCardContainer(
     game: Game,
     onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
@@ -103,7 +107,16 @@ private fun MatchCardContainer(
             .fillMaxWidth()
             .shadow(elevation = 6.dp, shape = PremiumCardShape, ambientColor = Color.Black.copy(0.35f))
             .clip(PremiumCardShape)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .then(
+                when {
+                    onClick != null && onLongClick != null -> Modifier.combinedClickable(
+                        onClick = onClick,
+                        onLongClick = onLongClick
+                    )
+                    onClick != null -> Modifier.clickable(onClick = onClick)
+                    else -> Modifier
+                }
+            )
             .background(matchCardSurfaceColor(game, MatchCardDisplayMode.LIST))
             .border(width = 1.dp, color = GlassBorder, shape = PremiumCardShape)
             .padding(16.dp),
@@ -241,11 +254,13 @@ fun MatchCard(
     game: Game,
     matchdayLabel: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null
 ) {
     MatchCardContainer(
         game = game,
         onClick = onClick,
+        onLongClick = onLongClick,
         modifier = modifier
     ) {
         MatchCardContent(game = game, matchdayLabel = matchdayLabel)

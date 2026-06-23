@@ -172,6 +172,17 @@
     <string name="action_add_tipp_group">Tipp-Gruppe hinzufügen</string>
     <string name="action_add_entry">Eintrag hinzufügen</string>
     <string name="action_edit_entry">Eintrag bearbeiten</string>
+    <string name="action_edit_match">Spiel bearbeiten</string>
+    <string name="action_delete_match">Spiel löschen</string>
+    <string name="action_select_multiple_entries">Mehrere auswählen</string>
+    <string name="edit_match_sheet_title">Spiel bearbeiten</string>
+    <string name="match_actions_title">Spiel</string>
+    <string name="entry_actions_title">Eintrag</string>
+    <string name="entry_selection_count">%1$d ausgewählt</string>
+    <string name="delete_match_confirm_title">Spiel löschen?</string>
+    <string name="delete_match_confirm_message">Das Spiel und alle Tipp-Gruppen/Einträge werden entfernt.</string>
+    <string name="delete_entries_bulk_confirm_title">Ausgewählte Einträge löschen?</string>
+    <string name="delete_entries_bulk_confirm_message">Entfernt nur die ausgewählten Personen aus dieser Tipp-Runde.</string>
     <string name="action_delete_entry">Eintrag löschen</string>
     <string name="edit_entry">Eintrag bearbeiten</string>
     <string name="edit_entry_amount_label">Betrag</string>

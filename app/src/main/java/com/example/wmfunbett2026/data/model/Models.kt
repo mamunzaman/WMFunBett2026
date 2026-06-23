@@ -284,3 +284,45 @@ fun Game.matchPreviewTimeOrNull(): String? {
     val timeMatch = Regex("""\b\d{1,2}:\d{2}\b""").find(label)?.value
     return timeMatch
 }
+
+data class GameScheduleParts(
+    val date: java.time.LocalDate?,
+    val time: java.time.LocalTime?
+)
+
+fun Game.parseScheduleParts(reference: java.time.LocalDate = java.time.LocalDate.now()): GameScheduleParts {
+    val label = dateTimeLabel.trim()
+    if (label.isBlank() || label.equals("TBD", ignoreCase = true)) {
+        return GameScheduleParts(date = null, time = null)
+    }
+
+    val parts = label.split("·").map { it.trim() }.filter { it.isNotEmpty() }
+    val dateFormatter = java.time.format.DateTimeFormatter.ofPattern(
+        "EEE d MMM yyyy",
+        java.util.Locale.getDefault()
+    )
+    val timeFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm", java.util.Locale.getDefault())
+
+    fun parseTime(value: String): java.time.LocalTime? =
+        runCatching { java.time.LocalTime.parse(value.trim(), timeFormatter) }.getOrNull()
+
+    fun parseDate(value: String): java.time.LocalDate? =
+        runCatching {
+            java.time.LocalDate.parse("${value.trim()} ${reference.year}", dateFormatter)
+        }.getOrNull()
+
+    return when {
+        parts.size >= 2 -> GameScheduleParts(
+            date = parseDate(parts.first()),
+            time = parseTime(parts[1])
+        )
+        parts.size == 1 -> {
+            val part = parts.first()
+            when {
+                part.contains(':') -> GameScheduleParts(date = null, time = parseTime(part))
+                else -> GameScheduleParts(date = parseDate(part), time = null)
+            }
+        }
+        else -> GameScheduleParts(date = null, time = null)
+    }
+}

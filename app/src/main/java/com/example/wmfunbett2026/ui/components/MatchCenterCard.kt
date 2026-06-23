@@ -54,6 +54,7 @@ fun MatchCenterCard(
     matchdayLabel: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
     staggerIndex: Int = 0,
     entranceSession: Int = 0,
     animateEntrance: Boolean = false
@@ -74,7 +75,8 @@ fun MatchCenterCard(
             MatchCard(
                 game = game,
                 matchdayLabel = matchdayLabel,
-                onClick = onClick
+                onClick = onClick,
+                onLongClick = onLongClick
             )
         }
     }

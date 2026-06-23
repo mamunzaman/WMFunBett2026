@@ -55,10 +55,13 @@ import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.EditEntrySheet
 import com.example.wmfunbett2026.ui.components.EntryBlockedInfoSheet
 import com.example.wmfunbett2026.ui.components.EntryClosedInfoCard
+import com.example.wmfunbett2026.ui.components.EntryRowActionSheet
 import com.example.wmfunbett2026.ui.components.TippGroupEntryTable
 import com.example.wmfunbett2026.ui.components.FormBottomSheet
 import com.example.wmfunbett2026.ui.components.GlassPrimaryActionButton
 import com.example.wmfunbett2026.ui.components.GlassScopePill
+import androidx.compose.material3.TextButton
+import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
@@ -99,6 +102,11 @@ fun TippGroupDetailScreen(
     var showEntryBlockedInfo by remember { mutableStateOf<TippGroupEntryBlockReason?>(null) }
     var editingEntry by remember { mutableStateOf<Entry?>(null) }
     var deletingEntry by remember { mutableStateOf<Entry?>(null) }
+    var entryActionTarget by remember { mutableStateOf<Entry?>(null) }
+    var showEntryActionSheet by remember { mutableStateOf(false) }
+    var selectionMode by remember { mutableStateOf(false) }
+    var selectedEntryIds by remember { mutableStateOf(setOf<String>()) }
+    var showBulkDeleteConfirm by remember { mutableStateOf(false) }
     var selectedPersonName by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(tippGroupId, gameId) {
@@ -107,6 +115,11 @@ fun TippGroupDetailScreen(
         showEntryBlockedInfo = null
         editingEntry = null
         deletingEntry = null
+        entryActionTarget = null
+        showEntryActionSheet = false
+        selectionMode = false
+        selectedEntryIds = emptySet()
+        showBulkDeleteConfirm = false
         selectedPersonName = null
     }
 
@@ -144,10 +157,14 @@ fun TippGroupDetailScreen(
     }
 
     HierarchyScreenLayout(
-        title = tippGroup?.title ?: "Tipp Group",
+        title = if (selectionMode) {
+            stringResource(R.string.entry_selection_count, selectedEntryIds.size)
+        } else {
+            tippGroup?.title ?: "Tipp Group"
+        },
         breadcrumbs = HierarchyLabels.forTippGroupDetail(roundId, gameId, tippGroupId),
         onBackClick = onBackClick,
-        onDeleteClick = if (tippGroup != null) {{ showDeleteGroupDialog = true }} else null,
+        onDeleteClick = if (tippGroup != null && !selectionMode) {{ showDeleteGroupDialog = true }} else null,
         deleteEnabled = entries.isEmpty(),
         modifier = modifier
     ) { contentModifier ->
@@ -203,6 +220,22 @@ fun TippGroupDetailScreen(
                 }
             }
             item(key = "section") { HierarchySectionHeader(title = "Entries") }
+            if (selectionMode) {
+                item(key = "selection_bar") {
+                    EntryBulkSelectionBar(
+                        selectedCount = selectedEntryIds.size,
+                        onCancel = {
+                            selectionMode = false
+                            selectedEntryIds = emptySet()
+                        },
+                        onDeleteSelected = {
+                            if (selectedEntryIds.isNotEmpty()) {
+                                showBulkDeleteConfirm = true
+                            }
+                        }
+                    )
+                }
+            }
             if (entries.isEmpty()) {
                 item(key = "empty") {
                     Text(
@@ -226,7 +259,20 @@ fun TippGroupDetailScreen(
                         ),
                         onEntryClick = { entry -> selectedPersonName = entry.friendName },
                         onEditEntry = { entry -> editingEntry = entry },
-                        onDeleteEntry = { entry -> deletingEntry = entry }
+                        onDeleteEntry = { entry -> deletingEntry = entry },
+                        selectionMode = selectionMode,
+                        selectedEntryIds = selectedEntryIds,
+                        onToggleEntrySelection = { entry ->
+                            selectedEntryIds = if (entry.id in selectedEntryIds) {
+                                selectedEntryIds - entry.id
+                            } else {
+                                selectedEntryIds + entry.id
+                            }
+                        },
+                        onEntryLongPress = { entry ->
+                            entryActionTarget = entry
+                            showEntryActionSheet = true
+                        }
                     )
                 }
             }
@@ -259,6 +305,40 @@ fun TippGroupDetailScreen(
             onConfirm = {
                 deletingEntry = null
                 FunBettRepository.deleteEntry(tippGroupId, entry.id)
+            }
+        )
+    }
+
+    if (showBulkDeleteConfirm) {
+        DeleteConfirmDialog(
+            titleRes = R.string.delete_entries_bulk_confirm_title,
+            messageRes = R.string.delete_entries_bulk_confirm_message,
+            onDismiss = { showBulkDeleteConfirm = false },
+            onConfirm = {
+                FunBettRepository.deleteEntries(tippGroupId, selectedEntryIds)
+                showBulkDeleteConfirm = false
+                selectionMode = false
+                selectedEntryIds = emptySet()
+            }
+        )
+    }
+
+    if (showEntryActionSheet && entryActionTarget != null) {
+        val target = entryActionTarget!!
+        EntryRowActionSheet(
+            onDismiss = {
+                showEntryActionSheet = false
+                entryActionTarget = null
+            },
+            onEdit = {
+                editingEntry = target
+            },
+            onDelete = {
+                deletingEntry = target
+            },
+            onSelectMultiple = {
+                selectionMode = true
+                selectedEntryIds = setOf(target.id)
             }
         )
     }
@@ -641,6 +721,48 @@ private fun collectPersonGameTipps(game: Game, personName: String): List<PersonG
 private fun entryAmountLabel(tippGroup: TippGroup): String {
     val amount = JackpotChainCalculator.requiredPerPersonAmount(tippGroup)
     return amount?.toEuroLabel() ?: "—"
+}
+
+@Composable
+private fun EntryBulkSelectionBar(
+    selectedCount: Int,
+    onCancel: () -> Unit,
+    onDeleteSelected: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(TippGroupDetailPanelShape)
+            .background(Surface)
+            .border(1.dp, Divider.copy(alpha = 0.85f), TippGroupDetailPanelShape)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(R.string.entry_selection_count, selectedCount),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = PrimaryText
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            TextButton(onClick = onCancel) {
+                Text(
+                    text = stringResource(R.string.cancel),
+                    color = SecondaryText
+                )
+            }
+            if (selectedCount > 0) {
+                TextButton(onClick = onDeleteSelected) {
+                    Text(
+                        text = stringResource(R.string.delete),
+                        color = DangerRed
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)

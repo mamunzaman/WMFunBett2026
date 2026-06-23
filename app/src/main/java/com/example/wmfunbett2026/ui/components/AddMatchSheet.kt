@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.data.model.Game
+import com.example.wmfunbett2026.data.model.parseScheduleParts
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.matchcenter.MatchTeamCountryCatalog
 import com.example.wmfunbett2026.ui.matchcenter.loadLeagueSummaries
@@ -42,10 +44,23 @@ private val AddMatchDisplayDateFormatter =
 private val AddMatchDisplayTimeFormatter =
     DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
 
+private val AddMatchStorageDateFormatter =
+    DateTimeFormatter.ofPattern("EEE, d MMM yyyy", Locale.getDefault())
+
+private val AddMatchStorageTimeFormatter =
+    DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
+
+data class EditMatchSheetTarget(
+    val gameId: String,
+    val roundId: String,
+    val dayName: String
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMatchSheet(
     lockedLeagueId: String? = null,
+    editTarget: EditMatchSheetTarget? = null,
     onDismiss: () -> Unit,
     onCreate: (
         leagueId: String,
@@ -55,28 +70,50 @@ fun AddMatchSheet(
         day: LocalDate,
         time: LocalTime,
         note: String?
-    ) -> Unit
+    ) -> Unit,
+    onSave: (
+        gameId: String,
+        roundId: String,
+        leagueId: String,
+        leagueName: String,
+        teamA: String,
+        teamB: String,
+        day: LocalDate,
+        time: LocalTime,
+        note: String?
+    ) -> Unit = { _, _, _, _, _, _, _, _, _ -> }
 ) {
     FunBettRepository.dataVersion.intValue
+    val isEditMode = editTarget != null
+    val editGame = remember(editTarget, FunBettRepository.dataVersion.intValue) {
+        editTarget?.gameId?.let { FunBettRepository.getGame(it) }
+    }
+    val editSchedule = remember(editGame) {
+        editGame?.parseScheduleParts()
+    }
     val leagueOptions = remember(FunBettRepository.dataVersion.intValue) {
         loadSelectableLeagueRoundOptions()
     }
-    val lockedLeague = remember(lockedLeagueId, leagueOptions) {
-        lockedLeagueId?.let { id -> leagueOptions.find { it.leagueId == id } }
+    val resolvedLockedLeagueId = lockedLeagueId ?: editTarget?.roundId?.let { roundId ->
+        loadLeagueSummaries().find { it.roundId == roundId }?.id
     }
-    val lockedLeagueName = remember(lockedLeagueId, leagueOptions) {
+    val lockedLeague = remember(resolvedLockedLeagueId, leagueOptions) {
+        resolvedLockedLeagueId?.let { id -> leagueOptions.find { it.leagueId == id } }
+    }
+    val lockedLeagueName = remember(resolvedLockedLeagueId, leagueOptions) {
         lockedLeague?.displayName
-            ?: lockedLeagueId?.let { id -> loadLeagueSummaries().find { it.id == id }?.name }
+            ?: resolvedLockedLeagueId?.let { id -> loadLeagueSummaries().find { it.id == id }?.name }
     }
 
-    var selectedLeagueId by remember(lockedLeagueId, leagueOptions) {
-        mutableStateOf(lockedLeagueId ?: leagueOptions.firstOrNull()?.leagueId.orEmpty())
+    var selectedLeagueId by remember(resolvedLockedLeagueId, leagueOptions, editTarget) {
+        mutableStateOf(resolvedLockedLeagueId ?: leagueOptions.firstOrNull()?.leagueId.orEmpty())
     }
-    var teamA by remember { mutableStateOf("") }
-    var teamB by remember { mutableStateOf("") }
-    var selectedDay by remember { mutableStateOf<LocalDate?>(null) }
-    var selectedTime by remember { mutableStateOf<LocalTime?>(null) }
-    var note by remember { mutableStateOf("") }
+    var teamA by remember(editGame?.id) { mutableStateOf(editGame?.teamA.orEmpty()) }
+    var teamB by remember(editGame?.id) { mutableStateOf(editGame?.teamB.orEmpty()) }
+    var selectedDay by remember(editGame?.id) { mutableStateOf(editSchedule?.date) }
+    var selectedTime by remember(editGame?.id) { mutableStateOf(editSchedule?.time) }
+    var note by remember(editGame?.id) { mutableStateOf(editGame?.note.orEmpty()) }
+    val initialDay = remember(editGame?.id) { editSchedule?.date }
 
     var leagueMenuExpanded by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
@@ -84,39 +121,68 @@ fun AddMatchSheet(
     var dayDateError by remember { mutableStateOf(false) }
 
     val today = remember { LocalDate.now() }
-    val isDayValid = selectedDay?.let { FunBettRepository.isMatchDateAllowed(it, today) } == true
-    val effectiveLeagueId = lockedLeagueId ?: selectedLeagueId
+    val isDayValid = selectedDay?.let { day ->
+        day == initialDay || FunBettRepository.isMatchDateAllowed(day, today)
+    } == true
+    val effectiveLeagueId = resolvedLockedLeagueId ?: selectedLeagueId
     val effectiveLeague = leagueOptions.find { it.leagueId == effectiveLeagueId }
-    val canCreate = effectiveLeague != null &&
+    val canSave = (if (isEditMode) editGame != null else true) &&
+        (effectiveLeague != null || isEditMode) &&
         teamA.isNotBlank() &&
         teamB.isNotBlank() &&
         isDayValid &&
+        selectedDay != null &&
         selectedTime != null &&
         !dayDateError
 
     FormBottomSheet(
-        title = stringResource(R.string.add_match_sheet_title),
+        title = stringResource(
+            if (isEditMode) R.string.edit_match_sheet_title else R.string.add_match_sheet_title
+        ),
         onDismiss = onDismiss,
-        primaryActionLabel = stringResource(R.string.create),
+        primaryActionLabel = stringResource(if (isEditMode) R.string.save else R.string.create),
         onPrimaryAction = {
-            val league = effectiveLeague ?: return@FormBottomSheet
-            onCreate(
-                league.leagueId,
-                league.displayName,
-                MatchTeamCountryCatalog.normalizeForStorage(teamA),
-                MatchTeamCountryCatalog.normalizeForStorage(teamB),
-                selectedDay!!,
-                selectedTime!!,
-                note.trim().takeIf { it.isNotEmpty() }
-            )
+            val day = selectedDay ?: return@FormBottomSheet
+            val time = selectedTime ?: return@FormBottomSheet
+            val trimmedNote = note.trim().takeIf { it.isNotEmpty() }
+            val normalizedTeamA = MatchTeamCountryCatalog.normalizeForStorage(teamA)
+            val normalizedTeamB = MatchTeamCountryCatalog.normalizeForStorage(teamB)
+            if (isEditMode) {
+                val target = editTarget ?: return@FormBottomSheet
+                val leagueName = effectiveLeague?.displayName
+                    ?: lockedLeagueName
+                    ?: target.roundId
+                onSave(
+                    target.gameId,
+                    target.roundId,
+                    effectiveLeagueId,
+                    leagueName,
+                    normalizedTeamA,
+                    normalizedTeamB,
+                    day,
+                    time,
+                    trimmedNote
+                )
+            } else {
+                val league = effectiveLeague ?: return@FormBottomSheet
+                onCreate(
+                    league.leagueId,
+                    league.displayName,
+                    normalizedTeamA,
+                    normalizedTeamB,
+                    day,
+                    time,
+                    trimmedNote
+                )
+            }
         },
-        primaryActionEnabled = canCreate
+        primaryActionEnabled = canSave
     ) {
-        if (lockedLeagueId != null && lockedLeagueName != null) {
+        if (resolvedLockedLeagueId != null && lockedLeagueName != null) {
             LockedLeagueInfoRow(leagueName = lockedLeagueName)
-        } else if (lockedLeagueId != null) {
-            LockedLeagueInfoRow(leagueName = lockedLeagueId)
-        } else {
+        } else if (resolvedLockedLeagueId != null) {
+            LockedLeagueInfoRow(leagueName = resolvedLockedLeagueId)
+        } else if (!isEditMode) {
             ExposedDropdownMenuBox(
                 expanded = leagueMenuExpanded,
                 onExpandedChange = { leagueMenuExpanded = it }

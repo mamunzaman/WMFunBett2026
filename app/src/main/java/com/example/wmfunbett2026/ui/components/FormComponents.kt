@@ -40,15 +40,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.wmfunbett2026.ui.matchcenter.MatchTeamCountryCatalog
 import com.example.wmfunbett2026.ui.matchcenter.teamFlagEmoji
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.foundation.layout.navigationBarsPadding
+import com.example.wmfunbett2026.ui.theme.SheetSurface
+import com.example.wmfunbett2026.ui.theme.TextPrimary
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -838,3 +846,86 @@ private fun ScorePredictionInputBox(
 
 private fun sanitizeScoreDigits(input: String): String =
     input.filter { it.isDigit() }.take(2)
+
+data class FormActionMenuItem(
+    val label: String,
+    val onClick: () -> Unit,
+    val destructive: Boolean = false
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FormActionMenuSheet(
+    title: String,
+    onDismiss: () -> Unit,
+    actions: List<FormActionMenuItem>,
+    modifier: Modifier = Modifier
+) {
+    DisposableEffect(Unit) {
+        ModalSheetBackdropState.push()
+        onDispose { ModalSheetBackdropState.pop() }
+    }
+
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = SheetSurface,
+        contentColor = TextPrimary,
+        scrimColor = ModalSheetScrimColor,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+        tonalElevation = 0.dp,
+        dragHandle = { SheetDragHandle() },
+        modifier = modifier
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary,
+                modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+            )
+            actions.forEach { action ->
+                TextButton(
+                    onClick = {
+                        action.onClick()
+                        onDismiss()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp)),
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = if (action.destructive) DangerRed else TextPrimary
+                    )
+                ) {
+                    Text(
+                        text = action.label,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Start
+                    )
+                }
+            }
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.textButtonColors(contentColor = SheetOnSurfaceVariant)
+            ) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    }
+}

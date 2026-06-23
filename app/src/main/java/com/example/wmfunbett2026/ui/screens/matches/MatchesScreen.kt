@@ -17,6 +17,12 @@ import com.example.wmfunbett2026.ui.matchcenter.FlatGameItem
 import com.example.wmfunbett2026.ui.matchcenter.loadFlatGames
 import com.example.wmfunbett2026.ui.navigation.MainRoutes
 
+fun popNavStackForDeletedGame(navController: NavHostController, gameId: String) {
+    while (navController.currentBackStackEntry?.arguments?.getString("gameId") == gameId) {
+        if (!navController.popBackStack()) break
+    }
+}
+
 @Composable
 fun MatchesScreen(
     onGameClick: (FlatGameItem) -> Unit,
@@ -46,6 +52,7 @@ fun MatchesScreen(
         title = stringResource(R.string.screen_matches),
         games = games,
         onGameClick = onGameClick,
+        onGameDeleted = { gameId -> popNavStackForDeletedGame(navController, gameId) },
         showLiveAction = true,
         showQuickFilters = true,
         animateEntrance = true,

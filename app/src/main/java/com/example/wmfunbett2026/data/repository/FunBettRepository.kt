@@ -453,6 +453,66 @@ object FunBettRepository {
         return game
     }
 
+    fun updateGame(
+        gameId: String,
+        roundId: String,
+        dayLabel: String,
+        teamA: String,
+        teamB: String,
+        dateLabel: String?,
+        timeLabel: String?,
+        note: String? = null
+    ): Game? {
+        if (gameId.isBlank() || roundId.isBlank()) return null
+        if (getRound(roundId) == null) return null
+        val location = findGameLocation(gameId) ?: return null
+        val (currentRoundId, _, currentGame) = location
+        if (currentRoundId != roundId) return null
+
+        val updatedGame = currentGame.copy(
+            teamA = teamA.trim(),
+            teamB = teamB.trim(),
+            dateTimeLabel = buildDateTimeLabel(dateLabel, timeLabel),
+            note = note?.trim()?.takeIf { it.isNotEmpty() }
+        )
+        val normalizedDayLabel = dayLabel.trim()
+        if (normalizedDayLabel.isEmpty()) return null
+
+        var persistDay: Day? = null
+        roundsInternal = roundsInternal.map { round ->
+            if (round.id != roundId) return@map round
+
+            val cleanedDays = round.days.map { day ->
+                day.copy(games = day.games.filterNot { it.id == gameId })
+            }
+            val existingDayIndex = cleanedDays.indexOfFirst { day ->
+                day.name.equals(normalizedDayLabel, ignoreCase = true)
+            }
+            val updatedDays = if (existingDayIndex >= 0) {
+                val existingDay = cleanedDays[existingDayIndex]
+                persistDay = existingDay.copy(games = existingDay.games + updatedGame)
+                cleanedDays.mapIndexed { index, day ->
+                    if (index == existingDayIndex) persistDay!! else day
+                }
+            } else {
+                val newDay = Day(
+                    id = "day-${System.currentTimeMillis()}",
+                    name = normalizedDayLabel,
+                    games = listOf(updatedGame)
+                )
+                persistDay = newDay
+                cleanedDays + newDay
+            }
+
+            round.copy(days = updatedDays.filter { it.games.isNotEmpty() })
+        }
+
+        val day = persistDay ?: return null
+        localStore.updateGame(updatedGame, roundId, day)
+        notifyChanged()
+        return updatedGame
+    }
+
     fun addTippGroup(
         gameId: String,
         tippType: MatchTippType,
@@ -754,6 +814,36 @@ object FunBettRepository {
         localStore.deleteEntry(tippGroupId, entryId)
         notifyChanged()
         return true
+    }
+
+    fun deleteEntries(tippGroupId: String, entryIds: Collection<String>): Int {
+        if (tippGroupId.isBlank()) return 0
+        val ids = entryIds.map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        if (ids.isEmpty()) return 0
+
+        var removedCount = 0
+        roundsInternal = roundsInternal.map { round ->
+            round.copy(
+                days = round.days.map { day ->
+                    day.copy(
+                        games = day.games.map { game ->
+                            game.copy(
+                                tippGroups = game.tippGroups.map { group ->
+                                    if (group.id != tippGroupId) return@map group
+                                    val remaining = group.entries.filterNot { it.id in ids }
+                                    removedCount += group.entries.size - remaining.size
+                                    group.copy(entries = remaining)
+                                }
+                            )
+                        }
+                    )
+                }
+            )
+        }
+        if (removedCount == 0) return 0
+        ids.forEach { entryId -> localStore.deleteEntry(tippGroupId, entryId) }
+        notifyChanged()
+        return removedCount
     }
 
     private fun findGameLocation(gameId: String): Triple<String, Day, Game>? {

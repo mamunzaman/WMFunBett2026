@@ -172,6 +172,17 @@
     <string name="action_add_tipp_group">Add Tipp Group</string>
     <string name="action_add_entry">Add Entry</string>
     <string name="action_edit_entry">Edit Entry</string>
+    <string name="action_edit_match">Edit Match</string>
+    <string name="action_delete_match">Delete Match</string>
+    <string name="action_select_multiple_entries">Select Multiple</string>
+    <string name="edit_match_sheet_title">Edit Match</string>
+    <string name="match_actions_title">Match</string>
+    <string name="entry_actions_title">Entry</string>
+    <string name="entry_selection_count">%1$d selected</string>
+    <string name="delete_match_confirm_title">Delete Match?</string>
+    <string name="delete_match_confirm_message">This will remove the match and its Tipp Groups/Entries.</string>
+    <string name="delete_entries_bulk_confirm_title">Delete selected entries?</string>
+    <string name="delete_entries_bulk_confirm_message">This removes selected people from this Tipp round only.</string>
     <string name="action_delete_entry">Delete Entry</string>
     <string name="edit_entry">Edit Entry</string>
     <string name="edit_entry_amount_label">Amount</string>

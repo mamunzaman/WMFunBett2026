@@ -21,14 +21,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.matchcenter.FlatGameItem
 import com.example.wmfunbett2026.ui.matchcenter.MatchSelectFilter
 import com.example.wmfunbett2026.ui.matchcenter.MatchTimeQuickFilter
 import com.example.wmfunbett2026.ui.matchcenter.applyMatchQuickFilters
 import com.example.wmfunbett2026.ui.matchcenter.filterMatches
 import com.example.wmfunbett2026.ui.matchcenter.groupMatchesBySection
+import com.example.wmfunbett2026.ui.matchcenter.loadLeagueSummaries
 import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 import com.example.wmfunbett2026.ui.theme.TextPrimary
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+private val MatchEditDayFormatter =
+    DateTimeFormatter.ofPattern("EEE, d MMM yyyy", Locale.getDefault())
+private val MatchEditTimeFormatter =
+    DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
 
 @Composable
 fun MatchListScreenContent(
@@ -37,6 +46,7 @@ fun MatchListScreenContent(
     onGameClick: (FlatGameItem) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: (() -> Unit)? = null,
+    onGameDeleted: ((String) -> Unit)? = null,
     showLiveAction: Boolean = false,
     showQuickFilters: Boolean = false,
     animateEntrance: Boolean = false,
@@ -54,6 +64,11 @@ fun MatchListScreenContent(
     var showSelectSheet by remember { mutableStateOf(false) }
     var timeQuickFilter by remember { mutableStateOf<MatchTimeQuickFilter?>(null) }
     var leagueQuickFilterId by remember { mutableStateOf<String?>(null) }
+    var matchActionTarget by remember { mutableStateOf<FlatGameItem?>(null) }
+    var editMatchTarget by remember { mutableStateOf<FlatGameItem?>(null) }
+    var showMatchActionSheet by remember { mutableStateOf(false) }
+    var showEditMatchSheet by remember { mutableStateOf(false) }
+    var deletingMatch by remember { mutableStateOf<FlatGameItem?>(null) }
 
     val headerFiltered = remember(games, liveOnlyActive, selectFilter) {
         filterMatches(games, liveOnlyActive, selectFilter)
@@ -161,6 +176,10 @@ fun MatchListScreenContent(
                             game = item.game,
                             matchdayLabel = item.dayName,
                             onClick = { onGameClick(item) },
+                            onLongClick = {
+                                matchActionTarget = item
+                                showMatchActionSheet = true
+                            },
                             staggerIndex = cardStaggerIndices[itemKey] ?: 0,
                             entranceSession = entranceSession,
                             animateEntrance = animateEntrance
@@ -187,6 +206,79 @@ fun MatchListScreenContent(
                 }
             },
             onDismiss = { showSelectSheet = false }
+        )
+    }
+
+    if (showMatchActionSheet && matchActionTarget != null) {
+        FormActionMenuSheet(
+            title = stringResource(R.string.match_actions_title),
+            onDismiss = {
+                showMatchActionSheet = false
+                matchActionTarget = null
+            },
+            actions = listOf(
+                FormActionMenuItem(
+                    label = stringResource(R.string.action_edit_match),
+                    onClick = {
+                        editMatchTarget = matchActionTarget
+                        showEditMatchSheet = true
+                    }
+                ),
+                FormActionMenuItem(
+                    label = stringResource(R.string.action_delete_match),
+                    destructive = true,
+                    onClick = {
+                        deletingMatch = matchActionTarget
+                    }
+                )
+            )
+        )
+    }
+
+    if (showEditMatchSheet && editMatchTarget != null) {
+        val target = editMatchTarget!!
+        val lockedLeagueId = loadLeagueSummaries().find { it.roundId == target.roundId }?.id
+        AddMatchSheet(
+            lockedLeagueId = lockedLeagueId,
+            editTarget = EditMatchSheetTarget(
+                gameId = target.game.id,
+                roundId = target.roundId,
+                dayName = target.dayName
+            ),
+            onDismiss = {
+                showEditMatchSheet = false
+                editMatchTarget = null
+            },
+            onCreate = { _, _, _, _, _, _, _ -> },
+            onSave = { gameId, roundId, _, _, teamA, teamB, day, time, note ->
+                FunBettRepository.updateGame(
+                    gameId = gameId,
+                    roundId = roundId,
+                    dayLabel = day.format(MatchEditDayFormatter),
+                    teamA = teamA,
+                    teamB = teamB,
+                    dateLabel = day.format(MatchEditDayFormatter),
+                    timeLabel = time.format(MatchEditTimeFormatter),
+                    note = note
+                )
+                showEditMatchSheet = false
+                editMatchTarget = null
+            }
+        )
+    }
+
+    deletingMatch?.let { target ->
+        DeleteConfirmDialog(
+            titleRes = R.string.delete_match_confirm_title,
+            messageRes = R.string.delete_match_confirm_message,
+            onDismiss = { deletingMatch = null },
+            onConfirm = {
+                val gameId = target.game.id
+                if (FunBettRepository.deleteGame(gameId)) {
+                    onGameDeleted?.invoke(gameId)
+                }
+                deletingMatch = null
+            }
         )
     }
 }

@@ -3,6 +3,7 @@ package com.example.wmfunbett2026.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,8 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -81,7 +84,11 @@ fun TippGroupEntryTable(
     onEntryClick: (Entry) -> Unit,
     onEditEntry: (Entry) -> Unit,
     onDeleteEntry: (Entry) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectionMode: Boolean = false,
+    selectedEntryIds: Set<String> = emptySet(),
+    onToggleEntrySelection: (Entry) -> Unit = {},
+    onEntryLongPress: (Entry) -> Unit = {}
 ) {
     val matchStatus = game.status
     val scoreDash = stringResource(R.string.entry_table_score_dash)
@@ -123,9 +130,30 @@ fun TippGroupEntryTable(
                 isFirstRow = index == 0,
                 isLastRow = index == entries.lastIndex,
                 showDivider = index < entries.lastIndex,
-                onClick = { onEntryClick(entry) },
-                onEditClick = { onEditEntry(entry) },
-                onDeleteClick = { onDeleteEntry(entry) }
+                selectionMode = selectionMode,
+                selected = entry.id in selectedEntryIds,
+                onClick = {
+                    if (selectionMode) {
+                        onToggleEntrySelection(entry)
+                    } else {
+                        onEntryClick(entry)
+                    }
+                },
+                onLongClick = if (!selectionMode) {
+                    { onEntryLongPress(entry) }
+                } else {
+                    null
+                },
+                onEditClick = if (!selectionMode) {
+                    { onEditEntry(entry) }
+                } else {
+                    null
+                },
+                onDeleteClick = if (!selectionMode) {
+                    { onDeleteEntry(entry) }
+                } else {
+                    null
+                }
             )
         }
     }
@@ -205,6 +233,7 @@ private fun EntryTableHeaderCell(
     )
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun EntryCard(
     name: String,
@@ -217,7 +246,10 @@ fun EntryCard(
     isFirstRow: Boolean = false,
     isLastRow: Boolean = false,
     showDivider: Boolean = false,
+    selectionMode: Boolean = false,
+    selected: Boolean = false,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     onEditClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -252,10 +284,31 @@ fun EntryCard(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+                    .then(
+                        when {
+                            onClick != null && onLongClick != null -> Modifier.combinedClickable(
+                                onClick = onClick,
+                                onLongClick = onLongClick
+                            )
+                            onClick != null -> Modifier.clickable(onClick = onClick)
+                            else -> Modifier
+                        }
+                    )
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+            if (selectionMode) {
+                Checkbox(
+                    checked = selected,
+                    onCheckedChange = { onClick?.invoke() },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = PrimaryBlue,
+                        checkmarkColor = TextPrimary,
+                        uncheckedColor = TextSecondary
+                    ),
+                    modifier = Modifier.padding(end = 4.dp)
+                )
+            }
             Row(
                 modifier = Modifier.weight(PickColumnWeight),
                 verticalAlignment = Alignment.CenterVertically,
@@ -586,6 +639,34 @@ fun EntryClosedInfoCard(
             AllFriendsJoinedInfoCard(modifier = modifier)
         }
     }
+}
+
+@Composable
+fun EntryRowActionSheet(
+    onDismiss: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onSelectMultiple: () -> Unit
+) {
+    FormActionMenuSheet(
+        title = stringResource(R.string.entry_actions_title),
+        onDismiss = onDismiss,
+        actions = listOf(
+            FormActionMenuItem(
+                label = stringResource(R.string.action_edit_entry),
+                onClick = onEdit
+            ),
+            FormActionMenuItem(
+                label = stringResource(R.string.action_delete_entry),
+                onClick = onDelete,
+                destructive = true
+            ),
+            FormActionMenuItem(
+                label = stringResource(R.string.action_select_multiple_entries),
+                onClick = onSelectMultiple
+            )
+        )
+    )
 }
 
 @Composable

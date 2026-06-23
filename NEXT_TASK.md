@@ -1,10 +1,9 @@
 # Next Task
 
 ## Current Goal
-Phase 5: AddEntrySheet participation selector + catch-up UI (JACKPOT path).
+Wire Tipp Group settlement UI to split carry-over + entry payouts (Phase 5C).
 
 ## Verify Next
-- Add Entry → restart → LOCAL_ONLY persisted
-- Edit prediction/note → payment fields unchanged
-- Edit amount on LOCAL_ONLY entry still works
-- JACKPOT entries (if seeded) keep amount/catch-up on edit
+- Edit match from Matches long-press saves teams/date/time/note
+- Bulk delete removes entries only in current tipp group
+- Friends list unchanged after entry/match deletes
