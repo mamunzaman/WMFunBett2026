@@ -123,7 +123,7 @@ data class Entry(
 
 /**
  * Payment breakdown for a new entry at join time.
- * JACKPOT catch-up: missedJackpotRounds × currentRoundAmount.
+ * JACKPOT catch-up: sum of prior jackpot-round buy-ins since last jackpot winner.
  */
 data class EntryPaymentSnapshot(
     val participation: EntryParticipation,
@@ -145,7 +145,7 @@ data class LocalWinnerPool(
     val sharePerWinner: Double
 )
 
-/** Resolved jackpot-pot winners and equal share (future split engine). */
+/** Resolved jackpot-pot winners; [totalPot] is current-round jackpot-player money only. */
 data class JackpotWinnerPool(
     val winners: List<Entry>,
     val incomingJackpot: Double,

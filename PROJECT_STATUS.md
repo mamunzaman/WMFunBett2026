@@ -102,7 +102,11 @@
 - [x] Entry participation repository wiring (Phase 4B): LOCAL_ONLY add, safe updateEntry, payment snapshot helper
 - [x] Match edit/delete via long-press cards; bulk entry delete selection mode
 - [x] Add Entry participation selector (Local only / Join jackpot) with amount preview
-- [x] Friends screen edit/delete via tap/long-press action sheet; delete blocked when friend has entries
+- [x] Split local/jackpot payout pools: separate carry, winner shares, per-entry display
+- [x] Carried jackpot kept separate from current-round payout (no €60 combined pot)
+- [x] Catch-up qualification: per-round buy-in sum; dual-pool payout (current + accumulated jackpot)
+- [x] Cases A–E: mixed local/jackpot payout + carry (local winner keeps prior carry; no winner adds jackpot stakes)
+- [x] Settlement panel split labels: current share vs jackpot share; fallback share fixed
 
 ## Last Update
-2026-06-21 — Friends screen: edit/delete action sheet, entry-guarded delete, name propagation on edit.
+2026-06-21 — Settlement UI: split pot labels, current-share fallback, clear jackpot/local breakdown.
