@@ -1,9 +1,9 @@
 # Next Task
 
 ## Current Goal
-Wire Add Entry UI to `getEntryJoinBreakdown` + JACKPOT participation create (Phase 5B.2).
+Wire Add Entry UI to participation selector + `getEntryJoinBreakdown` (Phase 5B.3).
 
 ## Verify Next
-- Add Entry sheet shows LOCAL vs JACKPOT breakdown from `getEntryJoinBreakdown`
-- `addEntryToTippGroup` still LOCAL_ONLY until 5B.2 enables JACKPOT create
-- Legacy settlement APIs unchanged
+- Add Entry sheet passes `EntryParticipation.JACKPOT` when selected
+- JACKPOT entry persists catch-up + total amount
+- Default add (no participation arg) still LOCAL_ONLY

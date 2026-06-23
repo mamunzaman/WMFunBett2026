@@ -611,7 +611,8 @@ object FunBettRepository {
         tippGroupId: String,
         friendId: String,
         prediction: String,
-        note: String?
+        note: String?,
+        participation: EntryParticipation = EntryParticipation.LOCAL_ONLY
     ): Entry? {
         val game = getGameForTippGroup(tippGroupId) ?: return null
         if (!TippScopeAvailability.canAddEntryToGame(game)) return null
@@ -624,7 +625,13 @@ object FunBettRepository {
         val trimmedPrediction = prediction.trim()
         if (trimmedPrediction.isEmpty()) return null
 
-        val payment = buildEntryPaymentSnapshot(tippGroup, EntryParticipation.LOCAL_ONLY) ?: return null
+        val round = findGameLocation(game.id)?.let { (roundId, _, _) -> getRound(roundId) }
+        val payment = buildEntryPaymentSnapshot(
+            tippGroup = tippGroup,
+            participation = participation,
+            round = round,
+            game = game
+        ) ?: return null
 
         return addEntry(
             tippGroupId = tippGroupId,
@@ -842,17 +849,11 @@ object FunBettRepository {
         dataVersion.intValue++
     }
 
-    /**
-     * Future-ready payment breakdown for new entries.
-     * Add Entry UI still uses LOCAL_ONLY only; JACKPOT catch-up requires round/game context.
-     *
-     * TODO Phase 5B.2: pass roundId/gameId from addEntryToTippGroup when JACKPOT create is enabled.
-     */
     private fun buildEntryPaymentSnapshot(
         tippGroup: TippGroup,
         participation: EntryParticipation,
-        roundId: String? = null,
-        gameId: String? = null
+        round: Round? = null,
+        game: Game? = null
     ): EntryPaymentSnapshot? {
         val entryAmount = tippGroup.entryAmount ?: return null
         if (entryAmount <= 0.0) return null
@@ -865,26 +866,21 @@ object FunBettRepository {
                 totalPaid = entryAmount
             )
             EntryParticipation.JACKPOT -> {
-                val catchUp = resolveJackpotCatchUpAmount(tippGroup, roundId, gameId)
+                val resolvedRound = round ?: return null
+                val resolvedGame = game ?: return null
+                val context = JackpotChainCalculator.buildJackpotCatchUpContext(
+                    resolvedRound,
+                    resolvedGame,
+                    tippGroup
+                )
                 EntryPaymentSnapshot(
                     participation = EntryParticipation.JACKPOT,
                     currentRoundAmount = entryAmount,
-                    jackpotCatchUpAmount = catchUp,
-                    totalPaid = entryAmount + catchUp
+                    jackpotCatchUpAmount = context.catchUpAmount,
+                    totalPaid = entryAmount + context.catchUpAmount
                 )
             }
         }
-    }
-
-    private fun resolveJackpotCatchUpAmount(
-        tippGroup: TippGroup,
-        roundId: String?,
-        gameId: String?
-    ): Double {
-        if (roundId.isNullOrBlank() || gameId.isNullOrBlank()) return 0.0
-        val round = getRound(roundId) ?: return 0.0
-        val game = getGame(gameId) ?: return 0.0
-        return JackpotChainCalculator.buildJackpotCatchUpContext(round, game, tippGroup).catchUpAmount
     }
 
     private fun getAllGames(): List<Game> =

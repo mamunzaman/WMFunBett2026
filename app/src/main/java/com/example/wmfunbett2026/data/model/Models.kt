@@ -119,7 +119,7 @@ data class Entry(
 
 /**
  * Payment breakdown for a new entry at join time.
- * Future JACKPOT catch-up: missedJackpotRounds × currentRoundAmount.
+ * JACKPOT catch-up: missedJackpotRounds × currentRoundAmount.
  */
 data class EntryPaymentSnapshot(
     val participation: EntryParticipation,

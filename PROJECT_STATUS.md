@@ -104,6 +104,7 @@
 - [x] Split winner engine: `calculateSplit` + `previewSplitPayouts` (not wired to UI/repo)
 - [x] Split carry-over summary: `previewSplitCarryOverSummary` (not wired to UI/repo)
 - [x] Repository jackpot read APIs (Phase 5B.1): join breakdown, split carry-over, entry win payout
+- [x] JACKPOT entry create support (Phase 5B.2): addEntryToTippGroup participation + catch-up snapshot
 
 ## Last Update
-2026-06-21 — Phase 5B.1: parallel repository APIs for Add Entry jackpot UI (no UI wiring yet).
+2026-06-21 — Phase 5B.2: repository can create JACKPOT entries with catch-up payment fields.
