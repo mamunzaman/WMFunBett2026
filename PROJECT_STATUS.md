@@ -99,6 +99,7 @@
 - [x] Split winner engine architecture (Phase 3): split outcome models, payout pools, chain-break signal (not wired)
 - [x] Entry participation persistence (Phase 4A): Room v3 migration, entity + mapper fields
 - [x] Entry participation repository wiring (Phase 4B): LOCAL_ONLY add, safe updateEntry, payment snapshot helper
+- [x] Catch-up slot counting: `calculateCatchUpSlots` + `buildJackpotCatchUpContext` (not wired to UI/repo)
 
 ## Last Update
-2026-06-21 — Phase 4B: repository preserves participation payment fields on add/update.
+2026-06-21 — Implemented missed jackpot round slot counting in JackpotChainCalculator.

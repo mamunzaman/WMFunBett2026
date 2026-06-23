@@ -49,7 +49,8 @@ data class JackpotChainStep(
 
 /**
  * Catch-up context for a new JACKPOT entry.
- * Formula: [missedRoundSlots] × [entryAmount].
+ * [missedRoundSlots] from chronological FINISHED prior games with jackpot-active groups;
+ * not scoped by TimeScope. [catchUpAmount] = missedRoundSlots × [entryAmount].
  */
 data class JackpotCatchUpContext(
     val missedRoundSlots: Int,

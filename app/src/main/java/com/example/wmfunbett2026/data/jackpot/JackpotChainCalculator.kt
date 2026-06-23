@@ -158,16 +158,42 @@ object JackpotChainCalculator {
             .sumOf { it.currentRoundAmount }
 
     /**
-     * Future: count missed jackpot rounds for catch-up.
-     * Walk FINISHED prior games (same timeScope link); count chain steps without jackpot winner.
+     * Missed jackpot rounds for catch-up when joining as JACKPOT at [game].
      *
-     * TODO Phase 3: implement chain walk; return slot count for [calculateCatchUpAmount].
+     * Walks FINISHED prior games in chronological order only (no TimeScope linking).
+     * Each prior game with any jackpot-active tipp group = one slot.
+     * Stops when a prior FINISHED game has a JACKPOT winner in any tipp group.
+     *
+     * Ignores LIVE / NOT_STARTED games, player count, pot size, and payout amounts.
+     * [tippGroup] is kept for API compatibility; slot count is game-level, not scope-level.
      */
+    @Suppress("UNUSED_PARAMETER")
     fun calculateCatchUpSlots(
         round: Round,
         game: Game,
         tippGroup: TippGroup
-    ): Int = 0
+    ): Int {
+        val games = gamesInChronologicalOrder(round)
+        val currentIndex = games.indexOfFirst { it.id == game.id }
+        if (currentIndex <= 0) return 0
+
+        var slots = 0
+
+        for (index in currentIndex - 1 downTo 0) {
+            val previousGame = games[index]
+            if (!isFinishedGame(previousGame)) continue
+
+            if (gameHasJackpotWinner(previousGame)) {
+                return slots
+            }
+
+            if (gameHasJackpotActiveTippGroup(previousGame)) {
+                slots++
+            }
+        }
+
+        return slots
+    }
 
     /** Catch-up = missed jackpot rounds × current round amount. */
     fun calculateCatchUpAmount(slots: Int, entryAmount: Double): Double =
@@ -177,6 +203,7 @@ object JackpotChainCalculator {
      * Future entry-aware incoming jackpot (not wired; legacy [calculateIncomingJackpot] unchanged).
      *
      * Planned rules:
+     * - Chronological game order only (no TimeScope linking)
      * - Only FINISHED games affect the chain
      * - Only JACKPOT entry money accumulates ([jackpotCurrentCollected])
      * - Chain breaks when a prior game has a jackpot winner (not any local winner)
@@ -229,6 +256,24 @@ object JackpotChainCalculator {
             catchUpAmount = calculateCatchUpAmount(slots, entryAmount)
         )
     }
+
+    private fun isFinishedGame(game: Game): Boolean =
+        game.hasResult && game.status == MatchStatus.FINISHED
+
+    private fun gameHasJackpotActiveTippGroup(game: Game): Boolean =
+        game.tippGroups.any { group ->
+            group.entries.any { it.participation == EntryParticipation.JACKPOT }
+        }
+
+    /** JACKPOT winner in any tipp group on this game resets the missed-round chain. */
+    private fun gameHasJackpotWinner(game: Game): Boolean =
+        game.tippGroups.any { group ->
+            TippGroupWinnerEngine.winningEntriesByParticipation(
+                game,
+                group,
+                EntryParticipation.JACKPOT
+            ).isNotEmpty()
+        }
 
     /**
      * Future split carry-over summary (not wired).
