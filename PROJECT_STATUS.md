@@ -94,6 +94,7 @@
 - [x] Friends screen compact FIFA style; friend detail edit/delete menu
 - [x] Friend/person first + last name (Vorname/Nachname): forms, display rules, backward compat
 - [x] Add/Edit Entry score prediction UI (Design B): match preview + dual score inputs
+- [x] Entry participation foundation (Phase 1): `EntryParticipation`, Entry fields, split settlement read models
 
 ## Last Update
-2026-06-21 — Add/Edit Entry redesigned with match preview and two-score prediction input.
+2026-06-21 — Phase 1 entry participation domain models added (no behavior change).

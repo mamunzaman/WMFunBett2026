@@ -100,6 +100,11 @@ data class FriendEntryHistoryItem(
     val createdAtMs: Long
 )
 
+enum class EntryParticipation {
+    LOCAL_ONLY,
+    JACKPOT
+}
+
 data class Entry(
     val id: String,
     val friendId: String,
@@ -107,7 +112,22 @@ data class Entry(
     val prediction: String,
     val amount: Double,
     val currentRoundAmount: Double,
-    val note: String? = null
+    val note: String? = null,
+    val participation: EntryParticipation = EntryParticipation.LOCAL_ONLY,
+    val jackpotCatchUpAmount: Double = 0.0
+)
+
+data class EntryPaymentSnapshot(
+    val participation: EntryParticipation,
+    val currentRoundAmount: Double,
+    val jackpotCatchUpAmount: Double,
+    val totalPaid: Double
+)
+
+data class EntryWinPayout(
+    val entryId: String,
+    val participation: EntryParticipation,
+    val winAmount: Double
 )
 
 data class EntryUpdateRequest(

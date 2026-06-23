@@ -1,9 +1,9 @@
 # Next Task
 
 ## Current Goal
-Manual verify Design B score prediction in Add/Edit Entry.
+Phase 2: jackpot chain calculator entry-participation support (design + pure functions).
 
 ## Verify Next
-- Match preview with flags + time
-- Enter 2 → auto-focus second box → save as 2:1
-- Edit Entry prefills 2 and 1 from existing prediction
+- `EntryParticipation` defaults on existing entries (`LOCAL_ONLY`, catch-up `0`)
+- New read models compile but remain unused
+- No runtime behavior change until repository/calculator wired
