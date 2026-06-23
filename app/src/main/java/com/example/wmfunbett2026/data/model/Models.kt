@@ -130,6 +130,32 @@ data class EntryWinPayout(
     val winAmount: Double
 )
 
+/** Resolved local-pot winners and equal share (future split engine). */
+data class LocalWinnerPool(
+    val winners: List<Entry>,
+    val pot: Double,
+    val sharePerWinner: Double
+)
+
+/** Resolved jackpot-pot winners and equal share (future split engine). */
+data class JackpotWinnerPool(
+    val winners: List<Entry>,
+    val incomingJackpot: Double,
+    val currentCollected: Double,
+    val totalPot: Double,
+    val sharePerWinner: Double
+)
+
+/**
+ * Per-entry payouts after split resolution.
+ * [payoutsByEntryId] maps winning entry id → [EntryWinPayout].
+ */
+data class TippGroupSplitPayouts(
+    val local: LocalWinnerPool?,
+    val jackpot: JackpotWinnerPool?,
+    val payoutsByEntryId: Map<String, EntryWinPayout>
+)
+
 data class EntryUpdateRequest(
     val friendId: String,
     val prediction: String,

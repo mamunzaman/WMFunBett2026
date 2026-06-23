@@ -96,6 +96,7 @@
 - [x] Add/Edit Entry score prediction UI (Design B): match preview + dual score inputs
 - [x] Entry participation foundation (Phase 1): `EntryParticipation`, Entry fields, split settlement read models
 - [x] Jackpot calculator architecture (Phase 2): participation helpers, catch-up models, split summary docs (not wired)
+- [x] Split winner engine architecture (Phase 3): split outcome models, payout pools, chain-break signal (not wired)
 
 ## Last Update
-2026-06-21 — Phase 2 jackpot calculator future helpers added (legacy logic unchanged).
+2026-06-21 — Phase 3 split winner engine architecture added (legacy winner logic unchanged).

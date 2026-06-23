@@ -1,9 +1,9 @@
 # Next Task
 
 ## Current Goal
-Phase 3: split winner engine (local vs jackpot outcomes).
+Phase 4: wire repository + implement `calculateSplit` / `calculateIncomingJackpotEntryAware`.
 
 ## Verify Next
-- Legacy `calculateIncomingJackpot` / `calculateCarryOverSummary` unchanged
-- New helpers compile but are not called from repository or UI
-- `calculateCatchUpSlots` returns 0 until Phase 3 chain walk
+- Legacy `TippGroupWinnerEngine.calculate` still drives UI
+- `calculateSplit` returns Pending until wired
+- `previewSplitPayouts` returns null until wired

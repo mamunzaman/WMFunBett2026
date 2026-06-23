@@ -101,3 +101,12 @@ data class SplitTippGroupSettlementSummary(
     val local: LocalPotSummary,
     val jackpot: JackpotPotSummary
 )
+
+/**
+ * Signal for jackpot chain break after split winner resolution.
+ * Only a jackpot winner breaks the chain; local winners do not.
+ */
+data class JackpotChainBreakSignal(
+    val hasJackpotWinner: Boolean,
+    val jackpotWinnerEntryIds: List<String> = emptyList()
+)
