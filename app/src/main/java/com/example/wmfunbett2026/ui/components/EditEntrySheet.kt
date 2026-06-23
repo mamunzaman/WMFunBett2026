@@ -3,6 +3,8 @@ package com.example.wmfunbett2026.ui.components
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -10,15 +12,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.res.stringResource
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.EntryUpdateRequest
-import com.example.wmfunbett2026.data.model.parsePersonName
 import com.example.wmfunbett2026.data.repository.FunBettRepository
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun EditEntrySheet(
@@ -28,24 +29,34 @@ fun EditEntrySheet(
     onSave: (EntryUpdateRequest) -> Unit
 ) {
     FunBettRepository.dataVersion.intValue
-    val friend = remember(entry.friendId, FunBettRepository.dataVersion.intValue) {
-        FunBettRepository.getFriend(entry.friendId)
+    val friends = remember(FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getFriends()
     }
-    val initialNames = remember(entry.id, friend) {
-        friend?.let { it.firstName to it.lastName } ?: parsePersonName(entry.friendName)
+    val joinedFriendIds = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getFriendIdsInTippGroup(tippGroupId)
+    }
+    val selectableFriends = remember(friends, joinedFriendIds, entry.friendId) {
+        val takenByOthers = joinedFriendIds - entry.friendId
+        friends.filter { it.id == entry.friendId || it.id !in takenByOthers }
     }
 
-    var firstName by remember(entry.id) { mutableStateOf(initialNames.first) }
-    var lastName by remember(entry.id) { mutableStateOf(initialNames.second) }
+    var selectedFriend by remember(entry.id, friends) {
+        mutableStateOf(friends.find { it.id == entry.friendId })
+    }
+    var friendSearchQuery by remember { mutableStateOf("") }
     var prediction by remember(entry.id) { mutableStateOf(entry.prediction) }
     var amountInput by remember(entry.id) {
         mutableStateOf(formatEditableAmount(entry.amount))
     }
     var note by remember(entry.id) { mutableStateOf(entry.note.orEmpty()) }
+    val searchFocusRequester = remember { FocusRequester() }
 
     val amount = amountInput.trim().replace(',', '.').toDoubleOrNull()
-    val trimmedFirst = firstName.trim()
-    val canSave = trimmedFirst.isNotEmpty() &&
+    val duplicateSelected = selectedFriend?.id?.let { friendId ->
+        friendId != entry.friendId && friendId in joinedFriendIds
+    } == true
+    val canSave = selectedFriend != null &&
+        !duplicateSelected &&
         prediction.isNotBlank() &&
         amount != null &&
         amount > 0.0
@@ -55,11 +66,10 @@ fun EditEntrySheet(
         onDismiss = onDismiss,
         primaryActionLabel = stringResource(R.string.save),
         onPrimaryAction = {
+            val friend = selectedFriend ?: return@FormBottomSheet
             onSave(
                 EntryUpdateRequest(
-                    friendId = entry.friendId,
-                    firstName = trimmedFirst,
-                    lastName = lastName.trim(),
+                    friendId = friend.id,
                     prediction = prediction.trim(),
                     amount = amount!!,
                     note = note.trim().takeIf { it.isNotEmpty() }
@@ -68,12 +78,41 @@ fun EditEntrySheet(
         },
         primaryActionEnabled = canSave
     ) {
-        PersonNameFields(
-            firstName = firstName,
-            onFirstNameChange = { firstName = it },
-            lastName = lastName,
-            onLastNameChange = { lastName = it }
-        )
+        when {
+            friends.isEmpty() -> {
+                Text(
+                    text = stringResource(R.string.add_entry_no_friends),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            selectableFriends.isEmpty() -> {
+                Text(
+                    text = stringResource(R.string.add_entry_no_friends),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            else -> {
+                EntryFriendPickerSection(
+                    friends = selectableFriends,
+                    searchQuery = friendSearchQuery,
+                    onSearchQueryChange = { friendSearchQuery = it },
+                    selectedFriend = selectedFriend,
+                    onFriendSelected = { selectedFriend = it },
+                    onClearSelection = {
+                        selectedFriend = null
+                        friendSearchQuery = ""
+                    },
+                    searchFocusRequester = searchFocusRequester
+                )
+            }
+        }
+
+        if (duplicateSelected) {
+            Spacer(modifier = Modifier.height(8.dp))
+            FormErrorText(text = stringResource(R.string.add_entry_friend_already_joined))
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 

@@ -112,8 +112,6 @@ data class Entry(
 
 data class EntryUpdateRequest(
     val friendId: String,
-    val firstName: String,
-    val lastName: String,
     val prediction: String,
     val amount: Double,
     val note: String?

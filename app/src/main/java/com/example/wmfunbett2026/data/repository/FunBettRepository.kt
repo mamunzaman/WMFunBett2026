@@ -279,19 +279,6 @@ object FunBettRepository {
         return updatedFriend
     }
 
-    fun findOrCreateFriend(firstName: String, lastName: String, note: String? = null): Friend? {
-        val trimmedFirst = firstName.trim()
-        val trimmedLast = lastName.trim()
-        if (trimmedFirst.isEmpty()) return null
-
-        friendsInternal.find {
-            it.firstName.equals(trimmedFirst, ignoreCase = true) &&
-                it.lastName.equals(trimmedLast, ignoreCase = true)
-        }?.let { return it }
-
-        return addFriend(trimmedFirst, trimmedLast, note)
-    }
-
     fun deleteFriend(friendId: String): Boolean {
         if (friendId.isBlank() || getFriend(friendId) == null) return false
         friendsInternal = friendsInternal.filterNot { it.id == friendId }
@@ -556,22 +543,6 @@ object FunBettRepository {
 
     fun addEntryToTippGroup(
         tippGroupId: String,
-        firstName: String,
-        lastName: String,
-        prediction: String,
-        note: String?
-    ): Entry? {
-        val friend = findOrCreateFriend(firstName, lastName) ?: return null
-        return addEntryToTippGroup(
-            tippGroupId = tippGroupId,
-            friendId = friend.id,
-            prediction = prediction,
-            note = note
-        )
-    }
-
-    fun addEntryToTippGroup(
-        tippGroupId: String,
         friendId: String,
         prediction: String,
         note: String?
@@ -609,10 +580,8 @@ object FunBettRepository {
         request: EntryUpdateRequest
     ): Entry? {
         if (tippGroupId.isBlank() || entryId.isBlank()) return null
-        val trimmedFirst = request.firstName.trim()
-        val trimmedLast = request.lastName.trim()
         val trimmedPrediction = request.prediction.trim()
-        if (trimmedFirst.isEmpty() || trimmedPrediction.isEmpty()) return null
+        if (trimmedPrediction.isEmpty()) return null
         if (request.amount <= 0.0) return null
 
         val tippGroup = getTippGroup(tippGroupId) ?: return null
@@ -624,16 +593,9 @@ object FunBettRepository {
         }
         if (friendTaken) return null
 
-        val nameChanged = !friend.firstName.equals(trimmedFirst, ignoreCase = true) ||
-            !friend.lastName.equals(trimmedLast, ignoreCase = true)
-        if (nameChanged) {
-            updateFriend(request.friendId, trimmedFirst, trimmedLast, friend.note) ?: return null
-        }
-
-        val fullName = formatPersonFullName(trimmedFirst, trimmedLast)
         val updatedEntry = existing.copy(
             friendId = friend.id,
-            friendName = fullName,
+            friendName = friend.name,
             prediction = trimmedPrediction,
             amount = request.amount,
             currentRoundAmount = request.amount,

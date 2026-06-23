@@ -1,5 +1,9 @@
 package com.example.wmfunbett2026.ui.components
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Friend
-import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.theme.TextSecondary
@@ -59,7 +62,7 @@ private object FriendQuickPickRecents {
 fun AddEntrySheet(
     tippGroupId: String,
     onDismiss: () -> Unit,
-    onCreate: (firstName: String, lastName: String, prediction: String, note: String?) -> Unit
+    onCreate: (friendId: String, prediction: String, note: String?) -> Unit
 ) {
     FunBettRepository.dataVersion.intValue
     val entryBlockReason = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
@@ -79,27 +82,20 @@ fun AddEntrySheet(
     val joinedFriendIds = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getFriendIdsInTippGroup(tippGroupId)
     }
+    val availableFriends = remember(friends, joinedFriendIds) {
+        friends.filter { it.id !in joinedFriendIds }
+    }
     val entryAmount = tippGroup?.entryAmount
 
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
+    var selectedFriend by remember { mutableStateOf<Friend?>(null) }
     var friendSearchQuery by remember { mutableStateOf("") }
     var prediction by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     val searchFocusRequester = remember { FocusRequester() }
 
-    val trimmedFirst = firstName.trim()
-    val trimmedLast = lastName.trim()
-    val matchedFriend = remember(friends, trimmedFirst, trimmedLast) {
-        if (trimmedFirst.isEmpty()) null
-        else friends.find {
-            it.firstName.equals(trimmedFirst, ignoreCase = true) &&
-                it.lastName.equals(trimmedLast, ignoreCase = true)
-        }
-    }
-    val duplicateInGroup = matchedFriend?.id in joinedFriendIds
-    val canCreate = trimmedFirst.isNotEmpty() &&
-        !duplicateInGroup &&
+    val duplicateSelected = selectedFriend?.id?.let { it in joinedFriendIds } == true
+    val canCreate = selectedFriend != null &&
+        !duplicateSelected &&
         prediction.isNotBlank() &&
         entryAmount != null &&
         entryAmount > 0.0
@@ -109,11 +105,11 @@ fun AddEntrySheet(
         onDismiss = onDismiss,
         primaryActionLabel = stringResource(R.string.create),
         onPrimaryAction = {
-            if (duplicateInGroup) return@FormBottomSheet
-            matchedFriend?.id?.let { FriendQuickPickRecents.record(it) }
+            val friend = selectedFriend ?: return@FormBottomSheet
+            if (FunBettRepository.isFriendInTippGroup(tippGroupId, friend.id)) return@FormBottomSheet
+            FriendQuickPickRecents.record(friend.id)
             onCreate(
-                trimmedFirst,
-                trimmedLast,
+                friend.id,
                 prediction.trim(),
                 note.trim().takeIf { it.isNotEmpty() }
             )
@@ -132,29 +128,38 @@ fun AddEntrySheet(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        PersonNameFields(
-            firstName = firstName,
-            onFirstNameChange = { firstName = it },
-            lastName = lastName,
-            onLastNameChange = { lastName = it }
-        )
-
-        if (friends.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(12.dp))
-            EntryFriendQuickPickSection(
-                friends = friends,
-                searchQuery = friendSearchQuery,
-                onSearchQueryChange = { friendSearchQuery = it },
-                onFriendPicked = { friend ->
-                    firstName = friend.firstName
-                    lastName = friend.lastName
-                    friendSearchQuery = ""
-                },
-                searchFocusRequester = searchFocusRequester
-            )
+        when {
+            friends.isEmpty() -> {
+                Text(
+                    text = stringResource(R.string.add_entry_no_friends),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            availableFriends.isEmpty() -> {
+                Text(
+                    text = stringResource(R.string.add_entry_all_friends_joined),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            else -> {
+                EntryFriendPickerSection(
+                    friends = availableFriends,
+                    searchQuery = friendSearchQuery,
+                    onSearchQueryChange = { friendSearchQuery = it },
+                    selectedFriend = selectedFriend,
+                    onFriendSelected = { selectedFriend = it },
+                    onClearSelection = {
+                        selectedFriend = null
+                        friendSearchQuery = ""
+                    },
+                    searchFocusRequester = searchFocusRequester
+                )
+            }
         }
 
-        if (duplicateInGroup) {
+        if (duplicateSelected) {
             Spacer(modifier = Modifier.height(8.dp))
             FormErrorText(text = stringResource(R.string.add_entry_friend_already_joined))
         }
@@ -183,11 +188,13 @@ fun AddEntrySheet(
 }
 
 @Composable
-private fun EntryFriendQuickPickSection(
+internal fun EntryFriendPickerSection(
     friends: List<Friend>,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    onFriendPicked: (Friend) -> Unit,
+    selectedFriend: Friend?,
+    onFriendSelected: (Friend) -> Unit,
+    onClearSelection: () -> Unit,
     searchFocusRequester: FocusRequester,
     modifier: Modifier = Modifier
 ) {
@@ -211,57 +218,73 @@ private fun EntryFriendQuickPickSection(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        FormOutlinedTextField(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(searchFocusRequester),
-            label = { Text(stringResource(R.string.add_entry_search_friend)) },
-            singleLine = true
-        )
+        AnimatedContent(
+            targetState = selectedFriend,
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            label = "friendSelection"
+        ) { friend ->
+            if (friend == null) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    FormOutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = onSearchQueryChange,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(searchFocusRequester),
+                        label = { Text(stringResource(R.string.add_entry_search_friend)) },
+                        singleLine = true
+                    )
 
-        if (normalizedQuery.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            if (searchResults.isEmpty()) {
-                Text(
-                    text = stringResource(R.string.add_entry_no_friend_found),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    searchResults.forEach { result ->
-                        FriendSearchResultCard(
-                            friendName = result.name,
-                            onClick = { onFriendPicked(result) }
-                        )
+                    if (normalizedQuery.isNotEmpty()) {
+                        if (searchResults.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.add_entry_no_friend_found),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextSecondary,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        } else {
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                searchResults.forEach { result ->
+                                    FriendSearchResultCard(
+                                        friendName = result.name,
+                                        onClick = { onFriendSelected(result) }
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        FormSectionLabel(text = stringResource(R.string.add_entry_recently_used))
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState())
+                                .padding(vertical = 2.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            quickPickFriends.forEach { pickFriend ->
+                                FriendQuickPickChip(
+                                    friendName = friendDisplayShortName(
+                                        pickFriend.firstName,
+                                        pickFriend.lastName
+                                    ),
+                                    onClick = { onFriendSelected(pickFriend) }
+                                )
+                            }
+                            if (showMoreChip) {
+                                FriendQuickPickMoreChip(
+                                    onClick = { searchFocusRequester.requestFocus() }
+                                )
+                            }
+                        }
                     }
                 }
-            }
-        } else if (quickPickFriends.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            FormSectionLabel(text = stringResource(R.string.add_entry_recently_used))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(vertical = 2.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                quickPickFriends.forEach { friend ->
-                    FriendQuickPickChip(
-                        friendName = friendDisplayShortName(friend.firstName, friend.lastName),
-                        onClick = { onFriendPicked(friend) }
-                    )
-                }
-                if (showMoreChip) {
-                    FriendQuickPickMoreChip(
-                        onClick = { searchFocusRequester.requestFocus() }
-                    )
-                }
+            } else {
+                FriendSelectedCard(
+                    friendName = friend.name,
+                    onClear = onClearSelection
+                )
             }
         }
     }

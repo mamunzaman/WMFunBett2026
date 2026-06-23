@@ -267,11 +267,10 @@ fun TippGroupDetailScreen(
         AddEntrySheet(
             tippGroupId = tippGroupId,
             onDismiss = { showAddEntry = false },
-            onCreate = { firstName, lastName, prediction, note ->
+            onCreate = { friendId, prediction, note ->
                 if (FunBettRepository.addEntryToTippGroup(
                         tippGroupId = tippGroupId,
-                        firstName = firstName,
-                        lastName = lastName,
+                        friendId = friendId,
                         prediction = prediction,
                         note = note
                     ) != null
