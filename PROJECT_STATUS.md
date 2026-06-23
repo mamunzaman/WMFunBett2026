@@ -93,6 +93,7 @@
 - [x] Entry edit/delete: row menu, EditEntrySheet, repository updateEntry/deleteEntry
 - [x] Friends screen compact FIFA style; friend detail edit/delete menu
 - [x] Friend/person first + last name (Vorname/Nachname): forms, display rules, backward compat
+- [x] Add/Edit Entry score prediction UI (Design B): match preview + dual score inputs
 
 ## Last Update
-2026-06-21 — Friend/person names split into Vorname + Nachname with display helpers and no DB migration.
+2026-06-21 — Add/Edit Entry redesigned with match preview and two-score prediction input.

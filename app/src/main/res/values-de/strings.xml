@@ -233,6 +233,10 @@
     <string name="time">Uhrzeit</string>
     <string name="time_optional">Uhrzeit (optional)</string>
     <string name="prediction">Tipp</string>
+    <string name="my_prediction">Mein Tipp</string>
+    <string name="score_prediction_focus_hint">Tipp antippen → springt automatisch zum nächsten Feld</string>
+    <string name="edit_entry_legacy_prediction">Vorheriger Tipp: %1$s</string>
+    <string name="match_preview_vs">VS</string>
     <string name="status">Status</string>
     <string name="score">Ergebnis</string>
     <string name="time_scope">Zeitfenster</string>

@@ -19,6 +19,9 @@ import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.EntryUpdateRequest
+import com.example.wmfunbett2026.data.model.formatScorePrediction
+import com.example.wmfunbett2026.data.model.matchPreviewTimeOrNull
+import com.example.wmfunbett2026.data.model.parseScorePrediction
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 
 @Composable
@@ -29,6 +32,9 @@ fun EditEntrySheet(
     onSave: (EntryUpdateRequest) -> Unit
 ) {
     FunBettRepository.dataVersion.intValue
+    val game = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getGameForTippGroup(tippGroupId)
+    }
     val friends = remember(FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getFriends()
     }
@@ -40,17 +46,24 @@ fun EditEntrySheet(
         friends.filter { it.id == entry.friendId || it.id !in takenByOthers }
     }
 
+    val parsedScores = remember(entry.id) { parseScorePrediction(entry.prediction) }
+    val legacyPrediction = remember(entry.id) {
+        if (parsedScores == null && entry.prediction.isNotBlank()) entry.prediction else null
+    }
+
     var selectedFriend by remember(entry.id, friends) {
         mutableStateOf(friends.find { it.id == entry.friendId })
     }
     var friendSearchQuery by remember { mutableStateOf("") }
-    var prediction by remember(entry.id) { mutableStateOf(entry.prediction) }
+    var scoreA by remember(entry.id) { mutableStateOf(parsedScores?.scoreA.orEmpty()) }
+    var scoreB by remember(entry.id) { mutableStateOf(parsedScores?.scoreB.orEmpty()) }
     var amountInput by remember(entry.id) {
         mutableStateOf(formatEditableAmount(entry.amount))
     }
     var note by remember(entry.id) { mutableStateOf(entry.note.orEmpty()) }
     val searchFocusRequester = remember { FocusRequester() }
 
+    val prediction = formatScorePrediction(scoreA, scoreB).orEmpty()
     val amount = amountInput.trim().replace(',', '.').toDoubleOrNull()
     val duplicateSelected = selectedFriend?.id?.let { friendId ->
         friendId != entry.friendId && friendId in joinedFriendIds
@@ -70,7 +83,7 @@ fun EditEntrySheet(
             onSave(
                 EntryUpdateRequest(
                     friendId = friend.id,
-                    prediction = prediction.trim(),
+                    prediction = prediction,
                     amount = amount!!,
                     note = note.trim().takeIf { it.isNotEmpty() }
                 )
@@ -78,6 +91,15 @@ fun EditEntrySheet(
         },
         primaryActionEnabled = canSave
     ) {
+        game?.let { match ->
+            EntryMatchPreviewCard(
+                teamA = match.teamA,
+                teamB = match.teamB,
+                matchTime = match.matchPreviewTimeOrNull()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
         when {
             friends.isEmpty() -> {
                 Text(
@@ -116,13 +138,17 @@ fun EditEntrySheet(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        FormOutlinedTextField(
-            value = prediction,
-            onValueChange = { prediction = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.prediction)) },
-            placeholder = { Text(stringResource(R.string.add_entry_prediction_hint)) }
-        )
+        game?.let { match ->
+            ScorePredictionInputSection(
+                teamA = match.teamA,
+                teamB = match.teamB,
+                scoreA = scoreA,
+                scoreB = scoreB,
+                onScoreAChange = { scoreA = it },
+                onScoreBChange = { scoreB = it },
+                legacyPredictionNote = legacyPrediction
+            )
+        }
 
         Spacer(modifier = Modifier.height(10.dp))
 

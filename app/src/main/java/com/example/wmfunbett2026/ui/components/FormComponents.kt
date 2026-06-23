@@ -23,7 +23,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.getValue
@@ -31,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.wmfunbett2026.ui.matchcenter.MatchTeamCountryCatalog
+import com.example.wmfunbett2026.ui.matchcenter.teamFlagEmoji
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -552,3 +561,280 @@ fun FriendSearchResultCard(
         )
     }
 }
+
+private val EntryPreviewCardShape = RoundedCornerShape(14.dp)
+private val ScoreInputShape = RoundedCornerShape(14.dp)
+private val ScoreInputWidth = 88.dp
+private val ScoreInputHeight = 72.dp
+
+@Composable
+fun EntryMatchPreviewCard(
+    teamA: String,
+    teamB: String,
+    matchTime: String?,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(EntryPreviewCardShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f), EntryPreviewCardShape)
+            .padding(horizontal = 12.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        EntryMatchPreviewTeam(
+            teamName = teamA,
+            modifier = Modifier.weight(1f)
+        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.match_preview_vs),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = SheetOnSurface
+            )
+            matchTime?.let { time ->
+                Text(
+                    text = time,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(PrimaryBlue.copy(alpha = 0.28f))
+                        .padding(horizontal = 10.dp, vertical = 3.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = PrimaryBlue
+                )
+            }
+        }
+        EntryMatchPreviewTeam(
+            teamName = teamB,
+            modifier = Modifier.weight(1f),
+            alignEnd = true
+        )
+    }
+}
+
+@Composable
+private fun EntryMatchPreviewTeam(
+    teamName: String,
+    modifier: Modifier = Modifier,
+    alignEnd: Boolean = false
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = if (alignEnd) Alignment.End else Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        EntryMatchFlagBadge(teamName = teamName)
+        Text(
+            text = teamName,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = SheetOnSurface,
+            maxLines = 1,
+            textAlign = if (alignEnd) TextAlign.End else TextAlign.Start
+        )
+    }
+}
+
+@Composable
+private fun EntryMatchFlagBadge(teamName: String) {
+    val flag = teamFlagEmoji(teamName)
+    Box(
+        modifier = Modifier
+            .size(36.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.55f))
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = flag, fontSize = 18.sp)
+    }
+}
+
+@Composable
+fun ScorePredictionInputSection(
+    teamA: String,
+    teamB: String,
+    scoreA: String,
+    scoreB: String,
+    onScoreAChange: (String) -> Unit,
+    onScoreBChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    legacyPredictionNote: String? = null
+) {
+    val focusA = remember { FocusRequester() }
+    val focusB = remember { FocusRequester() }
+    var scoreAFocused by remember { mutableStateOf(false) }
+    var scoreBFocused by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        FormSectionLabel(text = stringResource(R.string.my_prediction))
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            ScorePredictionInputBox(
+                value = scoreA,
+                onValueChange = { raw ->
+                    val next = sanitizeScoreDigits(raw)
+                    val grew = next.length > scoreA.length
+                    onScoreAChange(next)
+                    if (grew && next.isNotEmpty()) {
+                        focusB.requestFocus()
+                    }
+                },
+                isFocused = scoreAFocused,
+                onFocusChanged = { scoreAFocused = it },
+                focusRequester = focusA,
+                onBackspaceWhenEmpty = {},
+                modifier = Modifier.width(ScoreInputWidth)
+            )
+            Text(
+                text = ":",
+                modifier = Modifier.padding(horizontal = 10.dp),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = SheetOnSurface
+            )
+            ScorePredictionInputBox(
+                value = scoreB,
+                onValueChange = { raw ->
+                    val next = sanitizeScoreDigits(raw)
+                    onScoreBChange(next)
+                },
+                isFocused = scoreBFocused,
+                onFocusChanged = { scoreBFocused = it },
+                focusRequester = focusB,
+                onBackspaceWhenEmpty = { focusA.requestFocus() },
+                modifier = Modifier.width(ScoreInputWidth)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = teamA,
+                modifier = Modifier.width(ScoreInputWidth),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
+                color = if (scoreAFocused) PrimaryBlue else SheetOnSurfaceVariant,
+                maxLines = 1,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.width(34.dp))
+            Text(
+                text = teamB,
+                modifier = Modifier.width(ScoreInputWidth),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
+                color = if (scoreBFocused) PrimaryBlue else SheetOnSurfaceVariant,
+                maxLines = 1,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = stringResource(R.string.score_prediction_focus_hint),
+            style = MaterialTheme.typography.labelSmall,
+            color = SheetOnSurfaceVariant,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+
+        legacyPredictionNote?.let { note ->
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.edit_entry_legacy_prediction, note),
+                style = MaterialTheme.typography.bodySmall,
+                color = SheetOnSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScorePredictionInputBox(
+    value: String,
+    onValueChange: (String) -> Unit,
+    isFocused: Boolean,
+    onFocusChanged: (Boolean) -> Unit,
+    focusRequester: FocusRequester,
+    onBackspaceWhenEmpty: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val borderColor = if (isFocused) PrimaryBlue else SheetBorderUnfocused
+    val borderWidth = if (isFocused) 2.dp else 1.dp
+
+    Box(
+        modifier = modifier
+            .height(ScoreInputHeight)
+            .clip(ScoreInputShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.32f))
+            .border(borderWidth, borderColor, ScoreInputShape),
+        contentAlignment = Alignment.Center
+    ) {
+        androidx.compose.foundation.text.BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .onFocusChanged { onFocusChanged(it.isFocused) }
+                .onPreviewKeyEvent { event ->
+                    if (
+                        event.type == KeyEventType.KeyUp &&
+                        event.key == Key.Backspace &&
+                        value.isEmpty()
+                    ) {
+                        onBackspaceWhenEmpty()
+                        true
+                    } else {
+                        false
+                    }
+                },
+            textStyle = MaterialTheme.typography.headlineLarge.copy(
+                fontWeight = FontWeight.Bold,
+                color = SheetOnSurface,
+                textAlign = TextAlign.Center
+            ),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            decorationBox = { innerTextField ->
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (value.isEmpty()) {
+                        Text(
+                            text = "0",
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = SheetOnSurfaceVariant.copy(alpha = 0.35f)
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        )
+    }
+}
+
+private fun sanitizeScoreDigits(input: String): String =
+    input.filter { it.isDigit() }.take(2)

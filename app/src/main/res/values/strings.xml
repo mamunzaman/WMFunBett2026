@@ -233,6 +233,10 @@
     <string name="time">Time</string>
     <string name="time_optional">Time (optional)</string>
     <string name="prediction">Prediction</string>
+    <string name="my_prediction">My Prediction</string>
+    <string name="score_prediction_focus_hint">Tap a score → moves automatically to the next</string>
+    <string name="edit_entry_legacy_prediction">Previous prediction: %1$s</string>
+    <string name="match_preview_vs">VS</string>
     <string name="status">Status</string>
     <string name="score">Score</string>
     <string name="time_scope">Time scope</string>

@@ -27,6 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Friend
+import com.example.wmfunbett2026.data.model.formatScorePrediction
+import com.example.wmfunbett2026.data.model.matchPreviewTimeOrNull
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.theme.TextSecondary
@@ -76,6 +78,9 @@ fun AddEntrySheet(
     val tippGroup = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getTippGroup(tippGroupId)
     }
+    val game = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getGameForTippGroup(tippGroupId)
+    }
     val friends = remember(FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getFriends()
     }
@@ -89,10 +94,12 @@ fun AddEntrySheet(
 
     var selectedFriend by remember { mutableStateOf<Friend?>(null) }
     var friendSearchQuery by remember { mutableStateOf("") }
-    var prediction by remember { mutableStateOf("") }
+    var scoreA by remember { mutableStateOf("") }
+    var scoreB by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     val searchFocusRequester = remember { FocusRequester() }
 
+    val prediction = formatScorePrediction(scoreA, scoreB).orEmpty()
     val duplicateSelected = selectedFriend?.id?.let { it in joinedFriendIds } == true
     val canCreate = selectedFriend != null &&
         !duplicateSelected &&
@@ -110,12 +117,21 @@ fun AddEntrySheet(
             FriendQuickPickRecents.record(friend.id)
             onCreate(
                 friend.id,
-                prediction.trim(),
+                prediction,
                 note.trim().takeIf { it.isNotEmpty() }
             )
         },
         primaryActionEnabled = canCreate
     ) {
+        game?.let { match ->
+            EntryMatchPreviewCard(
+                teamA = match.teamA,
+                teamB = match.teamB,
+                matchTime = match.matchPreviewTimeOrNull()
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
         if (entryAmount != null && entryAmount > 0.0) {
             LockedEntryAmountInfoRow(amountLabel = entryAmount.toEuroLabel())
         } else {
@@ -166,13 +182,16 @@ fun AddEntrySheet(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        FormOutlinedTextField(
-            value = prediction,
-            onValueChange = { prediction = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(R.string.prediction)) },
-            placeholder = { Text(stringResource(R.string.add_entry_prediction_hint)) }
-        )
+        game?.let { match ->
+            ScorePredictionInputSection(
+                teamA = match.teamA,
+                teamB = match.teamB,
+                scoreA = scoreA,
+                scoreB = scoreB,
+                onScoreAChange = { scoreA = it },
+                onScoreBChange = { scoreB = it }
+            )
+        }
 
         Spacer(modifier = Modifier.height(10.dp))
 

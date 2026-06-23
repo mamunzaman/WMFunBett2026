@@ -194,3 +194,43 @@ data class Round(
 
 fun Double.toEuroLabel(): String =
     if (this % 1.0 == 0.0) "€${toInt()}" else "€%.2f".format(this)
+
+data class ScorePredictionParts(
+    val scoreA: String,
+    val scoreB: String
+)
+
+fun parseScorePrediction(prediction: String): ScorePredictionParts? {
+    val normalized = prediction.trim().replace(Regex("\\s+"), "")
+    if (normalized.isEmpty()) return null
+
+    val separatorIndex = normalized.indexOfFirst { it == ':' || it == '-' }
+    if (separatorIndex <= 0 || separatorIndex >= normalized.lastIndex) return null
+
+    val scoreA = normalized.substring(0, separatorIndex)
+    val scoreB = normalized.substring(separatorIndex + 1)
+    if (scoreA.isEmpty() || scoreB.isEmpty()) return null
+    if (!scoreA.all { it.isDigit() } || !scoreB.all { it.isDigit() }) return null
+    if (scoreA.length > 2 || scoreB.length > 2) return null
+
+    return ScorePredictionParts(scoreA, scoreB)
+}
+
+fun formatScorePrediction(scoreA: String, scoreB: String): String? {
+    val a = scoreA.trim()
+    val b = scoreB.trim()
+    if (a.isEmpty() || b.isEmpty()) return null
+    if (!a.all { it.isDigit() } || !b.all { it.isDigit() }) return null
+    return "$a:$b"
+}
+
+fun Game.matchPreviewTimeOrNull(): String? {
+    val label = dateTimeLabel.trim()
+    if (label.isBlank()) return null
+
+    val timeAfterDot = label.substringAfter('·', missingDelimiterValue = "").trim()
+    if (timeAfterDot.isNotEmpty() && timeAfterDot.contains(':')) return timeAfterDot
+
+    val timeMatch = Regex("""\b\d{1,2}:\d{2}\b""").find(label)?.value
+    return timeMatch
+}
