@@ -4,6 +4,6 @@
 Wire Tipp Group settlement UI to split carry-over + entry payouts (Phase 5C).
 
 ## Verify Next
-- Edit match from Matches long-press saves teams/date/time/note
-- Bulk delete removes entries only in current tipp group
-- Friends list unchanged after entry/match deletes
+- JACKPOT entry shows catch-up in preview and persists on create
+- Default participation: Local if carried jackpot > 0, else Join jackpot
+- Entry amount row shows when tipp group has stake set

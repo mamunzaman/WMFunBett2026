@@ -100,6 +100,7 @@
 - [x] Entry participation persistence (Phase 4A): Room v3 migration, entity + mapper fields
 - [x] Entry participation repository wiring (Phase 4B): LOCAL_ONLY add, safe updateEntry, payment snapshot helper
 - [x] Match edit/delete via long-press cards; bulk entry delete selection mode
+- [x] Add Entry participation selector (Local only / Join jackpot) with amount preview
 
 ## Last Update
-2026-06-21 — Match edit/delete on card long-press; entry long-press + bulk delete selection.
+2026-06-21 — Add Entry sheet: participation radio rows + live catch-up/total preview.

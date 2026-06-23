@@ -4,6 +4,9 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,28 +16,43 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.data.jackpot.ParticipationEntryJoinBreakdown
+import com.example.wmfunbett2026.data.model.EntryParticipation
 import com.example.wmfunbett2026.data.model.Friend
 import com.example.wmfunbett2026.data.model.formatScorePrediction
 import com.example.wmfunbett2026.data.model.matchPreviewTimeOrNull
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
+import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.TextSecondary
 
 private const val QUICK_PICK_VISIBLE_COUNT = 4
 private const val SEARCH_RESULT_LIMIT = 5
+
+private fun resolveRoundIdForGame(gameId: String): String? =
+    FunBettRepository.getRounds().firstOrNull { round ->
+        round.days.any { day -> day.games.any { it.id == gameId } }
+    }?.id
 
 private object FriendQuickPickRecents {
     private const val MAX_RECENTS = 5
@@ -63,8 +81,15 @@ private object FriendQuickPickRecents {
 @Composable
 fun AddEntrySheet(
     tippGroupId: String,
+    roundId: String? = null,
+    gameId: String? = null,
     onDismiss: () -> Unit,
-    onCreate: (friendId: String, prediction: String, note: String?) -> Unit
+    onCreate: (
+        friendId: String,
+        prediction: String,
+        note: String?,
+        participation: EntryParticipation
+    ) -> Unit
 ) {
     FunBettRepository.dataVersion.intValue
     val entryBlockReason = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
@@ -75,11 +100,24 @@ fun AddEntrySheet(
         return
     }
 
-    val tippGroup = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
-        FunBettRepository.getTippGroup(tippGroupId)
+    val resolvedGameId = gameId?.takeIf { it.isNotBlank() }
+        ?: remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
+            FunBettRepository.getGameForTippGroup(tippGroupId)?.id
+        }
+    val resolvedRoundId = remember(roundId, resolvedGameId, FunBettRepository.dataVersion.intValue) {
+        roundId?.takeIf { it.isNotBlank() }
+            ?: resolvedGameId?.let(::resolveRoundIdForGame)
     }
-    val game = remember(tippGroupId, FunBettRepository.dataVersion.intValue) {
-        FunBettRepository.getGameForTippGroup(tippGroupId)
+    val tippGroup = remember(tippGroupId, resolvedGameId, FunBettRepository.dataVersion.intValue) {
+        when {
+            !resolvedGameId.isNullOrBlank() ->
+                FunBettRepository.getTippGroupInGame(resolvedGameId, tippGroupId)
+            else -> FunBettRepository.getTippGroup(tippGroupId)
+        } ?: FunBettRepository.getTippGroup(tippGroupId)
+    }
+    val game = remember(tippGroupId, resolvedGameId, FunBettRepository.dataVersion.intValue) {
+        resolvedGameId?.let { FunBettRepository.getGame(it) }
+            ?: FunBettRepository.getGameForTippGroup(tippGroupId)
     }
     val friends = remember(FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getFriends()
@@ -90,22 +128,57 @@ fun AddEntrySheet(
     val availableFriends = remember(friends, joinedFriendIds) {
         friends.filter { it.id !in joinedFriendIds }
     }
-    val entryAmount = tippGroup?.entryAmount
+    val entryAmount = tippGroup?.entryAmount?.takeIf { it > 0.0 }
+    val hasValidEntryAmount = entryAmount != null
+
+    val carriedJackpot = remember(resolvedRoundId, resolvedGameId, tippGroupId, FunBettRepository.dataVersion.intValue) {
+        val round = resolvedRoundId ?: return@remember 0.0
+        val gameIdValue = resolvedGameId ?: return@remember 0.0
+        FunBettRepository.getJackpotCarryOverSummary(round, gameIdValue, tippGroupId)
+            ?.incomingJackpot
+            ?: 0.0
+    }
 
     var selectedFriend by remember { mutableStateOf<Friend?>(null) }
+    var selectedParticipation by remember { mutableStateOf(EntryParticipation.LOCAL_ONLY) }
     var friendSearchQuery by remember { mutableStateOf("") }
     var scoreA by remember { mutableStateOf("") }
     var scoreB by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     val searchFocusRequester = remember { FocusRequester() }
 
+    LaunchedEffect(tippGroupId, carriedJackpot) {
+        selectedParticipation = if (carriedJackpot > 0.0) {
+            EntryParticipation.LOCAL_ONLY
+        } else {
+            EntryParticipation.JACKPOT
+        }
+    }
+
+    val joinBreakdown = remember(
+        resolvedRoundId,
+        resolvedGameId,
+        tippGroupId,
+        selectedParticipation,
+        FunBettRepository.dataVersion.intValue
+    ) {
+        if (!hasValidEntryAmount) return@remember null
+        val round = resolvedRoundId ?: return@remember null
+        val gameIdValue = resolvedGameId ?: return@remember null
+        FunBettRepository.getEntryJoinBreakdown(
+            roundId = round,
+            gameId = gameIdValue,
+            tippGroupId = tippGroupId,
+            participation = selectedParticipation
+        )
+    }
+
     val prediction = formatScorePrediction(scoreA, scoreB).orEmpty()
     val duplicateSelected = selectedFriend?.id?.let { it in joinedFriendIds } == true
     val canCreate = selectedFriend != null &&
         !duplicateSelected &&
         prediction.isNotBlank() &&
-        entryAmount != null &&
-        entryAmount > 0.0
+        hasValidEntryAmount
 
     FormBottomSheet(
         title = stringResource(R.string.add_entry),
@@ -118,7 +191,8 @@ fun AddEntrySheet(
             onCreate(
                 friend.id,
                 prediction,
-                note.trim().takeIf { it.isNotEmpty() }
+                note.trim().takeIf { it.isNotEmpty() },
+                selectedParticipation
             )
         },
         primaryActionEnabled = canCreate
@@ -132,8 +206,8 @@ fun AddEntrySheet(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        if (entryAmount != null && entryAmount > 0.0) {
-            LockedEntryAmountInfoRow(amountLabel = entryAmount.toEuroLabel())
+        if (hasValidEntryAmount) {
+            LockedEntryAmountInfoRow(amountLabel = entryAmount!!.toEuroLabel())
         } else {
             Text(
                 text = stringResource(R.string.add_entry_no_group_amount),
@@ -180,6 +254,20 @@ fun AddEntrySheet(
             FormErrorText(text = stringResource(R.string.add_entry_friend_already_joined))
         }
 
+        if (hasValidEntryAmount) {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            EntryParticipationSection(
+                selectedParticipation = selectedParticipation,
+                onParticipationSelected = { selectedParticipation = it }
+            )
+
+            joinBreakdown?.let { breakdown ->
+                Spacer(modifier = Modifier.height(10.dp))
+                EntryParticipationAmountPreview(breakdown = breakdown)
+            }
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
 
         game?.let { match ->
@@ -202,6 +290,154 @@ fun AddEntrySheet(
             label = { Text(stringResource(R.string.note_optional)) },
             singleLine = false,
             minLines = 2
+        )
+    }
+}
+
+@Composable
+private fun EntryParticipationSection(
+    selectedParticipation: EntryParticipation,
+    onParticipationSelected: (EntryParticipation) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        FormSectionLabel(text = stringResource(R.string.add_entry_participation_label))
+        ParticipationOptionRow(
+            title = stringResource(R.string.add_entry_participation_local),
+            subtitle = stringResource(R.string.add_entry_participation_local_subtitle),
+            selected = selectedParticipation == EntryParticipation.LOCAL_ONLY,
+            onClick = { onParticipationSelected(EntryParticipation.LOCAL_ONLY) }
+        )
+        ParticipationOptionRow(
+            title = stringResource(R.string.add_entry_participation_jackpot),
+            subtitle = stringResource(R.string.add_entry_participation_jackpot_subtitle),
+            selected = selectedParticipation == EntryParticipation.JACKPOT,
+            onClick = { onParticipationSelected(EntryParticipation.JACKPOT) }
+        )
+    }
+}
+
+@Composable
+private fun ParticipationOptionRow(
+    title: String,
+    subtitle: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val shape = RoundedCornerShape(12.dp)
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .background(
+                color = if (selected) {
+                    PrimaryBlue.copy(alpha = 0.18f)
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                },
+                shape = shape
+            )
+            .border(
+                width = if (selected) 2.dp else 1.dp,
+                color = if (selected) PrimaryBlue else MaterialTheme.colorScheme.outline,
+                shape = shape
+            )
+            .padding(horizontal = 8.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = PrimaryBlue,
+                unselectedColor = TextSecondary
+            )
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary
+            )
+        }
+    }
+}
+
+@Composable
+private fun EntryParticipationAmountPreview(
+    breakdown: ParticipationEntryJoinBreakdown,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                RoundedCornerShape(14.dp)
+            )
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+    ) {
+        EntryAmountPreviewLine(
+            label = stringResource(R.string.add_entry_payment_current),
+            value = breakdown.currentRoundEntryAmount.toEuroLabel()
+        )
+        EntryAmountPreviewLine(
+            label = stringResource(R.string.add_entry_payment_catch_up),
+            value = breakdown.catchUpAmount.toEuroLabel()
+        )
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        EntryAmountPreviewLine(
+            label = stringResource(R.string.add_entry_payment_total),
+            value = breakdown.totalDue.toEuroLabel(),
+            emphasized = true
+        )
+    }
+}
+
+@Composable
+private fun EntryAmountPreviewLine(
+    label: String,
+    value: String,
+    emphasized: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = if (emphasized) {
+                MaterialTheme.typography.bodyMedium
+            } else {
+                MaterialTheme.typography.bodySmall
+            },
+            color = if (emphasized) {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                TextSecondary
+            }
+        )
+        Text(
+            text = value,
+            style = if (emphasized) {
+                MaterialTheme.typography.bodyMedium
+            } else {
+                MaterialTheme.typography.bodySmall
+            },
+            fontWeight = if (emphasized) FontWeight.SemiBold else FontWeight.Normal,
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

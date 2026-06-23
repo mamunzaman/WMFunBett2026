@@ -161,6 +161,14 @@
     <string name="add_tipp_group_entry_amount">Einsatzbetrag</string>
     <string name="add_entry_locked_amount">Einsatzbetrag: %1$s</string>
     <string name="add_entry_no_group_amount">Für diese Tipp-Gruppe ist kein Einsatzbetrag festgelegt.</string>
+    <string name="add_entry_participation_label">Teilnahme</string>
+    <string name="add_entry_participation_local">Nur lokal</string>
+    <string name="add_entry_participation_local_subtitle">Nur aktuelles Spiel</string>
+    <string name="add_entry_participation_jackpot">Jackpot beitreten</string>
+    <string name="add_entry_participation_jackpot_subtitle">Gewinn aus aktuellem + übernommenem Jackpot</string>
+    <string name="add_entry_payment_current">Aktuell:</string>
+    <string name="add_entry_payment_catch_up">Nachholen:</string>
+    <string name="add_entry_payment_total">Gesamt:</string>
     <string name="add_entry_prediction_hint">z. B. 2:1</string>
     <string name="tipp_group_entries_empty">Noch keine Einträge — Eintrag unten hinzufügen</string>
     <string name="tipp_group_people">Personen</string>
