@@ -107,6 +107,7 @@
 - [x] Catch-up qualification: per-round buy-in sum; dual-pool payout (current + accumulated jackpot)
 - [x] Cases A–E: mixed local/jackpot payout + carry (local winner keeps prior carry; no winner adds jackpot stakes)
 - [x] Settlement panel split labels: current share vs jackpot share; fallback share fixed
+- [x] Jackpot Rules V2 documented (`docs/JACKPOT_RULES_V2.md`)
 
 ## Last Update
-2026-06-21 — Settlement UI: split pot labels, current-share fallback, clear jackpot/local breakdown.
+2026-06-21 — Jackpot Rules V2 spec written (doc only, no calc changes).

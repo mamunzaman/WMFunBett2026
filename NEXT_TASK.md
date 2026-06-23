@@ -1,9 +1,9 @@
 # Next Task
 
 ## Current Goal
-Wire Tipp Group settlement UI to split carry-over + entry payouts (Phase 5C).
+Align jackpot calculation engine to `docs/JACKPOT_RULES_V2.md` (especially no-winner local return + €40 carry example).
 
 ## Verify Next
-- Case C settlement panel: current share €15, jackpot share €30, carry €0
-- Entry rows: Ole €45, Mamun €15
-- Fallback EntryCard share uses current share only (not jackpot share)
+- Mixed winners €5 stakes: Mamun €7.50, Ole €37.50
+- Mixed no-winner: local €5 closed, jackpot carry €40
+- Settlement panel still matches split labels from prior fix
