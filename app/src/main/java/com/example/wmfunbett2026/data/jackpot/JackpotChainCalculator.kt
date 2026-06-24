@@ -34,56 +34,48 @@ object JackpotChainCalculator {
         game: Game,
         tippGroup: TippGroup
     ): JackpotCarryOverSummary {
-        val incomingJackpot = calculateIncomingJackpot(round, game, tippGroup)
-        val currentCollected = currentCollectedAmount(tippGroup)
-        val totalPot = incomingJackpot + currentCollected
-        val hasResult = game.hasResult && game.status == MatchStatus.FINISHED
-        val winnerCount = if (hasResult) {
-            TippGroupWinnerEngine.winningEntries(game, tippGroup).size
-        } else {
-            0
-        }
-        val hasWinner = winnerCount > 0
-        val carriedOut = if (hasResult && !hasWinner) totalPot else 0.0
-        val sharePerWinner = if (hasWinner) totalPot / winnerCount else 0.0
+        val settlement = JackpotV2SettlementBuilder.settle(round, game, tippGroup)
+        val currentCollected = tippGroup.entries.sumOf { it.currentRoundAmount }
+        val incomingJackpot = settlement.incomingJackpot
+        val calc = settlement.calculation
 
-        return JackpotCarryOverSummary(
-            incomingJackpot = incomingJackpot,
-            currentCollected = currentCollected,
-            totalPot = totalPot,
-            carriedOut = carriedOut,
-            hasWinner = hasWinner,
-            winnerCount = winnerCount,
-            sharePerWinner = sharePerWinner
-        )
+        return when (settlement.phase) {
+            TippGroupV2SettlementPhase.WAITING_RESULT,
+            TippGroupV2SettlementPhase.NO_ENTRIES -> JackpotCarryOverSummary(
+                incomingJackpot = incomingJackpot,
+                currentCollected = currentCollected,
+                totalPot = incomingJackpot + currentCollected,
+                carriedOut = 0.0,
+                hasWinner = false,
+                winnerCount = 0,
+                sharePerWinner = 0.0
+            )
+            TippGroupV2SettlementPhase.FINISHED_NO_WINNERS -> JackpotCarryOverSummary(
+                incomingJackpot = incomingJackpot,
+                currentCollected = currentCollected,
+                totalPot = incomingJackpot + currentCollected,
+                carriedOut = calc?.carryForwardJackpot ?: 0.0,
+                hasWinner = false,
+                winnerCount = 0,
+                sharePerWinner = 0.0
+            )
+            TippGroupV2SettlementPhase.FINISHED_WINNERS -> JackpotCarryOverSummary(
+                incomingJackpot = incomingJackpot,
+                currentCollected = currentCollected,
+                totalPot = incomingJackpot + currentCollected,
+                carriedOut = 0.0,
+                hasWinner = true,
+                winnerCount = calc?.currentWinners?.size ?: 0,
+                sharePerWinner = calc?.currentSharePerWinner ?: 0.0
+            )
+        }
     }
 
     fun calculateIncomingJackpot(
         round: Round,
         game: Game,
         tippGroup: TippGroup
-    ): Double {
-        val games = gamesInChronologicalOrder(round)
-        val currentIndex = games.indexOfFirst { it.id == game.id }
-        if (currentIndex <= 0) return 0.0
-
-        val scope = tippGroup.timeScope
-        var incoming = 0.0
-
-        for (index in currentIndex - 1 downTo 0) {
-            val previousGame = games[index]
-            val previousGroup = previousGame.tippGroups.find { it.timeScope == scope } ?: continue
-            if (!previousGame.hasResult || previousGame.status != MatchStatus.FINISHED) continue
-
-            when (TippGroupWinnerEngine.calculate(previousGame, previousGroup)) {
-                is TippGroupWinnerOutcome.Winners -> return incoming
-                TippGroupWinnerOutcome.NoWinner -> incoming += currentCollectedAmount(previousGroup)
-                TippGroupWinnerOutcome.Pending -> Unit
-            }
-        }
-
-        return incoming
-    }
+    ): Double = JackpotV2SettlementBuilder.incomingJackpot(round, game, tippGroup)
 
     fun maxIncomingJackpotForGame(round: Round, game: Game): Double =
         game.tippGroups.maxOfOrNull { calculateIncomingJackpot(round, game, it) } ?: 0.0
@@ -158,18 +150,23 @@ object JackpotChainCalculator {
             .sumOf { it.currentRoundAmount }
 
     /**
-     * Future: count missed jackpot rounds for catch-up.
-     * Walk FINISHED prior games (same timeScope link); count chain steps without jackpot winner.
-     *
-     * TODO Phase 3: implement chain walk; return slot count for [calculateCatchUpAmount].
+     * Missed jackpot-chain round count for late join (see [JackpotV2SettlementBuilder.calculateCatchUp]).
      */
     fun calculateCatchUpSlots(
         round: Round,
         game: Game,
-        tippGroup: TippGroup
-    ): Int = 0
+        tippGroup: TippGroup,
+        friendId: String? = null
+    ): Int = JackpotV2SettlementBuilder.calculateCatchUp(round, game, tippGroup, friendId).missedRoundSlots
 
-    /** Catch-up = missed jackpot rounds × current round amount. */
+    fun calculateCatchUpAmountForJoin(
+        round: Round,
+        game: Game,
+        tippGroup: TippGroup,
+        friendId: String? = null
+    ): Double = JackpotV2SettlementBuilder.calculateCatchUp(round, game, tippGroup, friendId).amount
+
+    /** @deprecated Use [calculateCatchUpAmountForJoin]; kept for slot×amount helper in tests. */
     fun calculateCatchUpAmount(slots: Int, entryAmount: Double): Double =
         if (slots <= 0 || entryAmount <= 0.0) 0.0 else slots * entryAmount
 
@@ -188,7 +185,7 @@ object JackpotChainCalculator {
         round: Round,
         game: Game,
         tippGroup: TippGroup
-    ): Double = 0.0
+    ): Double = JackpotV2SettlementBuilder.incomingJackpot(round, game, tippGroup)
 
     /**
      * Future Add Entry breakdown for LOCAL_ONLY vs JACKPOT (not wired).
@@ -196,21 +193,22 @@ object JackpotChainCalculator {
      */
     fun buildParticipationEntryJoinBreakdown(
         participation: EntryParticipation,
+        catchUpAmount: Double,
         catchUpSlots: Int,
         entryAmount: Double
     ): ParticipationEntryJoinBreakdown {
-        val catchUpAmount = when (participation) {
+        val resolvedCatchUp = when (participation) {
             EntryParticipation.LOCAL_ONLY -> 0.0
-            EntryParticipation.JACKPOT -> calculateCatchUpAmount(catchUpSlots, entryAmount)
+            EntryParticipation.JACKPOT -> catchUpAmount.coerceAtLeast(0.0)
         }
         val totalDue = when (participation) {
             EntryParticipation.LOCAL_ONLY -> entryAmount
-            EntryParticipation.JACKPOT -> catchUpAmount + entryAmount
+            EntryParticipation.JACKPOT -> resolvedCatchUp + entryAmount
         }
         return ParticipationEntryJoinBreakdown(
             participation = participation,
-            catchUpSlots = catchUpSlots,
-            catchUpAmount = catchUpAmount,
+            catchUpSlots = if (participation == EntryParticipation.JACKPOT) catchUpSlots else 0,
+            catchUpAmount = resolvedCatchUp,
             currentRoundEntryAmount = entryAmount,
             totalDue = totalDue
         )
@@ -219,14 +217,15 @@ object JackpotChainCalculator {
     fun buildJackpotCatchUpContext(
         round: Round,
         game: Game,
-        tippGroup: TippGroup
+        tippGroup: TippGroup,
+        friendId: String? = null
     ): JackpotCatchUpContext {
         val entryAmount = tippGroup.entryAmount ?: 0.0
-        val slots = calculateCatchUpSlots(round, game, tippGroup)
+        val catchUp = JackpotV2SettlementBuilder.calculateCatchUp(round, game, tippGroup, friendId)
         return JackpotCatchUpContext(
-            missedRoundSlots = slots,
+            missedRoundSlots = catchUp.missedRoundSlots,
             entryAmount = entryAmount,
-            catchUpAmount = calculateCatchUpAmount(slots, entryAmount)
+            catchUpAmount = catchUp.amount
         )
     }
 

@@ -39,8 +39,7 @@ import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.TippGroup
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
-import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
-import com.example.wmfunbett2026.data.winner.TippGroupWinnerOutcome
+import com.example.wmfunbett2026.ui.matchcenter.tippGroupV2CompactSummary
 import com.example.wmfunbett2026.ui.components.AddTippGroupSheet
 import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.DetailInlineAddButton
@@ -128,6 +127,8 @@ fun GameDetailScreen(
             item(key = "notice") { SampleDataNotice() }
             item(key = "game_info") {
                 GameMatchOverviewCard(
+                    roundId = roundId,
+                    gameId = gameId,
                     game = game,
                     dayLabel = day?.name,
                     incomingJackpotLabel = incomingJackpotMax.takeIf { it > 0 }?.toEuroLabel(),
@@ -150,14 +151,19 @@ fun GameDetailScreen(
                 }
             } else {
                 items(tippGroups, key = { it.id }) { tippGroup ->
-                    val outcome = TippGroupWinnerEngine.calculate(game, tippGroup)
+                    val v2Settlement = FunBettRepository.getTippGroupV2Settlement(
+                        roundId = roundId,
+                        gameId = gameId,
+                        tippGroupId = tippGroup.id
+                    )
                     TippGroupListCard(
                         title = tippGroup.title,
                         scopeLabel = tippGroup.timeScope.label,
                         peopleCount = tippGroup.entries.size,
                         entryAmountLabel = entryAmountLabel(tippGroup),
                         totalAmountLabel = tippGroup.totalAmount.toEuroLabel(),
-                        winnerStatusLabel = winnerStatusLabel(outcome),
+                        winnerStatusLabel = v2Settlement?.let { tippGroupV2CompactSummary(it) }
+                            ?: stringResource(R.string.game_tipp_summary_waiting),
                         onClick = { onTippGroupClick(tippGroup.id) }
                     )
                 }
@@ -214,6 +220,8 @@ private const val TippsOverviewFadeOutDurationMs = 80
 
 @Composable
 private fun GameMatchOverviewCard(
+    roundId: String,
+    gameId: String,
     game: Game,
     dayLabel: String?,
     incomingJackpotLabel: String?,
@@ -285,6 +293,8 @@ private fun GameMatchOverviewCard(
                     )
                 ) {
                     TippsOverviewContent(
+                        roundId = roundId,
+                        gameId = gameId,
                         game = game,
                         tippGroupCount = tippGroupCount,
                         totalPeople = totalPeople,
@@ -300,6 +310,8 @@ private fun GameMatchOverviewCard(
 
 @Composable
 private fun TippsOverviewContent(
+    roundId: String,
+    gameId: String,
     game: Game,
     tippGroupCount: Int,
     totalPeople: Int,
@@ -330,7 +342,11 @@ private fun TippsOverviewContent(
         }
         if (tippGroups.isNotEmpty()) {
             tippGroups.forEach { group ->
-                val outcome = TippGroupWinnerEngine.calculate(game, group)
+                val v2Settlement = FunBettRepository.getTippGroupV2Settlement(
+                    roundId = roundId,
+                    gameId = gameId,
+                    tippGroupId = group.id
+                )
                 val entryLabel = entryAmountLabel(group).takeIf { it != "—" }
                 TippGroupOverviewMiniCard(
                     title = group.title,
@@ -338,7 +354,8 @@ private fun TippsOverviewContent(
                     peopleCount = group.entries.size,
                     entryAmountLabel = entryLabel,
                     collectedLabel = group.totalAmount.toEuroLabel(),
-                    statusLabel = winnerStatusLabel(outcome)
+                    statusLabel = v2Settlement?.let { tippGroupV2CompactSummary(it) }
+                        ?: stringResource(R.string.game_tipp_summary_waiting)
                 )
             }
         }
@@ -370,12 +387,6 @@ private fun OverviewStat(
 private fun entryAmountLabel(tippGroup: TippGroup): String {
     val amount = JackpotChainCalculator.requiredPerPersonAmount(tippGroup)
     return amount?.toEuroLabel() ?: "—"
-}
-
-private fun winnerStatusLabel(outcome: TippGroupWinnerOutcome): String = when (outcome) {
-    TippGroupWinnerOutcome.Pending -> "Open"
-    TippGroupWinnerOutcome.NoWinner -> "No winner yet"
-    is TippGroupWinnerOutcome.Winners -> "Winner split"
 }
 
 private fun buildCarryLabel(carryItems: List<com.example.wmfunbett2026.data.jackpot.JackpotCarryItem>): String? {

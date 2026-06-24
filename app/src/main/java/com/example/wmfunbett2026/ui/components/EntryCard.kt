@@ -49,9 +49,8 @@ import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
-import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.model.toEuroLabel
-import com.example.wmfunbett2026.ui.matchcenter.shouldShowEntryWinnerShare
+import com.example.wmfunbett2026.ui.matchcenter.entryV2PayoutLabel
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.Divider
 import com.example.wmfunbett2026.ui.theme.JackpotGold
@@ -80,11 +79,11 @@ fun TippGroupEntryTable(
     entries: List<Entry>,
     winningEntryIds: Set<String>,
     winnerNames: List<String>,
-    settlement: TippGroupSettlementSummary,
     onEntryClick: (Entry) -> Unit,
     onEditEntry: (Entry) -> Unit,
     onDeleteEntry: (Entry) -> Unit,
     modifier: Modifier = Modifier,
+    entryPayouts: Map<String, Double> = emptyMap(),
     selectionMode: Boolean = false,
     selectedEntryIds: Set<String> = emptySet(),
     onToggleEntrySelection: (Entry) -> Unit = {},
@@ -111,14 +110,7 @@ fun TippGroupEntryTable(
         EntryTableHeaderRow()
         entries.forEachIndexed { index, entry ->
             val isWinner = entry.id in winningEntryIds
-            val shareLabel = if (shouldShowEntryWinnerShare(game, isWinner, settlement)) {
-                stringResource(
-                    R.string.entry_winner_share,
-                    settlement.sharePerWinner.toEuroLabel()
-                )
-            } else {
-                null
-            }
+            val shareLabel = entryV2PayoutLabel(game, isWinner, entryPayouts[entry.id])
             EntryCard(
                 name = entry.friendName,
                 prediction = entry.prediction,

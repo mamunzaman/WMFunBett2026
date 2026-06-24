@@ -4,8 +4,6 @@ import com.example.wmfunbett2026.data.model.EntryParticipation
 
 /**
  * Pure V2 jackpot/current-pot calculator per [docs/JACKPOT_RULES_V2.md].
- *
- * Not wired to UI or repository — unit-tested in isolation first.
  */
 object JackpotV2Calculator {
 

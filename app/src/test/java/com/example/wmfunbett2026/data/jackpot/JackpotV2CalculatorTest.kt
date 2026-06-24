@@ -143,4 +143,86 @@ class JackpotV2CalculatorTest {
         assertEquals(5.0, result.localReturnedAmount, DELTA)
         assertEquals(0, result.payoutsByEntryId.size)
     }
+
+    @Test
+    fun oneWinner_getsFullCurrentPot() {
+        val result = JackpotV2Calculator.calculate(
+            JackpotV2RoundInput(
+                incomingJackpot = 0.0,
+                entries = listOf(
+                    jackpotEntry("ole", correct = true),
+                    jackpotEntry("thomas", correct = false)
+                )
+            )
+        )
+
+        assertEquals(10.0, result.currentPot, DELTA)
+        assertEquals(10.0, result.payoutsByEntryId["ole"]!!, DELTA)
+    }
+
+    @Test
+    fun twoWinners_splitCurrentPot() {
+        val result = JackpotV2Calculator.calculate(
+            JackpotV2RoundInput(
+                incomingJackpot = 0.0,
+                entries = listOf(
+                    jackpotEntry("ole", correct = true),
+                    localEntry("mamun", correct = true)
+                )
+            )
+        )
+
+        assertEquals(10.0, result.currentPot, DELTA)
+        assertEquals(5.0, result.currentSharePerWinner, DELTA)
+        assertEquals(5.0, result.payoutsByEntryId["ole"]!!, DELTA)
+        assertEquals(5.0, result.payoutsByEntryId["mamun"]!!, DELTA)
+    }
+
+    @Test
+    fun noCorrectWinner_noPayouts() {
+        val result = JackpotV2Calculator.calculate(
+            JackpotV2RoundInput(
+                incomingJackpot = 20.0,
+                entries = listOf(
+                    jackpotEntry("ole"),
+                    localEntry("mamun")
+                )
+            )
+        )
+
+        assertEquals(0, result.payoutsByEntryId.size)
+        assertEquals(25.0, result.carryForwardJackpot, DELTA)
+    }
+
+    @Test
+    fun localWinner_cannotWinJackpotPot() {
+        val result = JackpotV2Calculator.calculate(
+            JackpotV2RoundInput(
+                incomingJackpot = 30.0,
+                entries = listOf(localEntry("mamun", correct = true))
+            )
+        )
+
+        assertEquals(5.0, result.payoutsByEntryId["mamun"]!!, DELTA)
+        assertEquals(0.0, result.jackpotSharePerWinner, DELTA)
+        assertEquals(30.0, result.carryForwardJackpot, DELTA)
+    }
+
+    @Test
+    fun twoJackpotWinners_splitAccumulatedJackpot() {
+        val result = JackpotV2Calculator.calculate(
+            JackpotV2RoundInput(
+                incomingJackpot = 40.0,
+                entries = listOf(
+                    jackpotEntry("ole", correct = true),
+                    jackpotEntry("thomas", correct = true)
+                )
+            )
+        )
+
+        assertEquals(20.0, result.jackpotSharePerWinner, DELTA)
+        assertEquals(25.0, result.payoutsByEntryId["ole"]!!, DELTA)
+        assertEquals(25.0, result.payoutsByEntryId["thomas"]!!, DELTA)
+        assertEquals(0.0, result.carryForwardJackpot, DELTA)
+    }
 }

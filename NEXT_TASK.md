@@ -1,9 +1,10 @@
 # Next Task
 
 ## Current Goal
-Wire `JackpotV2Calculator` into repository + settlement UI (no Add Entry / Friends changes).
+Manual verify person-specific catch-up in Add Entry sheet on device.
 
 ## Verify Next
-- Tipp group settlement panel shows V2 split payouts
-- Chain carry uses `carryForwardJackpot` from V2 engine
-- Scenario 7 late join catch-up in Add Entry (separate pass)
+- Select Thomas who joined 2/3 prior jackpot groups → Join jackpot shows Catch-up €10, Total €20
+- New person missed all prior groups → Catch-up €30, Total €40
+- Local only → Catch-up €0, Total = current only
+- No person selected → Catch-up €0, no crash

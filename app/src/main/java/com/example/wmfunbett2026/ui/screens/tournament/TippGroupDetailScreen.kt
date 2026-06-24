@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountBalanceWallet
-import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material.icons.outlined.Savings
@@ -45,9 +43,9 @@ import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.TippGroup
 import com.example.wmfunbett2026.data.jackpot.JackpotCarryOverSummary
+import com.example.wmfunbett2026.data.jackpot.TippGroupV2Settlement
+import com.example.wmfunbett2026.data.jackpot.TippGroupV2SettlementPhase
 import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
-import com.example.wmfunbett2026.data.model.TippGroupSettlementStatus
-import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.components.AddEntrySheet
@@ -67,8 +65,10 @@ import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
 import com.example.wmfunbett2026.ui.components.MatchCenterTippGroupDetailMatchCard
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
+import com.example.wmfunbett2026.ui.matchcenter.entryV2PayoutLabel
 import com.example.wmfunbett2026.ui.matchcenter.tippGroupWinnerNames
 import com.example.wmfunbett2026.ui.matchcenter.tippGroupWinningEntryIds
+import com.example.wmfunbett2026.ui.matchcenter.winnerLineLabel
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
 import com.example.wmfunbett2026.ui.theme.Divider
 import com.example.wmfunbett2026.ui.theme.JackpotGold
@@ -146,8 +146,11 @@ fun TippGroupDetailScreen(
             emptyList()
         }
     }
-    val settlement = remember(roundId, gameId, tippGroupId, FunBettRepository.dataVersion.intValue) {
-        FunBettRepository.getTippGroupSettlementSummary(roundId, gameId, tippGroupId)
+    val v2Settlement = remember(roundId, gameId, tippGroupId, FunBettRepository.dataVersion.intValue) {
+        FunBettRepository.getTippGroupV2Settlement(roundId, gameId, tippGroupId)
+    }
+    val entryPayouts = remember(v2Settlement) {
+        v2Settlement?.calculation?.payoutsByEntryId.orEmpty()
     }
     val jackpotSummary = remember(roundId, gameId, tippGroupId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getJackpotCarryOverSummary(roundId, gameId, tippGroupId)
@@ -209,14 +212,9 @@ fun TippGroupDetailScreen(
                     jackpotSummary = jackpotSummary
                 )
             }
-            settlement?.let { summary ->
-                jackpotSummary?.let { jackpot ->
-                    item(key = "settlement") {
-                        TippGroupSettlementSection(
-                            summary = summary,
-                            jackpot = jackpot
-                        )
-                    }
+            v2Settlement?.let { settlement ->
+                item(key = "result_calculation") {
+                    TippGroupV2ResultCalculationSection(settlement = settlement)
                 }
             }
             item(key = "section") { HierarchySectionHeader(title = "Entries") }
@@ -251,12 +249,7 @@ fun TippGroupDetailScreen(
                         entries = entries,
                         winningEntryIds = winningEntryIds,
                         winnerNames = winnerNames,
-                        settlement = settlement ?: TippGroupSettlementSummary(
-                            status = TippGroupSettlementStatus.PENDING,
-                            totalCollected = 0.0,
-                            winnerCount = 0,
-                            sharePerWinner = 0.0
-                        ),
+                        entryPayouts = entryPayouts,
                         onEntryClick = { entry -> selectedPersonName = entry.friendName },
                         onEditEntry = { entry -> editingEntry = entry },
                         onDeleteEntry = { entry -> deletingEntry = entry },
@@ -521,97 +514,117 @@ private fun TippGroupDetailHeaderSection(
 }
 
 @Composable
-private fun TippGroupSettlementSection(
-    summary: TippGroupSettlementSummary,
-    jackpot: JackpotCarryOverSummary,
+private fun TippGroupV2ResultCalculationSection(
+    settlement: TippGroupV2Settlement,
     modifier: Modifier = Modifier
 ) {
+    val calc = settlement.calculation
+
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Text(
-            text = stringResource(R.string.settlement_title),
+            text = stringResource(R.string.result_calculation_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = PrimaryText
         )
         TippGroupDetailPanel {
-            TippGroupDetailStatRow(
-                label = stringResource(R.string.settlement_incoming_jackpot),
-                value = jackpot.incomingJackpot.toEuroLabel(),
-                icon = Icons.Outlined.EmojiEvents,
-                highlightValue = jackpot.incomingJackpot > 0
-            )
-            TippGroupDetailStatDivider()
-            TippGroupDetailStatRow(
-                label = stringResource(R.string.settlement_collected),
-                value = jackpot.currentCollected.toEuroLabel(),
-                icon = Icons.Outlined.AccountBalanceWallet
-            )
-            when (summary.status) {
-                TippGroupSettlementStatus.PENDING -> {
-                    TippGroupDetailStatDivider()
-                    TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_total_pot),
-                        value = jackpot.totalPot.toEuroLabel(),
-                        icon = Icons.Outlined.Savings,
-                        highlightValue = true
-                    )
-                    TippGroupDetailStatDivider()
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.settlement_pending_title),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = PrimaryText
+            when (settlement.phase) {
+                TippGroupV2SettlementPhase.WAITING_RESULT -> {
+                    ResultCalculationTextRow(stringResource(R.string.result_waiting_final))
+                }
+                TippGroupV2SettlementPhase.NO_ENTRIES -> {
+                    ResultCalculationTextRow(stringResource(R.string.result_no_entries))
+                }
+                TippGroupV2SettlementPhase.FINISHED_NO_WINNERS -> {
+                    ResultCalculationTextRow(stringResource(R.string.result_no_winner))
+                    calc?.let {
+                        ResultCalculationTextRow(
+                            stringResource(R.string.result_current_pot, it.currentPot.toEuroLabel())
                         )
-                        Text(
-                            text = stringResource(R.string.settlement_pending_message),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = SecondaryText
-                        )
+                        if (it.carryForwardJackpot > 0.0) {
+                            ResultCalculationTextRow(
+                                stringResource(
+                                    R.string.result_jackpot_carry,
+                                    it.carryForwardJackpot.toEuroLabel()
+                                )
+                            )
+                        }
+                        if (it.localReturnedAmount > 0.0) {
+                            ResultCalculationTextRow(
+                                stringResource(
+                                    R.string.result_local_returned,
+                                    it.localReturnedAmount.toEuroLabel()
+                                )
+                            )
+                        }
                     }
                 }
-                TippGroupSettlementStatus.NO_WINNERS -> {
-                    TippGroupDetailStatDivider()
-                    TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_carried_forward),
-                        value = jackpot.carriedOut.toEuroLabel(),
-                        icon = Icons.Outlined.Savings,
-                        highlightValue = true
-                    )
-                }
-                TippGroupSettlementStatus.WINNERS -> {
-                    TippGroupDetailStatDivider()
-                    TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_total_pot),
-                        value = jackpot.totalPot.toEuroLabel(),
-                        icon = Icons.Outlined.Savings,
-                        highlightValue = true
-                    )
-                    TippGroupDetailStatDivider()
-                    TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_winners),
-                        value = jackpot.winnerCount.toString(),
-                        icon = Icons.Outlined.Groups
-                    )
-                    TippGroupDetailStatDivider()
-                    TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_share_per_winner),
-                        value = jackpot.sharePerWinner.toEuroLabel(),
-                        icon = Icons.Outlined.EmojiEvents,
-                        highlightValue = true
-                    )
+                TippGroupV2SettlementPhase.FINISHED_WINNERS -> {
+                    calc?.let {
+                        ResultCalculationTextRow(
+                            stringResource(R.string.result_current_pot, it.currentPot.toEuroLabel())
+                        )
+                        ResultCalculationTextRow(
+                            stringResource(
+                                R.string.result_current_share,
+                                it.currentSharePerWinner.toEuroLabel()
+                            )
+                        )
+                        if (it.jackpotPot > 0.0) {
+                            ResultCalculationTextRow(
+                                stringResource(R.string.result_jackpot_pot, it.jackpotPot.toEuroLabel())
+                            )
+                        }
+                        if (it.jackpotWinners.isNotEmpty()) {
+                            ResultCalculationTextRow(
+                                stringResource(
+                                    R.string.result_jackpot_share,
+                                    it.jackpotSharePerWinner.toEuroLabel()
+                                )
+                            )
+                        }
+                    }
+                    if (settlement.winnerLines.isNotEmpty()) {
+                        TippGroupDetailStatDivider()
+                        Text(
+                            text = stringResource(R.string.result_winners_title),
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = SecondaryText
+                        )
+                        settlement.winnerLines.forEach { line ->
+                            Text(
+                                text = winnerLineLabel(line),
+                                modifier = Modifier.padding(bottom = 8.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = JackpotGold
+                            )
+                        }
+                    }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun ResultCalculationTextRow(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        style = MaterialTheme.typography.bodyMedium,
+        color = PrimaryText
+    )
 }
 
 @Composable

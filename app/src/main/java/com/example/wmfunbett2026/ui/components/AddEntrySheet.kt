@@ -160,6 +160,7 @@ fun AddEntrySheet(
         resolvedGameId,
         tippGroupId,
         selectedParticipation,
+        selectedFriend?.id,
         FunBettRepository.dataVersion.intValue
     ) {
         if (!hasValidEntryAmount) return@remember null
@@ -169,7 +170,8 @@ fun AddEntrySheet(
             roundId = round,
             gameId = gameIdValue,
             tippGroupId = tippGroupId,
-            participation = selectedParticipation
+            participation = selectedParticipation,
+            friendId = selectedFriend?.id
         )
     }
 

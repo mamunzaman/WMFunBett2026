@@ -111,6 +111,10 @@
 - [x] Jackpot V2 final approved scenarios (Scenarios 1–7) — business logic locked
 - [x] `JackpotV2Calculator` + 6 scenario unit tests (Scenarios 1–6)
 - [x] `TippGroupWinnerEngine.calculateSplit` delegates to V2 calculator
+- [x] V2 Result Calculation UI on Tipp Group detail + compact summaries on Game detail
+- [x] Repository wired to `JackpotV2SettlementBuilder` (incoming jackpot chain + payouts)
+- [x] Late jackpot join catch-up wired (all active jackpot Tipp Groups in prior FINISHED games)
+- [x] Person-specific catch-up: missed jackpot groups per `friendId` (Add Entry sheet updates on person select)
 
 ## Last Update
-2026-06-21 — Match edit/delete + bulk entry delete verified; edit date parse fix; GameDetail delete copy aligned.
+2026-06-21 — Person-specific jackpot catch-up by friendId; 8 catch-up unit tests.

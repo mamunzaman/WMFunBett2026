@@ -47,9 +47,15 @@ data class JackpotChainStep(
     val hadJackpotWinner: Boolean
 )
 
+/** Catch-up result for late jackpot join per [docs/JACKPOT_RULES_V2.md]. */
+data class JackpotCatchUpResult(
+    val amount: Double,
+    val missedRoundSlots: Int
+)
+
 /**
  * Catch-up context for a new JACKPOT entry.
- * Formula: [missedRoundSlots] × [entryAmount].
+ * Formula: sum of per-round buy-ins on the active jackpot chain.
  */
 data class JackpotCatchUpContext(
     val missedRoundSlots: Int,
@@ -135,4 +141,28 @@ data class JackpotV2Result(
     val payoutsByEntryId: Map<String, Double>,
     val carryForwardJackpot: Double,
     val localReturnedAmount: Double
+)
+
+enum class TippGroupV2SettlementPhase {
+    WAITING_RESULT,
+    NO_ENTRIES,
+    FINISHED_NO_WINNERS,
+    FINISHED_WINNERS
+}
+
+data class TippGroupV2WinnerLine(
+    val entryId: String,
+    val name: String,
+    val participation: EntryParticipation,
+    val currentShare: Double,
+    val jackpotShare: Double,
+    val totalPayout: Double
+)
+
+/** V2 settlement snapshot for one Tipp Group (UI + repository). */
+data class TippGroupV2Settlement(
+    val phase: TippGroupV2SettlementPhase,
+    val incomingJackpot: Double,
+    val calculation: JackpotV2Result?,
+    val winnerLines: List<TippGroupV2WinnerLine>
 )

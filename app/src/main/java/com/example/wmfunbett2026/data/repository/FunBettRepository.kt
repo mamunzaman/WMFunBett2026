@@ -27,8 +27,12 @@ import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.tipp.TippScopeAvailability
 import com.example.wmfunbett2026.data.jackpot.JackpotCarryOverSummary
 import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
+import com.example.wmfunbett2026.data.jackpot.JackpotCatchUpResult
+import com.example.wmfunbett2026.data.jackpot.JackpotV2SettlementBuilder
 import com.example.wmfunbett2026.data.jackpot.ParticipationEntryJoinBreakdown
-import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
+import com.example.wmfunbett2026.data.jackpot.TippGroupV2Settlement
+import com.example.wmfunbett2026.data.jackpot.TippGroupV2SettlementPhase
+import com.example.wmfunbett2026.data.model.TippGroupSettlementStatus
 import java.time.LocalDate
 
 object FunBettRepository {
@@ -374,10 +378,58 @@ object FunBettRepository {
     ): TippGroupSettlementSummary? {
         val game = getGame(gameId) ?: return null
         val tippGroup = getTippGroupInGame(gameId, tippGroupId) ?: return null
-        val base = TippGroupWinnerEngine.settlementSummary(game, tippGroup)
-        val round = getRound(roundId) ?: return base
-        val jackpot = JackpotChainCalculator.calculateCarryOverSummary(round, game, tippGroup)
-        return base.copy(sharePerWinner = jackpot.sharePerWinner)
+        val round = getRound(roundId) ?: return null
+        val v2 = JackpotV2SettlementBuilder.settle(round, game, tippGroup)
+        val totalCollected = tippGroup.entries.sumOf { it.currentRoundAmount }
+        val calc = v2.calculation
+
+        return when (v2.phase) {
+            TippGroupV2SettlementPhase.WAITING_RESULT -> TippGroupSettlementSummary(
+                status = TippGroupSettlementStatus.PENDING,
+                totalCollected = totalCollected,
+                winnerCount = 0,
+                sharePerWinner = 0.0
+            )
+            TippGroupV2SettlementPhase.NO_ENTRIES -> TippGroupSettlementSummary(
+                status = TippGroupSettlementStatus.NO_WINNERS,
+                totalCollected = 0.0,
+                winnerCount = 0,
+                sharePerWinner = 0.0
+            )
+            TippGroupV2SettlementPhase.FINISHED_NO_WINNERS -> TippGroupSettlementSummary(
+                status = TippGroupSettlementStatus.NO_WINNERS,
+                totalCollected = totalCollected,
+                winnerCount = 0,
+                sharePerWinner = 0.0
+            )
+            TippGroupV2SettlementPhase.FINISHED_WINNERS -> TippGroupSettlementSummary(
+                status = TippGroupSettlementStatus.WINNERS,
+                totalCollected = totalCollected,
+                winnerCount = calc?.currentWinners?.size ?: 0,
+                sharePerWinner = calc?.currentSharePerWinner ?: 0.0
+            )
+        }
+    }
+
+    fun getTippGroupV2Settlement(
+        roundId: String,
+        gameId: String,
+        tippGroupId: String
+    ): TippGroupV2Settlement? {
+        val round = getRound(roundId) ?: return null
+        val game = getGame(gameId) ?: return null
+        val tippGroup = getTippGroupInGame(gameId, tippGroupId) ?: return null
+        return JackpotV2SettlementBuilder.settle(round, game, tippGroup)
+    }
+
+    fun getEntryV2Payout(
+        roundId: String,
+        gameId: String,
+        tippGroupId: String,
+        entryId: String
+    ): Double? {
+        val settlement = getTippGroupV2Settlement(roundId, gameId, tippGroupId) ?: return null
+        return settlement.calculation?.payoutsByEntryId?.get(entryId)
     }
 
     fun getJackpotCarryOverSummary(
@@ -401,7 +453,8 @@ object FunBettRepository {
         roundId: String,
         gameId: String,
         tippGroupId: String,
-        participation: EntryParticipation
+        participation: EntryParticipation,
+        friendId: String? = null
     ): ParticipationEntryJoinBreakdown? {
         if (roundId.isBlank() || gameId.isBlank() || tippGroupId.isBlank()) return null
         val round = getRound(roundId) ?: return null
@@ -410,15 +463,16 @@ object FunBettRepository {
         val entryAmount = tippGroup.entryAmount ?: return null
         if (entryAmount <= 0.0) return null
 
-        val catchUpSlots = when (participation) {
-            EntryParticipation.LOCAL_ONLY -> 0
+        val catchUp = when (participation) {
+            EntryParticipation.LOCAL_ONLY -> JackpotCatchUpResult(0.0, 0)
             EntryParticipation.JACKPOT ->
-                JackpotChainCalculator.buildJackpotCatchUpContext(round, game, tippGroup).missedRoundSlots
+                JackpotV2SettlementBuilder.calculateCatchUp(round, game, tippGroup, friendId)
         }
 
         return JackpotChainCalculator.buildParticipationEntryJoinBreakdown(
             participation = participation,
-            catchUpSlots = catchUpSlots,
+            catchUpAmount = catchUp.amount,
+            catchUpSlots = catchUp.missedRoundSlots,
             entryAmount = entryAmount
         )
     }
@@ -679,7 +733,8 @@ object FunBettRepository {
             tippGroup = tippGroup,
             participation = participation,
             round = round,
-            game = game
+            game = game,
+            friendId = friend.id
         ) ?: return null
 
         return addEntry(
@@ -932,7 +987,8 @@ object FunBettRepository {
         tippGroup: TippGroup,
         participation: EntryParticipation,
         round: Round? = null,
-        game: Game? = null
+        game: Game? = null,
+        friendId: String? = null
     ): EntryPaymentSnapshot? {
         val entryAmount = tippGroup.entryAmount ?: return null
         if (entryAmount <= 0.0) return null
@@ -950,7 +1006,8 @@ object FunBettRepository {
                 val context = JackpotChainCalculator.buildJackpotCatchUpContext(
                     resolvedRound,
                     resolvedGame,
-                    tippGroup
+                    tippGroup,
+                    friendId
                 )
                 EntryPaymentSnapshot(
                     participation = EntryParticipation.JACKPOT,
