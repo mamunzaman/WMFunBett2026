@@ -113,4 +113,4 @@
 - [x] `TippGroupWinnerEngine.calculateSplit` delegates to V2 calculator
 
 ## Last Update
-2026-06-21 — Jackpot V2 calculator implemented; all unit tests pass.
+2026-06-21 — Match edit/delete + bulk entry delete verified; edit date parse fix; GameDetail delete copy aligned.

@@ -301,19 +301,31 @@ fun Game.parseScheduleParts(reference: java.time.LocalDate = java.time.LocalDate
     }
 
     val parts = label.split("·").map { it.trim() }.filter { it.isNotEmpty() }
-    val dateFormatter = java.time.format.DateTimeFormatter.ofPattern(
-        "EEE d MMM yyyy",
-        java.util.Locale.getDefault()
+    val locale = java.util.Locale.getDefault()
+    val timeFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm", locale)
+    val datePatternsWithYear = listOf(
+        java.time.format.DateTimeFormatter.ofPattern("EEE, d MMM yyyy", locale),
+        java.time.format.DateTimeFormatter.ofPattern("EEE d MMM yyyy", locale),
+        java.time.format.DateTimeFormatter.ofPattern("EEE, d MMM yyyy", java.util.Locale.ENGLISH),
+        java.time.format.DateTimeFormatter.ofPattern("EEE d MMM yyyy", java.util.Locale.ENGLISH)
     )
-    val timeFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm", java.util.Locale.getDefault())
+    val datePatternsWithoutYear = listOf(
+        java.time.format.DateTimeFormatter.ofPattern("EEE d MMM", java.util.Locale.ENGLISH)
+    )
 
     fun parseTime(value: String): java.time.LocalTime? =
         runCatching { java.time.LocalTime.parse(value.trim(), timeFormatter) }.getOrNull()
 
-    fun parseDate(value: String): java.time.LocalDate? =
-        runCatching {
-            java.time.LocalDate.parse("${value.trim()} ${reference.year}", dateFormatter)
-        }.getOrNull()
+    fun parseDate(value: String): java.time.LocalDate? {
+        val trimmed = value.trim()
+        datePatternsWithYear.forEach { formatter ->
+            runCatching { return java.time.LocalDate.parse(trimmed, formatter) }
+        }
+        datePatternsWithoutYear.forEach { formatter ->
+            runCatching { return java.time.LocalDate.parse("$trimmed ${reference.year}", formatter) }
+        }
+        return null
+    }
 
     return when {
         parts.size >= 2 -> GameScheduleParts(

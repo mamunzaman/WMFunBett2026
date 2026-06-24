@@ -194,6 +194,8 @@ fun GameDetailScreen(
 
     if (showDeleteDialog) {
         DeleteConfirmDialog(
+            titleRes = R.string.delete_match_confirm_title,
+            messageRes = R.string.delete_match_confirm_message,
             onDismiss = { showDeleteDialog = false },
             onConfirm = {
                 showDeleteDialog = false
