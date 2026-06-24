@@ -30,6 +30,8 @@ import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
 import com.example.wmfunbett2026.data.jackpot.ParticipationEntryJoinBreakdown
 import com.example.wmfunbett2026.data.winner.TippGroupWinnerEngine
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 object FunBettRepository {
 
@@ -38,8 +40,11 @@ object FunBettRepository {
     const val GAME_ID = "game-1"
     const val GAME_ID_2 = "game-2"
     const val TIPP_GROUP_ID = "tipp-1"
-    const val FRIEND_ID_ALEX = "friend-alex"
-    const val FRIEND_ID_JOHN = "friend-john"
+    const val TIPP_GROUP_ID_2 = "tipp-2"
+    const val FRIEND_ID_THOMAS = "friend-thomas"
+    const val FRIEND_ID_BELLO = "friend-bello"
+    const val FRIEND_ID_OLE = "friend-ole"
+    const val FRIEND_ID_MAMUN = "friend-mamun"
 
     val dataVersion = mutableIntStateOf(0)
 
@@ -965,65 +970,89 @@ object FunBettRepository {
     private fun getAllGames(): List<Game> =
         roundsInternal.flatMap { it.days }.flatMap { it.games }
 
-    private fun buildSampleFriends(): List<Friend> = listOf(
-        Friend(id = FRIEND_ID_ALEX, firstName = "Alex", createdAt = 0L),
-        Friend(id = FRIEND_ID_JOHN, firstName = "John", createdAt = 0L)
+    private fun buildSampleFriends(): List<Friend> {
+        val now = System.currentTimeMillis()
+        return listOf(
+            Friend(id = FRIEND_ID_THOMAS, firstName = "Thomas", createdAt = now),
+            Friend(id = FRIEND_ID_BELLO, firstName = "Bello", createdAt = now),
+            Friend(id = FRIEND_ID_OLE, firstName = "Ole", createdAt = now),
+            Friend(id = FRIEND_ID_MAMUN, firstName = "Mamun", createdAt = now)
+        )
+    }
+
+    private fun buildSampleDateTimeLabel(time: String): String {
+        val dateLabel = LocalDate.now().format(
+            DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault())
+        )
+        return buildDateTimeLabel(dateLabel, time)
+    }
+
+    private fun buildSampleEntry(
+        id: String,
+        friendId: String,
+        friendName: String,
+        prediction: String,
+        amount: Double = 10.0,
+        note: String? = null
+    ) = Entry(
+        id = id,
+        friendId = friendId,
+        friendName = friendName,
+        prediction = prediction,
+        amount = amount,
+        currentRoundAmount = amount,
+        note = note,
+        participation = EntryParticipation.LOCAL_ONLY,
+        jackpotCatchUpAmount = 0.0
     )
 
     private fun buildSampleRound(): Round {
-        val correctScoreGroup = TippGroup(
+        val todayDayName = LocalDate.now().format(
+            DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault())
+        )
+
+        val germanyFranceGroup = TippGroup(
             id = TIPP_GROUP_ID,
-            title = "Correct Score",
+            title = TimeScope.FULL_TIME.defaultTippTitle(),
             timeScope = TimeScope.FULL_TIME,
             entries = listOf(
-                Entry(
-                    id = "entry-1",
-                    friendId = FRIEND_ID_ALEX,
-                    friendName = "Alex",
-                    prediction = "2:1",
-                    amount = 10.0,
-                    currentRoundAmount = 10.0,
-                    note = "Confident home win"
-                ),
-                Entry(
-                    id = "entry-2",
-                    friendId = FRIEND_ID_JOHN,
-                    friendName = "John",
-                    prediction = "1:1",
-                    amount = 10.0,
-                    currentRoundAmount = 10.0
-                )
+                buildSampleEntry("entry-1", FRIEND_ID_THOMAS, "Thomas", "2:1", note = "Home win"),
+                buildSampleEntry("entry-2", FRIEND_ID_BELLO, "Bello", "1:1")
             ),
             entryAmount = 10.0
         )
 
-        val game = Game(
+        val gameGermanyFrance = Game(
             id = GAME_ID,
             teamA = "Germany",
             teamB = "France",
-            dateTimeLabel = "Sat 21 Jun · 20:00",
-            tippGroups = listOf(correctScoreGroup)
+            dateTimeLabel = buildSampleDateTimeLabel("20:00"),
+            tippGroups = listOf(germanyFranceGroup)
         )
 
-        val brazilSpainGroup = TippGroup(
-            id = "tipp-2",
-            title = "Match Winner",
+        val italyPortugalGroup = TippGroup(
+            id = TIPP_GROUP_ID_2,
+            title = TimeScope.FULL_TIME.defaultTippTitle(),
             timeScope = TimeScope.FULL_TIME,
-            entries = emptyList()
+            entries = listOf(
+                buildSampleEntry("entry-3", FRIEND_ID_OLE, "Ole", "1:0"),
+                buildSampleEntry("entry-4", FRIEND_ID_MAMUN, "Mamun", "0:0")
+            ),
+            entryAmount = 10.0
         )
 
-        val game2 = Game(
+        val gameItalyPortugal = Game(
             id = GAME_ID_2,
-            teamA = "Brazil",
-            teamB = "Spain",
-            dateTimeLabel = "Sat 21 Jun · 17:00",
-            tippGroups = listOf(brazilSpainGroup)
+            teamA = "Italy",
+            teamB = "Portugal",
+            dateTimeLabel = buildSampleDateTimeLabel("22:00"),
+            tippGroups = listOf(italyPortugalGroup)
         )
 
         val day = Day(
             id = DAY_ID,
-            name = "Matchday 1",
-            games = listOf(game, game2)
+            name = todayDayName,
+            games = listOf(gameGermanyFrance, gameItalyPortugal)
         )
 
         return Round(

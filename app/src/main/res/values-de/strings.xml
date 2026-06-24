@@ -116,6 +116,10 @@
     <string name="settlement_total_pot">Gesamtpot</string>
     <string name="settlement_carried_forward">Weitergegeben</string>
     <string name="jackpot_incoming_chip">Jackpot %1$s</string>
+    <string name="main_jackpot_title">Haupt-Jackpot</string>
+    <string name="main_jackpot_available">%1$s aus vorherigen Runden ohne Gewinner</string>
+    <string name="main_jackpot_carry_placeholder">Jackpot wächst aus vorherigen Runden</string>
+    <string name="main_jackpot_coming_soon">Jackpot-Einstieg folgt als Nächstes</string>
     <string name="entry_winner_share">Anteil %1$s</string>
     <string name="add_entry_friend_already_joined">Dieser Freund ist bereits in dieser Tipp-Gruppe</string>
     <string name="friend_active_entries">%1$d aktive Einträge</string>
@@ -226,6 +230,11 @@
     <string name="add_tipp_group">Tipp-Gruppe hinzufügen</string>
     <string name="add_entry">Tipp eintragen</string>
     <string name="set_result">Ergebnis setzen</string>
+    <string name="save_result">Ergebnis speichern</string>
+    <string name="set_result_info">Dieses Ergebnis gilt für alle Tipps in diesem Spiel. Du kannst es später ändern.</string>
+    <string name="close">Schließen</string>
+    <string name="increase_score_for_team">Tore erhöhen für %1$s</string>
+    <string name="decrease_score_for_team">Tore verringern für %1$s</string>
     <string name="winner_share_settings">Gewinner-Aufteilung</string>
     <string name="no_tipp_type_available">Kein Tipp-Typ verfügbar</string>
     <string name="tipp_creation_closed_title">Tipp-Erstellung geschlossen</string>

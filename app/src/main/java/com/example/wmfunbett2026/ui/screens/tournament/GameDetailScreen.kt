@@ -47,10 +47,11 @@ import com.example.wmfunbett2026.ui.components.DetailInlineAddButton
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
+import com.example.wmfunbett2026.ui.components.MainJackpotPlaceholderCard
 import com.example.wmfunbett2026.ui.components.MatchCenterMatchCardBody
 import com.example.wmfunbett2026.ui.components.MatchCenterMatchCardShell
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
-import com.example.wmfunbett2026.ui.components.SetResultDialog
+import com.example.wmfunbett2026.ui.components.SetResultSheet
 import com.example.wmfunbett2026.ui.components.TippGroupListCard
 import com.example.wmfunbett2026.ui.components.TippGroupOverviewMiniCard
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
@@ -93,6 +94,8 @@ fun GameDetailScreen(
     val incomingJackpotMax = remember(roundId, gameId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getGameIncomingJackpotMax(roundId, gameId)
     }
+    val mainJackpotVisible = incomingJackpotMax > 0.0 || carryItems.isNotEmpty()
+    val mainJackpotAmountLabel = incomingJackpotMax.takeIf { it > 0.0 }?.toEuroLabel()
     val totalPeople = tippGroups.sumOf { it.entries.size }
     val totalMoney = game?.totalKasse ?: 0.0
 
@@ -139,6 +142,11 @@ fun GameDetailScreen(
                     onAddTippClick = { showSampleAddTipp = true }
                 )
             }
+            if (mainJackpotVisible) {
+                item(key = "main_jackpot") {
+                    MainJackpotPlaceholderCard(amountLabel = mainJackpotAmountLabel)
+                }
+            }
             item(key = "section") { HierarchySectionHeader(title = "Tipp Groups") }
             if (tippGroups.isEmpty()) {
                 item(key = "empty") {
@@ -182,7 +190,7 @@ fun GameDetailScreen(
     }
 
     if (showSetResultDialog && game != null) {
-        SetResultDialog(
+        SetResultSheet(
             game = game,
             onDismiss = { showSetResultDialog = false },
             onSave = { teamAScore, teamBScore, status ->
