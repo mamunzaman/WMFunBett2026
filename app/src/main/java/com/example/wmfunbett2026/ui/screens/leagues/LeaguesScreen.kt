@@ -24,7 +24,9 @@ import com.example.wmfunbett2026.ui.components.LeagueGridCard
 import com.example.wmfunbett2026.ui.components.MatchCenterHeader
 import com.example.wmfunbett2026.ui.components.screenContentPadding
 import com.example.wmfunbett2026.ui.matchcenter.LeagueSummary
+import com.example.wmfunbett2026.ui.matchcenter.loadFlatGames
 import com.example.wmfunbett2026.ui.matchcenter.loadLeagueSummaries
+import com.example.wmfunbett2026.ui.matchcenter.resolveHeaderJackpotAmountLabel
 import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 
 private val LeagueGridRightColumnOffset = 56.dp
@@ -42,6 +44,10 @@ fun LeaguesScreen(
     FunBettRepository.dataVersion.intValue
     var showCreateRoundSheet by remember { mutableStateOf(false) }
     val leagues = remember(FunBettRepository.dataVersion.intValue) { loadLeagueSummaries() }
+    val allGames = remember(FunBettRepository.dataVersion.intValue) { loadFlatGames() }
+    val headerJackpotLabel = remember(allGames) {
+        resolveHeaderJackpotAmountLabel(allGames)
+    }
     val leftLeagues = remember(leagues) { leagues.filterIndexed { index, _ -> index % 2 == 0 } }
     val rightLeagues = remember(leagues) { leagues.filterIndexed { index, _ -> index % 2 == 1 } }
 
@@ -52,7 +58,8 @@ fun LeaguesScreen(
     ) {
         MatchCenterHeader(
             title = stringResource(R.string.screen_leagues),
-            showSearchIcon = true
+            showSearchIcon = true,
+            jackpotAmountLabel = headerJackpotLabel
         )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,10 +21,10 @@ import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Entry
 import com.example.wmfunbett2026.data.model.EntryUpdateRequest
 import com.example.wmfunbett2026.data.model.formatScorePrediction
-import com.example.wmfunbett2026.data.model.matchPreviewTimeOrNull
 import com.example.wmfunbett2026.data.model.parseScorePrediction
 import com.example.wmfunbett2026.data.repository.FunBettRepository
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditEntrySheet(
     tippGroupId: String,
@@ -74,31 +75,31 @@ fun EditEntrySheet(
         amount != null &&
         amount > 0.0
 
-    FormBottomSheet(
-        title = stringResource(R.string.edit_entry),
+    AppBottomSheetContainer(
         onDismiss = onDismiss,
-        primaryActionLabel = stringResource(R.string.save),
-        onPrimaryAction = {
-            val friend = selectedFriend ?: return@FormBottomSheet
-            onSave(
-                EntryUpdateRequest(
-                    friendId = friend.id,
-                    prediction = prediction,
-                    amount = amount!!,
-                    note = note.trim().takeIf { it.isNotEmpty() }
-                )
+        footer = {
+            SheetPrimaryButton(
+                label = stringResource(R.string.save),
+                onClick = {
+                    val friend = selectedFriend ?: return@SheetPrimaryButton
+                    onSave(
+                        EntryUpdateRequest(
+                            friendId = friend.id,
+                            prediction = prediction,
+                            amount = amount!!,
+                            note = note.trim().takeIf { it.isNotEmpty() }
+                        )
+                    )
+                },
+                enabled = canSave
             )
-        },
-        primaryActionEnabled = canSave
-    ) {
-        game?.let { match ->
-            EntryMatchPreviewCard(
-                teamA = match.teamA,
-                teamB = match.teamB,
-                matchTime = match.matchPreviewTimeOrNull()
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+            SheetTextCancelButton(onClick = onDismiss)
         }
+    ) {
+        AppBottomSheetHeader(
+            title = stringResource(R.string.edit_entry),
+            onCloseClick = onDismiss
+        )
 
         when {
             friends.isEmpty() -> {
@@ -136,21 +137,7 @@ fun EditEntrySheet(
             FormErrorText(text = stringResource(R.string.add_entry_friend_already_joined))
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        game?.let { match ->
-            ScorePredictionInputSection(
-                teamA = match.teamA,
-                teamB = match.teamB,
-                scoreA = scoreA,
-                scoreB = scoreB,
-                onScoreAChange = { scoreA = it },
-                onScoreBChange = { scoreB = it },
-                legacyPredictionNote = legacyPrediction
-            )
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         FormOutlinedTextField(
             value = amountInput,
@@ -160,7 +147,29 @@ fun EditEntrySheet(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        game?.let { match ->
+            Spacer(modifier = Modifier.height(16.dp))
+            FormSectionLabel(text = stringResource(R.string.prediction))
+            Spacer(modifier = Modifier.height(8.dp))
+            MatchScoreInputCard(
+                teamA = match.teamA,
+                teamB = match.teamB,
+                scoreA = scoreA,
+                scoreB = scoreB,
+                onScoreAChange = { scoreA = it.filter { c -> c.isDigit() }.take(2) },
+                onScoreBChange = { scoreB = it.filter { c -> c.isDigit() }.take(2) }
+            )
+            if (legacyPrediction != null && prediction.isBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.edit_entry_legacy_prediction, legacyPrediction),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         FormOutlinedTextField(
             value = note,

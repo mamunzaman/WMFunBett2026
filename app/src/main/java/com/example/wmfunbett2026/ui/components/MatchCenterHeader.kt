@@ -2,6 +2,7 @@ package com.example.wmfunbett2026.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -43,6 +44,7 @@ fun MatchCenterHeader(
     modifier: Modifier = Modifier,
     onBackClick: (() -> Unit)? = null,
     showSearchIcon: Boolean = false,
+    jackpotAmountLabel: String? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     onSetResultClick: (() -> Unit)? = null,
     onWinnerShareSettingsClick: (() -> Unit)? = null,
@@ -53,6 +55,7 @@ fun MatchCenterHeader(
     val hasMenu = onSetResultClick != null ||
         onWinnerShareSettingsClick != null ||
         onDeleteClick != null
+    val showJackpot = !jackpotAmountLabel.isNullOrBlank()
 
     Column(
         modifier = modifier
@@ -82,7 +85,13 @@ fun MatchCenterHeader(
 
             Text(
                 text = title,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = if (showJackpot || trailingContent != null || showSearchIcon || hasMenu) {
+                        HeaderActionSpacing
+                    } else {
+                        0.dp
+                    }),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = TextPrimary,
@@ -91,66 +100,79 @@ fun MatchCenterHeader(
             )
 
             when {
-                trailingContent != null -> trailingContent()
-                showSearchIcon -> {
-                    IconButton(onClick = { }) {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = stringResource(R.string.search),
-                            tint = TextPrimary
-                        )
-                    }
-                }
-                hasMenu -> {
-                    Box {
-                        IconButton(onClick = { showMenu = true }) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "More options",
-                                tint = TextPrimary
-                            )
+                trailingContent != null || showJackpot || showSearchIcon || hasMenu -> {
+                    Row(
+                        modifier = Modifier.padding(end = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(HeaderActionSpacing)
+                    ) {
+                        if (showJackpot) {
+                            HeaderJackpotAction(amountLabel = jackpotAmountLabel!!)
                         }
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            if (onWinnerShareSettingsClick != null) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.winner_share_settings)) },
-                                    onClick = {
-                                        showMenu = false
-                                        onWinnerShareSettingsClick()
-                                    }
-                                )
+                        when {
+                            trailingContent != null -> trailingContent()
+                            showSearchIcon -> {
+                                IconButton(onClick = { }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = stringResource(R.string.search),
+                                        tint = TextPrimary
+                                    )
+                                }
                             }
-                            if (onSetResultClick != null) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.set_result)) },
-                                    onClick = {
-                                        showMenu = false
-                                        onSetResultClick()
-                                    }
-                                )
-                            }
-                            if (onDeleteClick != null && deleteEnabled) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.delete), color = DangerRed) },
-                                    onClick = {
-                                        showMenu = false
-                                        onDeleteClick()
-                                    }
-                                )
-                            } else if (onDeleteClick != null) {
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = stringResource(R.string.delete_entries_first),
-                                            color = TextSecondary
+                            hasMenu -> {
+                                Box {
+                                    IconButton(onClick = { showMenu = true }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = "More options",
+                                            tint = TextPrimary
                                         )
-                                    },
-                                    onClick = { showMenu = false },
-                                    enabled = false
-                                )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showMenu,
+                                        onDismissRequest = { showMenu = false }
+                                    ) {
+                                        if (onWinnerShareSettingsClick != null) {
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.winner_share_settings)) },
+                                                onClick = {
+                                                    showMenu = false
+                                                    onWinnerShareSettingsClick()
+                                                }
+                                            )
+                                        }
+                                        if (onSetResultClick != null) {
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.set_result)) },
+                                                onClick = {
+                                                    showMenu = false
+                                                    onSetResultClick()
+                                                }
+                                            )
+                                        }
+                                        if (onDeleteClick != null && deleteEnabled) {
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(R.string.delete), color = DangerRed) },
+                                                onClick = {
+                                                    showMenu = false
+                                                    onDeleteClick()
+                                                }
+                                            )
+                                        } else if (onDeleteClick != null) {
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        text = stringResource(R.string.delete_entries_first),
+                                                        color = TextSecondary
+                                                    )
+                                                },
+                                                onClick = { showMenu = false },
+                                                enabled = false
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

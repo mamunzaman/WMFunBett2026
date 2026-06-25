@@ -40,6 +40,7 @@ import com.example.wmfunbett2026.ui.components.MatchCenterCard
 import com.example.wmfunbett2026.ui.components.MatchCenterEmptyState
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
+import com.example.wmfunbett2026.ui.matchcenter.resolveHeaderJackpotForRound
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
 import com.example.wmfunbett2026.ui.theme.SecondaryText
 import com.example.wmfunbett2026.ui.theme.SurfaceDark
@@ -65,6 +66,9 @@ fun TournamentDetailScreen(
     val round = FunBettRepository.getRound(roundId)
     val days = FunBettRepository.getDays(roundId)
     val hasGames = days.any { it.games.isNotEmpty() }
+    val headerJackpotLabel = remember(roundId, FunBettRepository.dataVersion.intValue) {
+        resolveHeaderJackpotForRound(roundId)
+    }
 
     HierarchyScreenLayout(
         title = round?.name ?: "Tournament",
@@ -73,6 +77,7 @@ fun TournamentDetailScreen(
         onFabClick = if (round != null) {{ showAddDialog = true }} else null,
         fabContentDescription = "Add game",
         onDeleteClick = if (round != null) {{ showDeleteDialog = true }} else null,
+        jackpotAmountLabel = headerJackpotLabel,
         modifier = modifier
     ) { contentModifier ->
         if (round == null) {

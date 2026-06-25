@@ -17,7 +17,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +37,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.jackpot.JackpotChainCalculator
@@ -47,15 +53,16 @@ import com.example.wmfunbett2026.ui.components.DetailInlineAddButton
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
 import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
-import com.example.wmfunbett2026.ui.components.MainJackpotPlaceholderCard
 import com.example.wmfunbett2026.ui.components.MatchCenterMatchCardBody
 import com.example.wmfunbett2026.ui.components.MatchCenterMatchCardShell
 import com.example.wmfunbett2026.ui.components.SampleDataNotice
 import com.example.wmfunbett2026.ui.components.SetResultSheet
+import com.example.wmfunbett2026.ui.components.TippGroupOverviewFooterSection
 import com.example.wmfunbett2026.ui.components.TippGroupListCard
 import com.example.wmfunbett2026.ui.components.TippGroupOverviewMiniCard
 import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
+import com.example.wmfunbett2026.ui.theme.GlassBorder
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SecondaryText
@@ -94,8 +101,7 @@ fun GameDetailScreen(
     val incomingJackpotMax = remember(roundId, gameId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getGameIncomingJackpotMax(roundId, gameId)
     }
-    val mainJackpotVisible = incomingJackpotMax > 0.0 || carryItems.isNotEmpty()
-    val mainJackpotAmountLabel = incomingJackpotMax.takeIf { it > 0.0 }?.toEuroLabel()
+    val headerJackpotLabel = incomingJackpotMax.takeIf { it > 0.0 }?.toEuroLabel()
     val totalPeople = tippGroups.sumOf { it.entries.size }
     val totalMoney = game?.totalKasse ?: 0.0
 
@@ -105,6 +111,7 @@ fun GameDetailScreen(
         onBackClick = onBackClick,
         onSetResultClick = if (game != null) {{ showSetResultDialog = true }} else null,
         onDeleteClick = if (game != null) {{ showDeleteDialog = true }} else null,
+        jackpotAmountLabel = headerJackpotLabel,
         modifier = modifier
     ) { contentModifier ->
         if (game == null) {
@@ -141,11 +148,6 @@ fun GameDetailScreen(
                     tippGroups = tippGroups,
                     onAddTippClick = { showSampleAddTipp = true }
                 )
-            }
-            if (mainJackpotVisible) {
-                item(key = "main_jackpot") {
-                    MainJackpotPlaceholderCard(amountLabel = mainJackpotAmountLabel)
-                }
             }
             item(key = "section") { HierarchySectionHeader(title = "Tipp Groups") }
             if (tippGroups.isEmpty()) {
@@ -220,6 +222,8 @@ private const val TippsOverviewFadeInDelayMs = 120
 private const val TippsOverviewFadeInDurationMs = 180
 private const val TippsOverviewFadeOutDurationMs = 80
 
+private val GameMatchCardContentPadding = 16.dp
+
 @Composable
 private fun GameMatchOverviewCard(
     game: Game,
@@ -254,45 +258,62 @@ private fun GameMatchOverviewCard(
                 matchdayLabel = matchdayLabel,
                 incomingJackpotLabel = incomingJackpotLabel
             )
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 18.dp)
-                    .padding(bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                    .padding(horizontal = GameMatchCardContentPadding)
+                    .padding(top = 4.dp, bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    Icon(
+                        imageVector = if (expanded) {
+                            Icons.Default.KeyboardArrowUp
+                        } else {
+                            Icons.Default.KeyboardArrowDown
+                        },
+                        contentDescription = null,
+                        tint = SecondaryText,
+                        modifier = Modifier.size(20.dp)
+                    )
                     Text(
                         text = if (expanded) "Hide tipps overview" else "Show tipps overview",
                         style = MaterialTheme.typography.labelLarge,
                         color = SecondaryText
                     )
-                    DetailInlineAddButton(
-                        label = "Add Tipp",
-                        onClick = onAddTippClick
-                    )
                 }
-                AnimatedVisibility(
-                    visible = expanded,
-                    enter = fadeIn(
-                        animationSpec = tween(
-                            durationMillis = TippsOverviewFadeInDurationMs,
-                            delayMillis = TippsOverviewFadeInDelayMs,
-                            easing = FastOutSlowInEasing
-                        )
-                    ),
-                    exit = fadeOut(
-                        animationSpec = tween(
-                            durationMillis = TippsOverviewFadeOutDurationMs,
-                            easing = FastOutSlowInEasing
-                        )
+                DetailInlineAddButton(
+                    label = "Add Tipp",
+                    onClick = onAddTippClick
+                )
+            }
+            AnimatedVisibility(
+                visible = expanded,
+                enter = fadeIn(
+                    animationSpec = tween(
+                        durationMillis = TippsOverviewFadeInDurationMs,
+                        delayMillis = TippsOverviewFadeInDelayMs,
+                        easing = FastOutSlowInEasing
                     )
-                ) {
+                ),
+                exit = fadeOut(
+                    animationSpec = tween(
+                        durationMillis = TippsOverviewFadeOutDurationMs,
+                        easing = FastOutSlowInEasing
+                    )
+                )
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    HorizontalDivider(color = GlassBorder, thickness = 1.dp)
                     TippsOverviewContent(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                        contentPadding = GameMatchCardContentPadding,
                         game = game,
                         tippGroupCount = tippGroupCount,
                         totalPeople = totalPeople,
@@ -314,40 +335,62 @@ private fun TippsOverviewContent(
     totalMoneyLabel: String,
     carryLabel: String?,
     tippGroups: List<TippGroup>,
+    contentPadding: Dp,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        HorizontalDivider(color = SecondaryText.copy(alpha = 0.2f))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = contentPadding)
+                .then(
+                    if (tippGroups.isEmpty()) {
+                        Modifier.padding(bottom = 16.dp)
+                    } else {
+                        Modifier
+                    }
+                ),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            OverviewStat(label = "Tipp Groups", value = tippGroupCount.toString())
-            OverviewStat(label = "Entries", value = totalPeople.toString())
-            OverviewStat(label = "Collected", value = totalMoneyLabel, highlight = true)
-        }
-        if (carryLabel != null) {
-            Text(
-                text = carryLabel,
-                style = MaterialTheme.typography.bodySmall,
-                color = JackpotGold.copy(alpha = 0.9f)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                OverviewStat(label = "Tipp Groups", value = tippGroupCount.toString())
+                OverviewStat(label = "Entries", value = totalPeople.toString())
+                OverviewStat(label = "Collected", value = totalMoneyLabel, highlight = true)
+            }
+            if (carryLabel != null) {
+                Text(
+                    text = carryLabel,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = JackpotGold.copy(alpha = 0.9f)
+                )
+            }
         }
         if (tippGroups.isNotEmpty()) {
-            tippGroups.forEach { group ->
-                val outcome = TippGroupWinnerEngine.calculate(game, group)
-                val entryLabel = entryAmountLabel(group).takeIf { it != "—" }
-                TippGroupOverviewMiniCard(
-                    title = group.title,
-                    scopeLabel = group.timeScope.label,
-                    peopleCount = group.entries.size,
-                    entryAmountLabel = entryLabel,
-                    collectedLabel = group.totalAmount.toEuroLabel(),
-                    statusLabel = winnerStatusLabel(outcome)
-                )
+            TippGroupOverviewFooterSection(contentHorizontalPadding = contentPadding) {
+                tippGroups.forEachIndexed { index, group ->
+                    if (index > 0) {
+                        HorizontalDivider(
+                            color = GlassBorder.copy(alpha = 0.7f),
+                            thickness = 1.dp
+                        )
+                    }
+                    val outcome = TippGroupWinnerEngine.calculate(game, group)
+                    val entryLabel = entryAmountLabel(group).takeIf { it != "—" }
+                    TippGroupOverviewMiniCard(
+                        title = group.title,
+                        scopeLabel = group.timeScope.label,
+                        peopleCount = group.entries.size,
+                        entryAmountLabel = entryLabel,
+                        collectedLabel = group.totalAmount.toEuroLabel(),
+                        statusLabel = winnerStatusLabel(outcome)
+                    )
+                }
             }
         }
     }

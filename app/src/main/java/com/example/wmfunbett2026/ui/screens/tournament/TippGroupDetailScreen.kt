@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AccountBalanceWallet
-import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material.icons.outlined.Savings
@@ -59,7 +57,6 @@ import com.example.wmfunbett2026.ui.components.EntryRowActionSheet
 import com.example.wmfunbett2026.ui.components.TippGroupEntryTable
 import com.example.wmfunbett2026.ui.components.FormBottomSheet
 import com.example.wmfunbett2026.ui.components.GlassPrimaryActionButton
-import com.example.wmfunbett2026.ui.components.GlassScopePill
 import androidx.compose.material3.TextButton
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
@@ -152,6 +149,9 @@ fun TippGroupDetailScreen(
     val jackpotSummary = remember(roundId, gameId, tippGroupId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getJackpotCarryOverSummary(roundId, gameId, tippGroupId)
     }
+    val headerJackpotLabel = remember(jackpotSummary) {
+        jackpotSummary?.incomingJackpot?.takeIf { it > 0.0 }?.toEuroLabel()
+    }
     val matchdayLabel = remember(dayId, FunBettRepository.dataVersion.intValue) {
         FunBettRepository.getDay(dayId)?.name ?: "Matchday"
     }
@@ -166,6 +166,7 @@ fun TippGroupDetailScreen(
         onBackClick = onBackClick,
         onDeleteClick = if (tippGroup != null && !selectionMode) {{ showDeleteGroupDialog = true }} else null,
         deleteEnabled = entries.isEmpty(),
+        jackpotAmountLabel = headerJackpotLabel,
         modifier = modifier
     ) { contentModifier ->
         if (tippGroup == null || game == null) {
@@ -194,7 +195,6 @@ fun TippGroupDetailScreen(
                     game = game,
                     matchdayLabel = matchdayLabel,
                     title = tippGroup.title,
-                    scopeLabel = tippGroup.timeScope.label,
                     peopleCount = entries.size,
                     entryAmountLabel = entryAmountLabel(tippGroup),
                     totalAmountLabel = tippGroup.totalAmount.toEuroLabel(),
@@ -205,19 +205,8 @@ fun TippGroupDetailScreen(
                             null -> showAddEntry = true
                             else -> showEntryBlockedInfo = entryBlockReason
                         }
-                    },
-                    jackpotSummary = jackpotSummary
-                )
-            }
-            settlement?.let { summary ->
-                jackpotSummary?.let { jackpot ->
-                    item(key = "settlement") {
-                        TippGroupSettlementSection(
-                            summary = summary,
-                            jackpot = jackpot
-                        )
                     }
-                }
+                )
             }
             item(key = "section") { HierarchySectionHeader(title = "Entries") }
             if (selectionMode) {
@@ -456,14 +445,12 @@ private fun TippGroupDetailHeaderSection(
     game: Game,
     matchdayLabel: String,
     title: String,
-    scopeLabel: String,
     peopleCount: Int,
     entryAmountLabel: String,
     totalAmountLabel: String,
     entryBlockReason: TippGroupEntryBlockReason?,
     canAddEntry: Boolean,
     onAddEntryClick: () -> Unit,
-    jackpotSummary: JackpotCarryOverSummary?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -475,17 +462,8 @@ private fun TippGroupDetailHeaderSection(
             matchdayLabel = matchdayLabel,
             tippGroupTitle = title,
             collectedLabel = totalAmountLabel,
-            incomingJackpotLabel = jackpotSummary?.incomingJackpot
-                ?.takeIf { it > 0 }
-                ?.toEuroLabel()
+            incomingJackpotLabel = null
         )
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = PrimaryText
-        )
-        GlassScopePill(label = scopeLabel)
         TippGroupDetailPanel {
             TippGroupDetailStatRow(
                 label = stringResource(R.string.tipp_group_people),
@@ -515,100 +493,6 @@ private fun TippGroupDetailHeaderSection(
             }
             entryBlockReason != null -> {
                 EntryClosedInfoCard(reason = entryBlockReason)
-            }
-        }
-    }
-}
-
-@Composable
-private fun TippGroupSettlementSection(
-    summary: TippGroupSettlementSummary,
-    jackpot: JackpotCarryOverSummary,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.settlement_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = PrimaryText
-        )
-        TippGroupDetailPanel {
-            TippGroupDetailStatRow(
-                label = stringResource(R.string.settlement_incoming_jackpot),
-                value = jackpot.incomingJackpot.toEuroLabel(),
-                icon = Icons.Outlined.EmojiEvents,
-                highlightValue = jackpot.incomingJackpot > 0
-            )
-            TippGroupDetailStatDivider()
-            TippGroupDetailStatRow(
-                label = stringResource(R.string.settlement_collected),
-                value = jackpot.currentCollected.toEuroLabel(),
-                icon = Icons.Outlined.AccountBalanceWallet
-            )
-            when (summary.status) {
-                TippGroupSettlementStatus.PENDING -> {
-                    TippGroupDetailStatDivider()
-                    TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_total_pot),
-                        value = jackpot.totalPot.toEuroLabel(),
-                        icon = Icons.Outlined.Savings,
-                        highlightValue = true
-                    )
-                    TippGroupDetailStatDivider()
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.settlement_pending_title),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = PrimaryText
-                        )
-                        Text(
-                            text = stringResource(R.string.settlement_pending_message),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = SecondaryText
-                        )
-                    }
-                }
-                TippGroupSettlementStatus.NO_WINNERS -> {
-                    TippGroupDetailStatDivider()
-                    TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_carried_forward),
-                        value = jackpot.carriedOut.toEuroLabel(),
-                        icon = Icons.Outlined.Savings,
-                        highlightValue = true
-                    )
-                }
-                TippGroupSettlementStatus.WINNERS -> {
-                    TippGroupDetailStatDivider()
-                    TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_total_pot),
-                        value = jackpot.totalPot.toEuroLabel(),
-                        icon = Icons.Outlined.Savings,
-                        highlightValue = true
-                    )
-                    TippGroupDetailStatDivider()
-                    TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_winners),
-                        value = jackpot.winnerCount.toString(),
-                        icon = Icons.Outlined.Groups
-                    )
-                    TippGroupDetailStatDivider()
-                    TippGroupDetailStatRow(
-                        label = stringResource(R.string.settlement_share_per_winner),
-                        value = jackpot.sharePerWinner.toEuroLabel(),
-                        icon = Icons.Outlined.EmojiEvents,
-                        highlightValue = true
-                    )
-                }
             }
         }
     }

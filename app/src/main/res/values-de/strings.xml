@@ -29,6 +29,7 @@
     <string name="filter_all">Alle</string>
     <string name="filter_all_matches">Alle Spiele</string>
     <string name="header_live">LIVE</string>
+    <string name="header_jackpot_content_description">Haupt-Jackpot-Betrag</string>
     <string name="select_matches">Spiele auswählen</string>
     <string name="search">Suche</string>
     <string name="empty_live_title">Keine Live-Spiele</string>
@@ -117,6 +118,8 @@
     <string name="settlement_carried_forward">Weitergegeben</string>
     <string name="jackpot_incoming_chip">Jackpot %1$s</string>
     <string name="main_jackpot_title">Haupt-Jackpot</string>
+    <string name="main_jackpot_amount_available">%1$s verfügbar</string>
+    <string name="main_jackpot_description">aus vorherigen Spielen ohne Gewinner</string>
     <string name="main_jackpot_available">%1$s aus vorherigen Runden ohne Gewinner</string>
     <string name="main_jackpot_carry_placeholder">Jackpot wächst aus vorherigen Runden</string>
     <string name="main_jackpot_coming_soon">Jackpot-Einstieg folgt als Nächstes</string>

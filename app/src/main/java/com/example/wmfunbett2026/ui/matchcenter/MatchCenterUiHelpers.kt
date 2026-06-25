@@ -446,4 +446,24 @@ fun shouldShowEntryWinnerShare(
         settlement.status == TippGroupSettlementStatus.WINNERS &&
         settlement.sharePerWinner > 0
 
+fun resolveHeaderJackpotAmountLabel(games: List<FlatGameItem>): String? {
+    if (games.isEmpty()) return null
+    val maxIncoming = games.maxOfOrNull { item ->
+        FunBettRepository.getGameIncomingJackpotMax(item.roundId, item.game.id)
+    } ?: 0.0
+    return maxIncoming.takeIf { it > 0.0 }?.toEuroLabel()
+}
+
+fun resolveHeaderJackpotForRound(roundId: String): String? {
+    val round = FunBettRepository.getRound(roundId) ?: return null
+    val pairs = round.days.flatMap { day ->
+        day.games.map { game -> roundId to game.id }
+    }
+    if (pairs.isEmpty()) return null
+    val maxIncoming = pairs.maxOfOrNull { (rId, gId) ->
+        FunBettRepository.getGameIncomingJackpotMax(rId, gId)
+    } ?: 0.0
+    return maxIncoming.takeIf { it > 0.0 }?.toEuroLabel()
+}
+
 fun FriendSummary.totalTippedLabel(): String = totalTipped.toEuroLabel()

@@ -6,8 +6,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.Payments
+import androidx.compose.material.icons.outlined.Savings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -15,6 +19,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,6 +32,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,15 +45,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 import com.example.wmfunbett2026.ui.theme.DangerRed
+import com.example.wmfunbett2026.ui.theme.Divider
+import com.example.wmfunbett2026.ui.theme.GlassBorder
 import com.example.wmfunbett2026.ui.theme.JackpotGold
+import com.example.wmfunbett2026.ui.theme.MatchCardCompactSurface
+import com.example.wmfunbett2026.ui.theme.PrimaryBlueBright
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SecondaryText
@@ -91,6 +104,7 @@ fun HierarchyScreenLayout(
     onWinnerShareSettingsClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
     deleteEnabled: Boolean = true,
+    jackpotAmountLabel: String? = null,
     content: @Composable (Modifier) -> Unit
 ) {
     RegisterMatchCenterAddAction(onFabClick)
@@ -104,6 +118,7 @@ fun HierarchyScreenLayout(
             title = title,
             onBackClick = onBackClick,
             showSearchIcon = showSearchIcon,
+            jackpotAmountLabel = jackpotAmountLabel,
             onSetResultClick = onSetResultClick,
             onWinnerShareSettingsClick = onWinnerShareSettingsClick,
             onDeleteClick = onDeleteClick,
@@ -265,6 +280,28 @@ fun DetailStatChip(
 }
 
 @Composable
+fun TippGroupOverviewFooterSection(
+    contentHorizontalPadding: Dp,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MatchCardCompactSurface)
+    ) {
+        HorizontalDivider(color = GlassBorder, thickness = 1.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = contentHorizontalPadding)
+                .padding(top = 8.dp, bottom = 14.dp),
+            content = content
+        )
+    }
+}
+
+@Composable
 fun TippGroupOverviewMiniCard(
     title: String,
     scopeLabel: String,
@@ -277,62 +314,108 @@ fun TippGroupOverviewMiniCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(SurfaceDark.copy(alpha = 0.85f), RoundedCornerShape(14.dp))
-            .border(1.dp, PrimaryBlue.copy(alpha = 0.18f), RoundedCornerShape(14.dp))
-            .padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
-            Text(
-                text = title,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = PrimaryText
-            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = scopeLabel,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SecondaryText
+                )
+            }
             DetailStatusChip(label = statusLabel)
         }
-        Text(
-            text = scopeLabel,
-            style = MaterialTheme.typography.bodyMedium,
-            color = SecondaryText
-        )
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            OverviewMiniRow(label = "Entries", value = "$peopleCount people")
+        Column(modifier = Modifier.fillMaxWidth()) {
+            TippGroupOverviewStatRow(
+                icon = Icons.Outlined.Groups,
+                label = "Entries",
+                value = "$peopleCount people"
+            )
+            TippGroupOverviewFooterRowDivider()
             if (entryAmountLabel != null) {
-                OverviewMiniRow(label = "Entry", value = "$entryAmountLabel / person")
+                TippGroupOverviewStatRow(
+                    icon = Icons.Outlined.Payments,
+                    label = "Entry",
+                    value = "$entryAmountLabel / person"
+                )
+                TippGroupOverviewFooterRowDivider()
             }
-            OverviewMiniRow(label = "Collected", value = collectedLabel, highlight = true)
+            TippGroupOverviewStatRow(
+                icon = Icons.Outlined.Savings,
+                label = "Collected",
+                value = collectedLabel,
+                highlightValue = true
+            )
         }
     }
 }
 
 @Composable
-private fun OverviewMiniRow(
+private fun TippGroupOverviewStatRow(
+    icon: ImageVector,
     label: String,
     value: String,
-    highlight: Boolean = false
+    highlightValue: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(PrimaryBlue.copy(alpha = 0.22f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (highlightValue) JackpotGold else PrimaryBlueBright,
+                modifier = Modifier.size(18.dp)
+            )
+        }
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyMedium,
             color = SecondaryText
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.SemiBold,
-            color = if (highlight) JackpotGold else PrimaryText
+            color = if (highlightValue) JackpotGold else PrimaryText
         )
     }
+}
+
+@Composable
+private fun TippGroupOverviewFooterRowDivider() {
+    HorizontalDivider(color = Divider.copy(alpha = 0.45f), thickness = 1.dp)
 }
 
 @Composable

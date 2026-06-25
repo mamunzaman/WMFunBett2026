@@ -28,6 +28,7 @@ import com.example.wmfunbett2026.ui.matchcenter.MatchTimeQuickFilter
 import com.example.wmfunbett2026.ui.matchcenter.applyMatchQuickFilters
 import com.example.wmfunbett2026.ui.matchcenter.filterMatches
 import com.example.wmfunbett2026.ui.matchcenter.groupMatchesBySection
+import com.example.wmfunbett2026.ui.matchcenter.resolveHeaderJackpotAmountLabel
 import com.example.wmfunbett2026.ui.matchcenter.loadLeagueSummaries
 import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 import com.example.wmfunbett2026.ui.theme.TextPrimary
@@ -87,6 +88,10 @@ fun MatchListScreenContent(
     }
     val calendarFilterActive = !liveOnlyActive && selectFilter != MatchSelectFilter.ALL_MATCHES
 
+    val jackpotAmountLabel = remember(games, FunBettRepository.dataVersion.intValue) {
+        resolveHeaderJackpotAmountLabel(games)
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -95,6 +100,7 @@ fun MatchListScreenContent(
         MatchCenterHeader(
             title = title,
             onBackClick = onBackClick,
+            jackpotAmountLabel = jackpotAmountLabel,
             trailingContent = {
                 MatchesHeaderActions(
                     liveFilterActive = liveOnlyActive,
