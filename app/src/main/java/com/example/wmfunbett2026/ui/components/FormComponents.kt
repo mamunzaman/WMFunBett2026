@@ -64,6 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.ui.designsystem.layout.FieldCornerRadius
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.SheetBorderUnfocused
@@ -71,7 +72,7 @@ import com.example.wmfunbett2026.ui.theme.SheetChipUnselected
 import com.example.wmfunbett2026.ui.theme.SheetOnSurface
 import com.example.wmfunbett2026.ui.theme.SheetOnSurfaceVariant
 
-private val FormFieldShape = RoundedCornerShape(12.dp)
+private val FormFieldShape = RoundedCornerShape(FieldCornerRadius)
 
 @Composable
 fun formTextFieldColors(isError: Boolean = false): TextFieldColors = OutlinedTextFieldDefaults.colors(

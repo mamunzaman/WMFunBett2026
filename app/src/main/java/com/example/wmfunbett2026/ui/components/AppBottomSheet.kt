@@ -15,15 +15,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -34,9 +31,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppPrimaryButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppSecondaryButton
 import com.example.wmfunbett2026.ui.theme.FormSheetTheme
-import com.example.wmfunbett2026.ui.theme.PrimaryBlue
-import com.example.wmfunbett2026.ui.theme.SheetOnSurfaceVariant
 import com.example.wmfunbett2026.ui.theme.SheetSurface
 import com.example.wmfunbett2026.ui.theme.TextPrimary
 import com.example.wmfunbett2026.ui.theme.TextSecondary
@@ -135,20 +132,12 @@ fun SheetPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    Button(
+    AppPrimaryButton(
+        text = label,
         onClick = onClick,
-        enabled = enabled,
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = PrimaryBlue,
-            contentColor = TextPrimary,
-            disabledContainerColor = PrimaryBlue.copy(alpha = 0.38f),
-            disabledContentColor = TextPrimary.copy(alpha = 0.6f)
-        )
-    ) {
-        Text(label)
-    }
+        modifier = modifier,
+        enabled = enabled
+    )
 }
 
 @Composable
@@ -157,13 +146,11 @@ fun SheetTextCancelButton(
     modifier: Modifier = Modifier,
     label: String = stringResource(R.string.cancel)
 ) {
-    TextButton(
+    AppSecondaryButton(
+        text = label,
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        colors = ButtonDefaults.textButtonColors(contentColor = SheetOnSurfaceVariant)
-    ) {
-        Text(label)
-    }
+        modifier = modifier.padding(vertical = 4.dp)
+    )
 }
 
 @Composable

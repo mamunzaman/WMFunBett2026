@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.ui.designsystem.cards.AppActionCard
 import com.example.wmfunbett2026.ui.theme.BackgroundDeep
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.Divider
@@ -284,7 +285,6 @@ fun DetailStatChip(
 }
 
 private val TippGroupSummaryStripShape = RoundedCornerShape(14.dp)
-private val AddEntryActionCardShape = RoundedCornerShape(14.dp)
 
 @Composable
 fun TippGroupSummaryStrip(
@@ -370,63 +370,12 @@ fun AddEntryActionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    AppActionCard(
+        title = title,
+        subtitle = subtitle,
+        onClick = onClick,
         modifier = modifier
-            .fillMaxWidth()
-            .clip(AddEntryActionCardShape)
-            .background(MatchCardCompactSurface)
-            .border(1.dp, GlassBorder, AddEntryActionCardShape)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = PrimaryBlueBright.copy(alpha = 0.12f)),
-                onClick = onClick
-            )
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(PrimaryBlue.copy(alpha = 0.24f))
-                .border(1.dp, GlassBorder, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = null,
-                tint = PrimaryBlueBright,
-                modifier = Modifier.size(22.dp)
-            )
-        }
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = PrimaryText,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = SecondaryText,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-        Icon(
-            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-            contentDescription = null,
-            tint = SecondaryText,
-            modifier = Modifier.size(22.dp)
-        )
-    }
+    )
 }
 
 @Composable

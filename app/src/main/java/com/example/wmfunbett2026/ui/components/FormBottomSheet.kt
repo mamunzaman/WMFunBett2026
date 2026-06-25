@@ -13,13 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -30,9 +27,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppPrimaryButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppSecondaryButton
 import com.example.wmfunbett2026.ui.theme.FormSheetTheme
-import com.example.wmfunbett2026.ui.theme.PrimaryBlue
-import com.example.wmfunbett2026.ui.theme.SheetOnSurfaceVariant
 import com.example.wmfunbett2026.ui.theme.SheetSurface
 import com.example.wmfunbett2026.ui.theme.TextPrimary
 private val AppSheetShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
@@ -103,34 +100,18 @@ fun FormBottomSheet(
                     content = content
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(
+                AppPrimaryButton(
+                    text = primaryActionLabel,
                     onClick = onPrimaryAction,
                     enabled = primaryActionEnabled,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryBlue,
-                        contentColor = TextPrimary,
-                        disabledContainerColor = PrimaryBlue.copy(alpha = 0.38f),
-                        disabledContentColor = TextPrimary.copy(alpha = 0.6f)
-                    )
-                ) {
-                    Text(primaryActionLabel)
-                }
+                    modifier = Modifier.padding(horizontal = 24.dp)
+                )
                 if (showCancel) {
-                    TextButton(
+                    AppSecondaryButton(
+                        text = stringResource(R.string.cancel),
                         onClick = onDismiss,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 4.dp),
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = SheetOnSurfaceVariant
-                        )
-                    ) {
-                        Text(stringResource(R.string.cancel))
-                    }
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
+                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
