@@ -49,6 +49,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material3.ripple
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -277,6 +281,170 @@ fun DetailStatChip(
             color = if (highlight) JackpotGold else PrimaryText
         )
     }
+}
+
+private val TippGroupSummaryStripShape = RoundedCornerShape(14.dp)
+private val AddEntryActionCardShape = RoundedCornerShape(14.dp)
+
+@Composable
+fun TippGroupSummaryStrip(
+    peopleCount: Int,
+    entryAmountLabel: String,
+    collectedLabel: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(TippGroupSummaryStripShape)
+            .background(MatchCardCompactSurface)
+            .border(1.dp, GlassBorder, TippGroupSummaryStripShape)
+            .padding(horizontal = 8.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.Top
+    ) {
+        TippGroupSummaryStatItem(
+            icon = Icons.Outlined.Groups,
+            value = peopleCount.toString(),
+            label = stringResource(R.string.tipp_group_people),
+            modifier = Modifier.weight(1f)
+        )
+        TippGroupSummaryStatItem(
+            icon = Icons.Outlined.Payments,
+            value = entryAmountLabel,
+            label = stringResource(R.string.tipp_group_entry_per_person),
+            modifier = Modifier.weight(1f)
+        )
+        TippGroupSummaryStatItem(
+            icon = Icons.Outlined.Savings,
+            value = collectedLabel,
+            label = stringResource(R.string.tipp_group_collected),
+            highlightValue = true,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun TippGroupSummaryStatItem(
+    icon: ImageVector,
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier,
+    highlightValue: Boolean = false
+) {
+    Column(
+        modifier = modifier.padding(horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = PrimaryBlueBright.copy(alpha = 0.88f),
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = if (highlightValue) JackpotGold else PrimaryText,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = SecondaryText,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+fun AddEntryActionCard(
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(AddEntryActionCardShape)
+            .background(MatchCardCompactSurface)
+            .border(1.dp, GlassBorder, AddEntryActionCardShape)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(color = PrimaryBlueBright.copy(alpha = 0.12f)),
+                onClick = onClick
+            )
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(PrimaryBlue.copy(alpha = 0.24f))
+                .border(1.dp, GlassBorder, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                tint = PrimaryBlueBright,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = PrimaryText,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = SecondaryText,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+            contentDescription = null,
+            tint = SecondaryText,
+            modifier = Modifier.size(22.dp)
+        )
+    }
+}
+
+@Composable
+fun EntriesSectionHeader(
+    entryCount: Int,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = stringResource(R.string.tipp_group_entries_section, entryCount),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 4.dp),
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.Bold,
+        color = PrimaryText,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
 }
 
 @Composable

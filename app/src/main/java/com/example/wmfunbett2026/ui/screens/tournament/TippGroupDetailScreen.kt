@@ -59,14 +59,18 @@ import com.example.wmfunbett2026.ui.components.EntryRowActionSheet
 import com.example.wmfunbett2026.ui.components.EntryWinnerSummaryRow
 import com.example.wmfunbett2026.ui.components.TippGroupEntryListItem
 import com.example.wmfunbett2026.ui.components.FormBottomSheet
-import com.example.wmfunbett2026.ui.components.GlassPrimaryActionButton
+import com.example.wmfunbett2026.ui.components.AddEntryActionCard
+import com.example.wmfunbett2026.ui.components.EntriesSectionHeader
+import com.example.wmfunbett2026.ui.components.TippGroupSummaryStrip
 import androidx.compose.material3.TextButton
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
-import com.example.wmfunbett2026.ui.components.HierarchySectionHeader
 import com.example.wmfunbett2026.ui.components.MatchCenterTippGroupDetailMatchCard
-import com.example.wmfunbett2026.ui.components.hierarchyContentPadding
+import androidx.compose.foundation.layout.PaddingValues
+import com.example.wmfunbett2026.ui.components.MatchCenterBottomNavReservedHeight
+import com.example.wmfunbett2026.ui.components.ScreenContentHorizontalPadding
+import com.example.wmfunbett2026.ui.components.ScreenContentTopPadding
 import com.example.wmfunbett2026.ui.matchcenter.tippGroupWinnerNames
 import com.example.wmfunbett2026.ui.matchcenter.tippGroupWinningEntryIds
 import com.example.wmfunbett2026.ui.navigation.HierarchyLabels
@@ -198,7 +202,7 @@ fun TippGroupDetailScreen(
 
         LazyColumn(
             modifier = contentModifier.fillMaxWidth(),
-            contentPadding = hierarchyContentPadding(),
+            contentPadding = tippGroupDetailContentPadding(),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item(key = "summary") {
@@ -219,7 +223,9 @@ fun TippGroupDetailScreen(
                     }
                 )
             }
-            item(key = "section") { HierarchySectionHeader(title = "Entries") }
+            item(key = "section") {
+                EntriesSectionHeader(entryCount = entries.size)
+            }
             if (selectionMode) {
                 item(key = "selection_bar") {
                     EntryBulkSelectionBar(
@@ -408,63 +414,6 @@ fun TippGroupDetailScreen(
 }
 
 @Composable
-private fun TippGroupDetailPanel(
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(TippGroupDetailPanelShape)
-            .background(Surface)
-            .border(1.dp, Divider.copy(alpha = 0.65f), TippGroupDetailPanelShape)
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        content = content
-    )
-}
-
-@Composable
-private fun TippGroupDetailStatRow(
-    label: String,
-    value: String,
-    icon: ImageVector,
-    highlightValue: Boolean = false,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = SecondaryText,
-            modifier = Modifier.size(20.dp)
-        )
-        Text(
-            text = label,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyMedium,
-            color = SecondaryText
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = if (highlightValue) JackpotGold else PrimaryText
-        )
-    }
-}
-
-@Composable
-private fun TippGroupDetailStatDivider() {
-    HorizontalDivider(color = Divider.copy(alpha = 0.45f))
-}
-
-@Composable
 private fun TippGroupDetailHeaderSection(
     game: Game,
     matchdayLabel: String,
@@ -488,30 +437,16 @@ private fun TippGroupDetailHeaderSection(
             collectedLabel = totalAmountLabel,
             incomingJackpotLabel = null
         )
-        TippGroupDetailPanel {
-            TippGroupDetailStatRow(
-                label = stringResource(R.string.tipp_group_people),
-                value = peopleCount.toString(),
-                icon = Icons.Outlined.Groups
-            )
-            TippGroupDetailStatDivider()
-            TippGroupDetailStatRow(
-                label = stringResource(R.string.tipp_group_entry_per_person),
-                value = entryAmountLabel,
-                icon = Icons.Outlined.Payments
-            )
-            TippGroupDetailStatDivider()
-            TippGroupDetailStatRow(
-                label = stringResource(R.string.tipp_group_collected),
-                value = totalAmountLabel,
-                icon = Icons.Outlined.Savings,
-                highlightValue = true
-            )
-        }
+        TippGroupSummaryStrip(
+            peopleCount = peopleCount,
+            entryAmountLabel = entryAmountLabel,
+            collectedLabel = totalAmountLabel
+        )
         when {
             canAddEntry -> {
-                GlassPrimaryActionButton(
-                    label = stringResource(R.string.action_add_entry),
+                AddEntryActionCard(
+                    title = stringResource(R.string.action_add_entry),
+                    subtitle = stringResource(R.string.add_entry_action_subtitle),
                     onClick = onAddEntryClick
                 )
             }
@@ -633,6 +568,15 @@ private fun entryAmountLabel(tippGroup: TippGroup): String {
     val amount = JackpotChainCalculator.requiredPerPersonAmount(tippGroup)
     return amount?.toEuroLabel() ?: "—"
 }
+
+private val TippGroupDetailExtraBottomPadding = 48.dp
+
+private fun tippGroupDetailContentPadding(): PaddingValues = PaddingValues(
+    start = ScreenContentHorizontalPadding,
+    end = ScreenContentHorizontalPadding,
+    top = ScreenContentTopPadding,
+    bottom = MatchCenterBottomNavReservedHeight + TippGroupDetailExtraBottomPadding
+)
 
 @Composable
 private fun EntryBulkSelectionBar(

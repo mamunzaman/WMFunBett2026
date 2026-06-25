@@ -22,7 +22,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -96,7 +98,7 @@ private val EntryAvatarSize = 38.dp
 private val EntryCollapsedMinHeight = 60.dp
 private const val EntryCardPressScale = 0.985f
 private const val EntryExpandAnimMs = 200
-private const val EntryBringIntoViewDelayMs = 220L
+private const val EntryBringIntoViewDelayMs = 300L
 
 @Composable
 fun TippGroupEntryTable(
@@ -256,7 +258,7 @@ fun EntryCard(
     onEditClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null
 ) {
-    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val expandedBringIntoViewRequester = remember { BringIntoViewRequester() }
     val expandSizeSpec = tween<IntSize>(durationMillis = EntryExpandAnimMs, easing = FastOutSlowInEasing)
     val expandFadeSpec = tween<Float>(durationMillis = EntryExpandAnimMs, easing = FastOutSlowInEasing)
 
@@ -279,7 +281,7 @@ fun EntryCard(
     LaunchedEffect(expanded, selectionMode) {
         if (expanded && !selectionMode) {
             delay(EntryBringIntoViewDelayMs)
-            bringIntoViewRequester.bringIntoView()
+            expandedBringIntoViewRequester.bringIntoView()
         }
     }
 
@@ -296,7 +298,6 @@ fun EntryCard(
 
     Box(
         modifier = modifier
-            .bringIntoViewRequester(bringIntoViewRequester)
             .fillMaxWidth()
             .graphicsLayer {
                 scaleX = pressScale
@@ -345,7 +346,7 @@ fun EntryCard(
                     start = if (isWinner) 13.dp else 14.dp,
                     end = 12.dp,
                     top = if (expanded) 14.dp else 10.dp,
-                    bottom = if (expanded) 12.dp else 10.dp
+                    bottom = 10.dp
                 )
         ) {
             Row(
@@ -430,7 +431,7 @@ fun EntryCard(
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     HorizontalDivider(
-                        modifier = Modifier.padding(top = 18.dp, bottom = 12.dp),
+                        modifier = Modifier.padding(top = 14.dp, bottom = 10.dp),
                         color = Divider.copy(alpha = 0.35f),
                         thickness = 0.5.dp
                     )
@@ -440,6 +441,11 @@ fun EntryCard(
                         statusLabel = entryMatchStatusLabel(matchStatus),
                         stakeLabel = amountLabel,
                         winnerShareAmountLabel = winnerShareAmountLabel
+                    )
+                    Spacer(
+                        modifier = Modifier
+                            .height(1.dp)
+                            .bringIntoViewRequester(expandedBringIntoViewRequester)
                     )
                 }
             }
@@ -523,8 +529,8 @@ private fun EntryExpandedDetailPanel(
             .clip(EntryDetailPanelShape)
             .background(MatchCardCompactSurface)
             .border(1.dp, GlassBorder, EntryDetailPanelShape)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -571,7 +577,7 @@ private fun EntryDetailScoreColumn(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(3.dp)
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Text(
             text = label,
