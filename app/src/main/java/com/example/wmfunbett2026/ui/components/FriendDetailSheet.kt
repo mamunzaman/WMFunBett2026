@@ -17,10 +17,10 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppMenuButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -88,9 +88,10 @@ fun FriendDetailSheet(
                     )
                 },
                 confirmButton = {
-                    TextButton(onClick = { showDeleteDialog = false }) {
-                        Text(stringResource(R.string.ok))
-                    }
+                    AppTextButton(
+                        text = stringResource(R.string.ok),
+                        onClick = { showDeleteDialog = false }
+                    )
                 }
             )
         } else {
@@ -165,13 +166,12 @@ private fun FriendDetailOverflowMenu(
     var expanded by remember { mutableStateOf(false) }
 
     Box(modifier = modifier) {
-        IconButton(onClick = { expanded = true }) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = null,
-                tint = TextSecondary
-            )
-        }
+        AppMenuButton(
+            contentDescription = null,
+            onClick = { expanded = true },
+            filled = false,
+            iconTint = TextSecondary
+        )
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }

@@ -19,6 +19,8 @@ import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.SecondaryText
 import com.example.wmfunbett2026.ui.theme.SurfaceDark
 
+// TODO: migrate JackpotCard, StatCard, PlaceholderCard to designsystem.cards
+
 @Composable
 fun JackpotCard(
     amount: String,

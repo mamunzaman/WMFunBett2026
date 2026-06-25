@@ -14,7 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,32 +51,32 @@ fun MatchesHeaderActions(
                 onClick = onLiveFilterClick
             )
         }
-        IconButton(onClick = onCalendarClick) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Default.CalendarMonth,
-                    contentDescription = stringResource(R.string.select_matches),
-                    tint = TextPrimary
+        Box(contentAlignment = Alignment.Center) {
+            AppIconButton(
+                icon = Icons.Default.CalendarMonth,
+                contentDescription = stringResource(R.string.select_matches),
+                onClick = onCalendarClick,
+                filled = false,
+                iconTint = TextPrimary
+            )
+            if (calendarFilterActive) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .size(7.dp)
+                        .clip(CircleShape)
+                        .background(PrimaryBlue)
+                        .border(1.dp, TextPrimary.copy(alpha = 0.6f), CircleShape)
                 )
-                if (calendarFilterActive) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .size(7.dp)
-                            .clip(CircleShape)
-                            .background(PrimaryBlue)
-                            .border(1.dp, TextPrimary.copy(alpha = 0.6f), CircleShape)
-                    )
-                }
             }
         }
-        IconButton(onClick = onSearchClick) {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = stringResource(R.string.search),
-                tint = TextPrimary
-            )
-        }
+        AppIconButton(
+            icon = Icons.Default.Search,
+            contentDescription = stringResource(R.string.search),
+            onClick = onSearchClick,
+            filled = false,
+            iconTint = TextPrimary
+        )
     }
 }
 

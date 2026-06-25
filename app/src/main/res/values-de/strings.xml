@@ -188,6 +188,8 @@
     <string name="tipp_group_people">Personen</string>
     <string name="tipp_group_entry_per_person">Einsatz / Person</string>
     <string name="tipp_group_collected">Gesammelt</string>
+    <string name="tipp_group_entries_section">Einträge (%1$d)</string>
+    <string name="add_entry_action_subtitle">Neue Vorhersage für dieses Spiel erstellen</string>
     <string name="friend_detail_from_entries">Berechnet aus gespeicherten Einträgen</string>
     <string name="action_add_league">Liga hinzufügen</string>
     <string name="action_add_match">Spiel hinzufügen</string>

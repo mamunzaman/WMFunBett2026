@@ -62,7 +62,7 @@ import com.example.wmfunbett2026.ui.components.FormBottomSheet
 import com.example.wmfunbett2026.ui.components.AddEntryActionCard
 import com.example.wmfunbett2026.ui.components.EntriesSectionHeader
 import com.example.wmfunbett2026.ui.components.TippGroupSummaryStrip
-import androidx.compose.material3.TextButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppTextButton
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.components.HierarchyListContentPadding
 import com.example.wmfunbett2026.ui.components.HierarchyScreenLayout
@@ -602,19 +602,16 @@ private fun EntryBulkSelectionBar(
             color = PrimaryText
         )
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            TextButton(onClick = onCancel) {
-                Text(
-                    text = stringResource(R.string.cancel),
-                    color = SecondaryText
-                )
-            }
+            AppTextButton(
+                text = stringResource(R.string.cancel),
+                onClick = onCancel
+            )
             if (selectedCount > 0) {
-                TextButton(onClick = onDeleteSelected) {
-                    Text(
-                        text = stringResource(R.string.delete),
-                        color = DangerRed
-                    )
-                }
+                AppTextButton(
+                    text = stringResource(R.string.delete),
+                    onClick = onDeleteSelected,
+                    destructive = true
+                )
             }
         }
     }

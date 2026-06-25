@@ -24,13 +24,14 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SortByAlpha
 import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppIconButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppMenuButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppPrimaryButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppTextButton
+import com.example.wmfunbett2026.ui.designsystem.fields.AppSearchField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,7 +50,6 @@ import com.example.wmfunbett2026.data.repository.FunBettRepository
 import com.example.wmfunbett2026.ui.components.AddFriendSheet
 import com.example.wmfunbett2026.ui.components.DeleteConfirmDialog
 import com.example.wmfunbett2026.ui.components.EditFriendSheet
-import com.example.wmfunbett2026.ui.components.FormOutlinedTextField
 import com.example.wmfunbett2026.ui.components.FriendGridCard
 import com.example.wmfunbett2026.ui.components.FriendListRow
 import com.example.wmfunbett2026.ui.components.FriendOverviewStatCard
@@ -126,23 +126,23 @@ fun FriendsScreen(modifier: Modifier = Modifier) {
         MatchCenterHeader(
             title = stringResource(R.string.screen_friends),
             trailingContent = {
-                IconButton(onClick = {
-                    searchActive = !searchActive
-                    if (!searchActive) searchQuery = ""
-                }) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = stringResource(R.string.search),
-                        tint = if (searchActive) PrimaryBlue else TextPrimary
-                    )
-                }
-                IconButton(onClick = { showAddFriendSheet = true }) {
-                    Icon(
-                        imageVector = Icons.Default.PersonAdd,
-                        contentDescription = stringResource(R.string.add_friend),
-                        tint = TextPrimary
-                    )
-                }
+                AppIconButton(
+                    icon = Icons.Default.Search,
+                    contentDescription = stringResource(R.string.search),
+                    onClick = {
+                        searchActive = !searchActive
+                        if (!searchActive) searchQuery = ""
+                    },
+                    filled = false,
+                    iconTint = if (searchActive) PrimaryBlue else TextPrimary
+                )
+                AppIconButton(
+                    icon = Icons.Default.PersonAdd,
+                    contentDescription = stringResource(R.string.add_friend),
+                    onClick = { showAddFriendSheet = true },
+                    filled = false,
+                    iconTint = TextPrimary
+                )
             }
         )
 
@@ -159,21 +159,20 @@ fun FriendsScreen(modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                FormOutlinedTextField(
+                AppSearchField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.weight(1f),
-                    label = { Text(stringResource(R.string.search)) },
-                    singleLine = true
+                    placeholder = { Text(stringResource(R.string.search)) }
                 )
                 if (searchQuery.isNotBlank()) {
-                    IconButton(onClick = { searchQuery = "" }) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = stringResource(R.string.friends_search_clear),
-                            tint = TextSecondary
-                        )
-                    }
+                    AppIconButton(
+                        icon = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.friends_search_clear),
+                        onClick = { searchQuery = "" },
+                        filled = false,
+                        iconTint = TextSecondary
+                    )
                 }
             }
         }
@@ -358,9 +357,10 @@ fun FriendsScreen(modifier: Modifier = Modifier) {
                 )
             },
             confirmButton = {
-                TextButton(onClick = { showDeleteBlockedDialog = false }) {
-                    Text(stringResource(R.string.ok))
-                }
+                AppTextButton(
+                    text = stringResource(R.string.ok),
+                    onClick = { showDeleteBlockedDialog = false }
+                )
             }
         )
     }
@@ -449,17 +449,11 @@ private fun FriendsEmptyContent(
             message = stringResource(R.string.friends_empty_message),
             modifier = Modifier.fillMaxWidth()
         )
-        Button(
+        AppPrimaryButton(
+            text = stringResource(R.string.add_friend),
             onClick = onAddFriendClick,
-            modifier = Modifier.fillMaxWidth(),
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = PrimaryBlue,
-                contentColor = TextPrimary
-            )
-        ) {
-            Text(stringResource(R.string.add_friend))
-        }
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppActionButton
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Groups
@@ -262,59 +262,12 @@ private fun CreateMenuRow(
     item: CreateMenuItem,
     onClick: () -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(CreateMenuRowShape)
-            .background(Surface)
-            .border(1.dp, GlassBorder, CreateMenuRowShape)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = PrimaryBlueBright.copy(alpha = 0.12f)),
-                onClick = onClick
-            )
-            .padding(horizontal = 14.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(PrimaryBlue.copy(alpha = 0.22f))
-                .border(1.dp, GlassBorder, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = null,
-                tint = PrimaryBlueBright,
-                modifier = Modifier.size(22.dp)
-            )
-        }
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Text(
-                text = stringResource(item.titleRes),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = TextPrimary
-            )
-            Text(
-                text = stringResource(item.descriptionRes),
-                style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
-            )
-        }
-        Icon(
-            imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-            contentDescription = null,
-            tint = TextSecondary,
-            modifier = Modifier.size(22.dp)
-        )
-    }
+    AppActionButton(
+        title = stringResource(item.titleRes),
+        subtitle = stringResource(item.descriptionRes),
+        onClick = onClick,
+        icon = item.icon
+    )
 }
 
 @Composable

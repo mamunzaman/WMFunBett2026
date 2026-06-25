@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.example.wmfunbett2026.ui.designsystem.fields.AppTextField
 import com.example.wmfunbett2026.R
 
 @Composable
@@ -25,7 +26,7 @@ fun CreateRoundSheet(
         onPrimaryAction = { onCreate(name.trim()) },
         primaryActionEnabled = name.isNotBlank()
     ) {
-        FormOutlinedTextField(
+        AppTextField(
             value = name,
             onValueChange = { name = it },
             modifier = Modifier.fillMaxWidth(),

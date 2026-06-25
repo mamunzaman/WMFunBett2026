@@ -18,7 +18,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppIconButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppMenuButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -72,13 +73,13 @@ fun MatchCenterHeader(
         ) {
             when {
                 onBackClick != null -> {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = TextPrimary
-                        )
-                    }
+                    AppIconButton(
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        onClick = onBackClick,
+                        filled = false,
+                        iconTint = TextPrimary
+                    )
                 }
                 else -> Spacer(modifier = Modifier.width(16.dp))
             }
@@ -112,23 +113,21 @@ fun MatchCenterHeader(
                         when {
                             trailingContent != null -> trailingContent()
                             showSearchIcon -> {
-                                IconButton(onClick = { }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Search,
-                                        contentDescription = stringResource(R.string.search),
-                                        tint = TextPrimary
-                                    )
-                                }
+                                AppIconButton(
+                                    icon = Icons.Default.Search,
+                                    contentDescription = stringResource(R.string.search),
+                                    onClick = { },
+                                    filled = false,
+                                    iconTint = TextPrimary
+                                )
                             }
                             hasMenu -> {
                                 Box {
-                                    IconButton(onClick = { showMenu = true }) {
-                                        Icon(
-                                            imageVector = Icons.Default.MoreVert,
-                                            contentDescription = "More options",
-                                            tint = TextPrimary
-                                        )
-                                    }
+                                    AppMenuButton(
+                                        onClick = { showMenu = true },
+                                        filled = false,
+                                        iconTint = TextPrimary
+                                    )
                                     DropdownMenu(
                                         expanded = showMenu,
                                         onDismissRequest = { showMenu = false }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -27,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -38,13 +40,16 @@ import com.example.wmfunbett2026.ui.designsystem.layout.ActionCardCornerRadius
 import com.example.wmfunbett2026.ui.designsystem.layout.ActionCardHorizontalPadding
 import com.example.wmfunbett2026.ui.designsystem.layout.ActionCardVerticalPadding
 import com.example.wmfunbett2026.ui.designsystem.layout.ActionIconSize
+import com.example.wmfunbett2026.ui.designsystem.layout.CompactActionButtonHeight
 import com.example.wmfunbett2026.ui.designsystem.layout.IconButtonSize
 import com.example.wmfunbett2026.ui.theme.GlassBorder
+import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.MatchCardCompactSurface
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.PrimaryBlueBright
 import com.example.wmfunbett2026.ui.theme.PrimaryText
 import com.example.wmfunbett2026.ui.theme.SecondaryText
+import com.example.wmfunbett2026.ui.theme.TextDisabled
 
 @Composable
 fun AppActionButton(
@@ -54,8 +59,24 @@ fun AppActionButton(
     icon: ImageVector = Icons.Default.Add,
     subtitle: String? = null,
     showChevron: Boolean = true,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    compact: Boolean = false,
+    accentGold: Boolean = false,
+    outlined: Boolean = false
 ) {
+    if (compact) {
+        AppCompactActionButton(
+            title = title,
+            onClick = onClick,
+            modifier = modifier,
+            icon = icon,
+            enabled = enabled,
+            accentGold = accentGold,
+            outlined = outlined
+        )
+        return
+    }
+
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale = rememberAppPressScale(isPressed = isPressed, enabled = enabled)
@@ -126,5 +147,78 @@ fun AppActionButton(
                 modifier = Modifier.size(ActionIconSize)
             )
         }
+    }
+}
+
+@Composable
+private fun AppCompactActionButton(
+    title: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector = Icons.Default.Add,
+    enabled: Boolean = true,
+    accentGold: Boolean = false,
+    outlined: Boolean = false
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale = rememberAppPressScale(isPressed = isPressed, enabled = enabled)
+    val shape = RoundedCornerShape(15.dp)
+    val borderColor = when {
+        accentGold -> JackpotGold
+        else -> GlassBorder
+    }
+    val textColor = when {
+        !enabled -> TextDisabled
+        accentGold -> JackpotGold
+        else -> PrimaryText
+    }
+    val iconTint = when {
+        !enabled -> TextDisabled
+        accentGold -> JackpotGold
+        else -> PrimaryBlueBright
+    }
+    val backgroundColor = when {
+        outlined -> Color.Transparent
+        accentGold -> JackpotGold.copy(alpha = 0.08f)
+        else -> MatchCardCompactSurface
+    }
+    val rippleColor = if (accentGold) {
+        JackpotGold.copy(alpha = 0.12f)
+    } else {
+        PrimaryBlueBright.copy(alpha = 0.12f)
+    }
+
+    Row(
+        modifier = modifier
+            .height(CompactActionButtonHeight)
+            .appPressGraphicsLayer(scale)
+            .clip(shape)
+            .background(backgroundColor)
+            .border(1.dp, borderColor, shape)
+            .clickable(
+                enabled = enabled,
+                interactionSource = interactionSource,
+                indication = ripple(color = rippleColor),
+                onClick = onClick
+            )
+            .padding(horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = iconTint,
+            modifier = Modifier.size(18.dp)
+        )
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = textColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }

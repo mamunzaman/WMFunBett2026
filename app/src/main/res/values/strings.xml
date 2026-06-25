@@ -188,6 +188,8 @@
     <string name="tipp_group_people">People</string>
     <string name="tipp_group_entry_per_person">Entry / person</string>
     <string name="tipp_group_collected">Collected</string>
+    <string name="tipp_group_entries_section">Entries (%1$d)</string>
+    <string name="add_entry_action_subtitle">Create a new prediction for this match</string>
     <string name="friend_detail_from_entries">Calculated from saved entries</string>
     <string name="action_add_league">Add League</string>
     <string name="action_add_match">Add Match</string>

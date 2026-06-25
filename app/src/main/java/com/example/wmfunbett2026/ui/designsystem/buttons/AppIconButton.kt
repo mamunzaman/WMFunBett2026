@@ -16,7 +16,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.ui.designsystem.animation.appPressGraphicsLayer
 import com.example.wmfunbett2026.ui.designsystem.animation.rememberAppPressScale
@@ -35,20 +37,39 @@ fun AppIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    selected: Boolean = false
+    selected: Boolean = false,
+    filled: Boolean = true,
+    iconTint: Color? = null,
+    buttonSize: Dp = IconButtonSize
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale = rememberAppPressScale(isPressed = isPressed, enabled = enabled)
-    val borderColor = if (selected) PrimaryBlueBright.copy(alpha = 0.55f) else GlassBorder
+    val borderColor = when {
+        !filled -> Color.Transparent
+        selected -> PrimaryBlueBright.copy(alpha = 0.55f)
+        else -> GlassBorder
+    }
+    val resolvedTint = iconTint ?: when {
+        !enabled -> TextDisabled
+        selected -> PrimaryBlueBright
+        else -> SecondaryText
+    }
 
     Box(
         modifier = modifier
             .appPressGraphicsLayer(scale)
-            .size(IconButtonSize)
-            .clip(CircleShape)
-            .background(MatchCardCompactSurface)
-            .border(1.dp, borderColor, CircleShape)
+            .size(buttonSize)
+            .then(
+                if (filled) {
+                    Modifier
+                        .clip(CircleShape)
+                        .background(MatchCardCompactSurface)
+                        .border(1.dp, borderColor, CircleShape)
+                } else {
+                    Modifier
+                }
+            )
             .clickable(
                 enabled = enabled,
                 interactionSource = interactionSource,
@@ -60,12 +81,10 @@ fun AppIconButton(
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = when {
-                !enabled -> TextDisabled
-                selected -> PrimaryBlueBright
-                else -> SecondaryText
-            },
-            modifier = Modifier.size(IconButtonIconSize)
+            tint = resolvedTint,
+            modifier = Modifier.size(
+                if (buttonSize < IconButtonSize) IconButtonIconSize - 2.dp else IconButtonIconSize
+            )
         )
     }
 }

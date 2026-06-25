@@ -232,29 +232,9 @@ fun GlassPrimaryActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    com.example.wmfunbett2026.ui.designsystem.buttons.AppPrimaryButton(
+        text = "+  $label",
+        onClick = onClick,
         modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        PrimaryBlue.copy(alpha = 0.55f),
-                        PrimaryBlue.copy(alpha = 0.35f)
-                    )
-                )
-            )
-            .border(1.dp, PrimaryBlue.copy(alpha = 0.55f), RoundedCornerShape(14.dp))
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "+  $label",
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = PrimaryText
-        )
-    }
+    )
 }

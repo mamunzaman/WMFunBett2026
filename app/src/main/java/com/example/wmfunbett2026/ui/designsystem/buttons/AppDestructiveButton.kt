@@ -1,7 +1,6 @@
 package com.example.wmfunbett2026.ui.designsystem.buttons
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -18,53 +17,57 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.ui.designsystem.animation.appPressGraphicsLayer
 import com.example.wmfunbett2026.ui.designsystem.animation.rememberAppPressScale
+import com.example.wmfunbett2026.ui.designsystem.layout.DefaultButtonElevation
 import com.example.wmfunbett2026.ui.designsystem.layout.DefaultButtonHeight
 import com.example.wmfunbett2026.ui.designsystem.layout.DefaultCornerRadius
-import com.example.wmfunbett2026.ui.theme.GlassBorder
-import com.example.wmfunbett2026.ui.theme.MatchCardCompactSurface
-import com.example.wmfunbett2026.ui.theme.PrimaryBlueBright
-import com.example.wmfunbett2026.ui.theme.SecondaryText
-import com.example.wmfunbett2026.ui.theme.TextDisabled
+import com.example.wmfunbett2026.ui.theme.DangerRed
+import com.example.wmfunbett2026.ui.theme.TextPrimary
 
 @Composable
-fun AppSecondaryButton(
+fun AppDestructiveButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    fillMaxWidth: Boolean = true,
-    outlined: Boolean = false,
-    icon: ImageVector? = null
+    fillMaxWidth: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val scale = rememberAppPressScale(isPressed = isPressed, enabled = enabled)
     val shape = RoundedCornerShape(DefaultCornerRadius)
-    val backgroundColor = if (outlined) Color.Transparent else MatchCardCompactSurface
 
     Box(
         modifier = modifier
             .then(if (fillMaxWidth) Modifier.fillMaxWidth() else Modifier)
             .appPressGraphicsLayer(scale)
             .height(DefaultButtonHeight)
+            .shadow(
+                elevation = if (enabled) DefaultButtonElevation else 0.dp,
+                shape = shape,
+                ambientColor = DangerRed.copy(alpha = 0.35f),
+                spotColor = DangerRed.copy(alpha = 0.25f)
+            )
             .clip(shape)
-            .background(backgroundColor)
-            .border(
-                width = 1.dp,
-                color = if (enabled) GlassBorder else GlassBorder.copy(alpha = 0.45f),
-                shape = shape
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = if (enabled) {
+                        listOf(DangerRed.copy(alpha = 0.95f), DangerRed.copy(alpha = 0.82f))
+                    } else {
+                        listOf(DangerRed.copy(alpha = 0.38f), DangerRed.copy(alpha = 0.32f))
+                    }
+                )
             )
             .clickable(
                 enabled = enabled,
                 interactionSource = interactionSource,
-                indication = ripple(color = PrimaryBlueBright.copy(alpha = 0.1f)),
+                indication = ripple(color = TextPrimary.copy(alpha = 0.12f)),
                 onClick = onClick
             ),
         contentAlignment = Alignment.Center
@@ -73,7 +76,7 @@ fun AppSecondaryButton(
             text = text,
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
-            color = if (enabled) SecondaryText else TextDisabled,
+            color = if (enabled) TextPrimary else TextPrimary.copy(alpha = 0.6f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

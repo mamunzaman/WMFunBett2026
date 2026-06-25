@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppIconButton
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.FriendWithStats
 import com.example.wmfunbett2026.ui.theme.Divider
@@ -139,22 +140,20 @@ fun FriendsToolbarIconButton(
 ) {
     val borderColor = Divider.copy(alpha = if (selected) 0.85f else 0.55f)
 
-    Box(
+    AppIconButton(
+        icon = icon,
+        contentDescription = contentDescription,
+        onClick = onClick,
         modifier = modifier
             .size(FriendsToolbarHeight)
             .clip(FriendsToolbarShape)
             .background(MatchCardCompactSurface)
-            .border(1.dp, borderColor, FriendsToolbarShape)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = contentDescription,
-            tint = if (selected) PrimaryBlue else TextSecondary,
-            modifier = Modifier.size(18.dp)
-        )
-    }
+            .border(1.dp, borderColor, FriendsToolbarShape),
+        filled = false,
+        selected = selected,
+        iconTint = if (selected) PrimaryBlue else TextSecondary,
+        buttonSize = FriendsToolbarHeight
+    )
 }
 
 @Composable

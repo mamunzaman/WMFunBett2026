@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Game
 import com.example.wmfunbett2026.data.model.MatchStatus
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppBottomSheetPrimaryButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppBottomSheetSecondaryButton
+import com.example.wmfunbett2026.ui.designsystem.chips.AppSegmentedStatusControl
 import com.example.wmfunbett2026.ui.theme.Divider
 import com.example.wmfunbett2026.ui.theme.SurfaceVariant
 import com.example.wmfunbett2026.ui.theme.TextSecondary
@@ -65,8 +68,8 @@ fun SetResultSheet(
     AppBottomSheetContainer(
         onDismiss = onDismiss,
         footer = {
-            SheetPrimaryButton(
-                label = stringResource(R.string.save_result),
+            AppBottomSheetPrimaryButton(
+                text = stringResource(R.string.save_result),
                 onClick = {
                     val validationError = validateResultForm(scoreA, scoreB, status, resultErrors)
                     if (validationError != null) {
@@ -80,7 +83,10 @@ fun SetResultSheet(
                     }
                 }
             )
-            SheetTextCancelButton(onClick = onDismiss)
+            AppBottomSheetSecondaryButton(
+                text = stringResource(R.string.cancel),
+                onClick = onDismiss
+            )
         }
     ) {
         AppBottomSheetHeader(
@@ -138,29 +144,23 @@ private fun MatchStatusSegmentedRow(
     onSelected: (MatchStatus) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        FormFilterChip(
-            label = stringResource(R.string.status_not_started),
-            selected = selected == MatchStatus.NOT_STARTED,
-            modifier = Modifier.weight(1f),
-            onClick = { onSelected(MatchStatus.NOT_STARTED) }
-        )
-        FormFilterChip(
-            label = stringResource(R.string.status_live),
-            selected = selected == MatchStatus.LIVE,
-            modifier = Modifier.weight(1f),
-            onClick = { onSelected(MatchStatus.LIVE) }
-        )
-        FormFilterChip(
-            label = stringResource(R.string.status_finished),
-            selected = selected == MatchStatus.FINISHED,
-            modifier = Modifier.weight(1f),
-            onClick = { onSelected(MatchStatus.FINISHED) }
-        )
-    }
+    AppSegmentedStatusControl(
+        options = listOf(
+            MatchStatus.NOT_STARTED,
+            MatchStatus.LIVE,
+            MatchStatus.FINISHED
+        ),
+        selected = selected,
+        label = { option ->
+            when (option) {
+                MatchStatus.NOT_STARTED -> stringResource(R.string.status_not_started)
+                MatchStatus.LIVE -> stringResource(R.string.status_live)
+                MatchStatus.FINISHED -> stringResource(R.string.status_finished)
+            }
+        },
+        onSelected = onSelected,
+        modifier = modifier
+    )
 }
 
 @Composable

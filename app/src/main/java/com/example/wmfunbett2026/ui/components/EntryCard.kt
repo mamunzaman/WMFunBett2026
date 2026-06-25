@@ -42,7 +42,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppMenuButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,6 +75,8 @@ import com.example.wmfunbett2026.data.model.MatchStatus
 import com.example.wmfunbett2026.data.model.TippGroupEntryBlockReason
 import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.model.toEuroLabel
+import com.example.wmfunbett2026.ui.designsystem.feedback.AppInfoMessage
+import com.example.wmfunbett2026.ui.designsystem.feedback.AppInfoMessageStyle
 import com.example.wmfunbett2026.ui.matchcenter.shouldShowEntryWinnerShare
 import com.example.wmfunbett2026.ui.theme.DangerRed
 import com.example.wmfunbett2026.ui.theme.DarkNavy
@@ -699,17 +701,12 @@ private fun EntryRowOverflowMenu(
     var expanded by remember { mutableStateOf(false) }
 
     Box(modifier = modifier) {
-        IconButton(
+        AppMenuButton(
             onClick = { expanded = true },
-            modifier = Modifier.size(32.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = null,
-                tint = TextSecondary,
-                modifier = Modifier.size(18.dp)
-            )
-        }
+            filled = false,
+            iconTint = TextSecondary,
+            buttonSize = 32.dp
+        )
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
@@ -751,64 +748,13 @@ private fun EntryStatusInfoCard(
     modifier: Modifier = Modifier,
     accentGold: Boolean = false
 ) {
-    val backgroundColor = if (accentGold) {
-        JackpotGold.copy(alpha = 0.12f)
-    } else {
-        PrimaryBlue.copy(alpha = 0.14f)
-    }
-    val borderColor = if (accentGold) {
-        JackpotGold.copy(alpha = 0.38f)
-    } else {
-        PrimaryBlue.copy(alpha = 0.34f)
-    }
-    val iconBackground = if (accentGold) {
-        JackpotGold.copy(alpha = 0.2f)
-    } else {
-        PrimaryBlue.copy(alpha = 0.24f)
-    }
-    val iconTint = if (accentGold) JackpotGold else PrimaryBlueBright
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(EntryInfoCardShape)
-            .background(backgroundColor)
-            .border(1.dp, borderColor, EntryInfoCardShape)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(iconBackground),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(22.dp)
-            )
-        }
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
-            )
-        }
-    }
+    AppInfoMessage(
+        title = title,
+        message = message,
+        icon = icon,
+        modifier = modifier,
+        style = if (accentGold) AppInfoMessageStyle.Accent else AppInfoMessageStyle.Info
+    )
 }
 
 @Composable

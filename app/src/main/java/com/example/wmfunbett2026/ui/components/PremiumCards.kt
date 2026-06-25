@@ -25,7 +25,7 @@ import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material.icons.outlined.SportsSoccer
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -881,13 +881,13 @@ fun TournamentCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            IconButton(onClick = onClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = TextSecondary
-                )
-            }
+            AppIconButton(
+                icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                onClick = onClick,
+                filled = false,
+                iconTint = TextSecondary
+            )
         }
     }
 }
@@ -956,13 +956,13 @@ fun LeagueSummaryCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            IconButton(onClick = onClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = TextSecondary
-                )
-            }
+            AppIconButton(
+                icon = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                onClick = onClick,
+                filled = false,
+                iconTint = TextSecondary
+            )
         }
     }
 }
