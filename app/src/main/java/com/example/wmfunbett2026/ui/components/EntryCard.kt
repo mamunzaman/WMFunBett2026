@@ -1,25 +1,42 @@
 package com.example.wmfunbett2026.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Paid
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.SportsSoccer
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenu
@@ -30,6 +47,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,12 +55,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
 import com.example.wmfunbett2026.R
 import com.example.wmfunbett2026.data.model.Entry
@@ -53,26 +78,28 @@ import com.example.wmfunbett2026.data.model.TippGroupSettlementSummary
 import com.example.wmfunbett2026.data.model.toEuroLabel
 import com.example.wmfunbett2026.ui.matchcenter.shouldShowEntryWinnerShare
 import com.example.wmfunbett2026.ui.theme.DangerRed
+import com.example.wmfunbett2026.ui.theme.DarkNavy
 import com.example.wmfunbett2026.ui.theme.Divider
+import com.example.wmfunbett2026.ui.theme.GlassBorder
 import com.example.wmfunbett2026.ui.theme.JackpotGold
 import com.example.wmfunbett2026.ui.theme.MatchCardCompactSurface
 import com.example.wmfunbett2026.ui.theme.PrimaryBlue
 import com.example.wmfunbett2026.ui.theme.PrimaryBlueBright
 import com.example.wmfunbett2026.ui.theme.Surface
+import com.example.wmfunbett2026.ui.theme.TextMuted
 import com.example.wmfunbett2026.ui.theme.TextPrimary
 import com.example.wmfunbett2026.ui.theme.TextSecondary
+import com.example.wmfunbett2026.ui.theme.WinnerGreen
+import kotlinx.coroutines.delay
 
-private val EntryTableShape = RoundedCornerShape(14.dp)
-private val EntryTableRowHeight = 78.dp
-private val EntryWinnerBandInset = 10.dp
-private val EntryWinnerBandVerticalInset = 4.dp
-private val EntryWinnerBandEdgeExtraInset = 4.dp
-private val EntryWinnerBandShape = RoundedCornerShape(8.dp)
-private val PickColumnWeight = 1.2f
-private val PredictColumnWeight = 0.85f
-private val CurrentColumnWeight = 1f
-private val StakeColumnWeight = 0.75f
-private val MenuColumnWeight = 0.28f
+private val EntryListCardShape = RoundedCornerShape(18.dp)
+private val EntryListSpacing = 12.dp
+private val EntryDetailPanelShape = RoundedCornerShape(14.dp)
+private val EntryAvatarSize = 38.dp
+private val EntryCollapsedMinHeight = 60.dp
+private const val EntryCardPressScale = 0.985f
+private const val EntryExpandAnimMs = 200
+private const val EntryBringIntoViewDelayMs = 220L
 
 @Composable
 fun TippGroupEntryTable(
@@ -87,6 +114,52 @@ fun TippGroupEntryTable(
     modifier: Modifier = Modifier,
     selectionMode: Boolean = false,
     selectedEntryIds: Set<String> = emptySet(),
+    expandedEntryId: String? = null,
+    onExpandedEntryIdChange: (String?) -> Unit = {},
+    onToggleEntrySelection: (Entry) -> Unit = {},
+    onEntryLongPress: (Entry) -> Unit = {}
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(EntryListSpacing)
+    ) {
+        if (winnerNames.isNotEmpty()) {
+            EntryWinnerSummaryRow(winnerCount = winnerNames.size)
+        }
+        entries.forEach { entry ->
+            TippGroupEntryListItem(
+                game = game,
+                entry = entry,
+                winningEntryIds = winningEntryIds,
+                settlement = settlement,
+                selectionMode = selectionMode,
+                selectedEntryIds = selectedEntryIds,
+                expanded = expandedEntryId == entry.id,
+                onExpandedChange = { shouldExpand ->
+                    onExpandedEntryIdChange(if (shouldExpand) entry.id else null)
+                },
+                onEditEntry = onEditEntry,
+                onDeleteEntry = onDeleteEntry,
+                onToggleEntrySelection = onToggleEntrySelection,
+                onEntryLongPress = onEntryLongPress
+            )
+        }
+    }
+}
+
+@Composable
+fun TippGroupEntryListItem(
+    game: Game,
+    entry: Entry,
+    winningEntryIds: Set<String>,
+    settlement: TippGroupSettlementSummary,
+    onEditEntry: (Entry) -> Unit,
+    onDeleteEntry: (Entry) -> Unit,
+    modifier: Modifier = Modifier,
+    selectionMode: Boolean = false,
+    selectedEntryIds: Set<String> = emptySet(),
+    expanded: Boolean = false,
+    onExpandedChange: (Boolean) -> Unit = {},
     onToggleEntrySelection: (Entry) -> Unit = {},
     onEntryLongPress: (Entry) -> Unit = {}
 ) {
@@ -96,71 +169,52 @@ fun TippGroupEntryTable(
         MatchStatus.NOT_STARTED -> scoreDash
         else -> game.compactScoreOrNull() ?: scoreDash
     }
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(EntryTableShape)
-            .background(Surface)
-            .border(1.dp, Divider.copy(alpha = 0.85f), EntryTableShape)
-    ) {
-        if (winnerNames.isNotEmpty()) {
-            EntryWinnerSummaryRow(winnerCount = winnerNames.size)
-            HorizontalDivider(color = Divider.copy(alpha = 0.7f))
-        }
-        EntryTableHeaderRow()
-        entries.forEachIndexed { index, entry ->
-            val isWinner = entry.id in winningEntryIds
-            val shareLabel = if (shouldShowEntryWinnerShare(game, isWinner, settlement)) {
-                stringResource(
-                    R.string.entry_winner_share,
-                    settlement.sharePerWinner.toEuroLabel()
-                )
-            } else {
-                null
-            }
-            EntryCard(
-                name = entry.friendName,
-                prediction = entry.prediction,
-                amountLabel = entry.amount.toEuroLabel(),
-                matchStatus = matchStatus,
-                currentScoreLabel = currentScoreLabel,
-                isWinner = isWinner,
-                shareLabel = shareLabel,
-                isFirstRow = index == 0,
-                isLastRow = index == entries.lastIndex,
-                showDivider = index < entries.lastIndex,
-                selectionMode = selectionMode,
-                selected = entry.id in selectedEntryIds,
-                onClick = {
-                    if (selectionMode) {
-                        onToggleEntrySelection(entry)
-                    } else {
-                        onEntryClick(entry)
-                    }
-                },
-                onLongClick = if (!selectionMode) {
-                    { onEntryLongPress(entry) }
-                } else {
-                    null
-                },
-                onEditClick = if (!selectionMode) {
-                    { onEditEntry(entry) }
-                } else {
-                    null
-                },
-                onDeleteClick = if (!selectionMode) {
-                    { onDeleteEntry(entry) }
-                } else {
-                    null
-                }
-            )
-        }
+    val isWinner = entry.id in winningEntryIds
+    val winnerShareAmountLabel = if (shouldShowEntryWinnerShare(game, isWinner, settlement)) {
+        settlement.sharePerWinner.toEuroLabel()
+    } else {
+        null
     }
+
+    EntryCard(
+        name = entry.friendName,
+        prediction = entry.prediction,
+        amountLabel = entry.amount.toEuroLabel(),
+        note = entry.note?.takeIf { it.isNotBlank() },
+        matchStatus = matchStatus,
+        currentScoreLabel = currentScoreLabel,
+        isWinner = isWinner,
+        winnerShareAmountLabel = winnerShareAmountLabel,
+        selectionMode = selectionMode,
+        selected = entry.id in selectedEntryIds,
+        expanded = expanded,
+        onExpandedChange = onExpandedChange,
+        modifier = modifier,
+        onClick = if (selectionMode) {
+            { onToggleEntrySelection(entry) }
+        } else {
+            null
+        },
+        onLongClick = if (!selectionMode) {
+            { onEntryLongPress(entry) }
+        } else {
+            null
+        },
+        onEditClick = if (!selectionMode) {
+            { onEditEntry(entry) }
+        } else {
+            null
+        },
+        onDeleteClick = if (!selectionMode) {
+            { onDeleteEntry(entry) }
+        } else {
+            null
+        }
+    )
 }
 
 @Composable
-private fun EntryWinnerSummaryRow(
+fun EntryWinnerSummaryRow(
     winnerCount: Int,
     modifier: Modifier = Modifier
 ) {
@@ -174,62 +228,13 @@ private fun EntryWinnerSummaryRow(
         text = summary,
         modifier = modifier
             .fillMaxWidth()
-            .background(JackpotGold.copy(alpha = 0.08f))
+            .clip(EntryListCardShape)
+            .background(WinnerGreen.copy(alpha = 0.1f))
+            .border(1.dp, WinnerGreen.copy(alpha = 0.28f), EntryListCardShape)
             .padding(horizontal = 14.dp, vertical = 10.dp),
         style = MaterialTheme.typography.labelLarge,
         fontWeight = FontWeight.SemiBold,
-        color = JackpotGold
-    )
-}
-
-@Composable
-private fun EntryTableHeaderRow() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        EntryTableHeaderCell(
-            text = stringResource(R.string.entry_table_pick),
-            modifier = Modifier.weight(PickColumnWeight),
-            textAlign = TextAlign.Start
-        )
-        EntryTableHeaderCell(
-            text = stringResource(R.string.entry_table_predict),
-            modifier = Modifier.weight(PredictColumnWeight),
-            textAlign = TextAlign.Center
-        )
-        EntryTableHeaderCell(
-            text = stringResource(R.string.entry_table_current),
-            modifier = Modifier.weight(CurrentColumnWeight),
-            textAlign = TextAlign.Center
-        )
-        EntryTableHeaderCell(
-            text = stringResource(R.string.entry_table_stake),
-            modifier = Modifier.weight(StakeColumnWeight),
-            textAlign = TextAlign.End
-        )
-    }
-    HorizontalDivider(color = Divider.copy(alpha = 0.7f))
-}
-
-@Composable
-private fun EntryTableHeaderCell(
-    text: String,
-    modifier: Modifier = Modifier,
-    textAlign: TextAlign = TextAlign.Start
-) {
-    Text(
-        text = text.uppercase(),
-        modifier = modifier,
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.SemiBold,
-        color = TextSecondary,
-        letterSpacing = 0.8.sp,
-        textAlign = textAlign,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
+        color = WinnerGreen
     )
 }
 
@@ -241,172 +246,475 @@ fun EntryCard(
     amountLabel: String,
     matchStatus: MatchStatus,
     currentScoreLabel: String,
+    modifier: Modifier = Modifier,
+    note: String? = null,
     isWinner: Boolean = false,
-    shareLabel: String? = null,
-    isFirstRow: Boolean = false,
-    isLastRow: Boolean = false,
-    showDivider: Boolean = false,
+    winnerShareAmountLabel: String? = null,
     selectionMode: Boolean = false,
     selected: Boolean = false,
+    expanded: Boolean = false,
+    onExpandedChange: (Boolean) -> Unit = {},
     onClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
     onEditClick: (() -> Unit)? = null,
-    onDeleteClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onDeleteClick: (() -> Unit)? = null
 ) {
-    val predictionColor = if (isWinner) JackpotGold else TextPrimary
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val expandSizeSpec = tween<IntSize>(durationMillis = EntryExpandAnimMs, easing = FastOutSlowInEasing)
+    val expandFadeSpec = tween<Float>(durationMillis = EntryExpandAnimMs, easing = FastOutSlowInEasing)
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        Box(
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val pressScale by animateFloatAsState(
+        targetValue = if (isPressed) EntryCardPressScale else 1f,
+        animationSpec = tween(durationMillis = 120, easing = FastOutSlowInEasing),
+        label = "entryCardPressScale"
+    )
+
+    val handleBodyClick: () -> Unit = {
+        if (selectionMode) {
+            onClick?.invoke()
+        } else {
+            onExpandedChange(!expanded)
+        }
+    }
+
+    LaunchedEffect(expanded, selectionMode) {
+        if (expanded && !selectionMode) {
+            delay(EntryBringIntoViewDelayMs)
+            bringIntoViewRequester.bringIntoView()
+        }
+    }
+
+    val cardBorderColor = when {
+        selectionMode && selected -> PrimaryBlue.copy(alpha = 0.6f)
+        isWinner -> WinnerGreen.copy(alpha = 0.22f)
+        else -> GlassBorder
+    }
+    val cardBackground = when {
+        selectionMode && selected -> PrimaryBlue.copy(alpha = 0.12f)
+        isWinner -> WinnerGreen.copy(alpha = 0.06f)
+        else -> Surface
+    }
+
+    Box(
+        modifier = modifier
+            .bringIntoViewRequester(bringIntoViewRequester)
+            .fillMaxWidth()
+            .graphicsLayer {
+                scaleX = pressScale
+                scaleY = pressScale
+            }
+            .shadow(
+                elevation = 4.dp,
+                shape = EntryListCardShape,
+                ambientColor = Color.Black.copy(alpha = 0.32f),
+                spotColor = Color.Black.copy(alpha = 0.22f)
+            )
+            .clip(EntryListCardShape)
+            .background(cardBackground)
+            .border(1.dp, cardBorderColor, EntryListCardShape)
+            .then(
+                when {
+                    onLongClick != null -> Modifier.combinedClickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = handleBodyClick,
+                        onLongClick = onLongClick
+                    )
+                    else -> Modifier.clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = handleBodyClick
+                    )
+                }
+            )
+    ) {
+        if (isWinner) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .width(3.dp)
+                    .fillMaxHeight()
+                    .background(WinnerGreen.copy(alpha = 0.65f))
+            )
+        }
+
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(EntryTableRowHeight)
-        ) {
-            if (isWinner) {
-                val topInset = EntryWinnerBandVerticalInset +
-                    if (isFirstRow) EntryWinnerBandEdgeExtraInset else 0.dp
-                val bottomInset = EntryWinnerBandVerticalInset +
-                    if (isLastRow) EntryWinnerBandEdgeExtraInset else 0.dp
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            start = EntryWinnerBandInset,
-                            end = EntryWinnerBandInset,
-                            top = topInset,
-                            bottom = bottomInset
-                        )
-                        .clip(EntryWinnerBandShape)
-                        .background(JackpotGold.copy(alpha = 0.05f))
+                .animateContentSize(animationSpec = expandSizeSpec)
+                .padding(
+                    start = if (isWinner) 13.dp else 14.dp,
+                    end = 12.dp,
+                    top = if (expanded) 14.dp else 10.dp,
+                    bottom = if (expanded) 12.dp else 10.dp
                 )
-            }
+        ) {
             Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        when {
-                            onClick != null && onLongClick != null -> Modifier.combinedClickable(
-                                onClick = onClick,
-                                onLongClick = onLongClick
-                            )
-                            onClick != null -> Modifier.clickable(onClick = onClick)
-                            else -> Modifier
-                        }
-                    )
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                    .fillMaxWidth()
+                    .heightIn(min = if (expanded) 0.dp else EntryCollapsedMinHeight),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-            if (selectionMode) {
-                Checkbox(
-                    checked = selected,
-                    onCheckedChange = { onClick?.invoke() },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = PrimaryBlue,
-                        checkmarkColor = TextPrimary,
-                        uncheckedColor = TextSecondary
-                    ),
-                    modifier = Modifier.padding(end = 4.dp)
-                )
-            }
-            Row(
-                modifier = Modifier.weight(PickColumnWeight),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FriendInitialsAvatar(
+                if (selectionMode) {
+                    Checkbox(
+                        checked = selected,
+                        onCheckedChange = { onClick?.invoke() },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = PrimaryBlue,
+                            checkmarkColor = TextPrimary,
+                            uncheckedColor = TextSecondary
+                        ),
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                }
+                EntryPremiumAvatar(
                     initials = friendDisplayInitials(name),
-                    size = 32.dp
+                    modifier = Modifier.padding(end = 10.dp)
                 )
                 Column(
-                    modifier = Modifier.weight(1f, fill = false),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(5.dp)
-                    ) {
-                        if (isWinner) {
-                            Icon(
-                                imageVector = Icons.Outlined.EmojiEvents,
-                                contentDescription = null,
-                                tint = JackpotGold,
-                                modifier = Modifier.size(13.dp)
-                            )
-                        }
-                        Text(
-                            text = name,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = if (isWinner) FontWeight.Bold else FontWeight.SemiBold,
-                            color = if (isWinner) TextPrimary else TextPrimary.copy(alpha = 0.88f),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    shareLabel?.let { label ->
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = JackpotGold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(start = if (isWinner) 18.dp else 0.dp)
+                    Text(
+                        text = name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (!expanded) {
+                        EntryCollapsedInfoLine(
+                            note = note,
+                            prediction = prediction,
+                            isWinner = isWinner,
+                            winnerShareAmountLabel = winnerShareAmountLabel
                         )
                     }
                 }
-            }
-            Box(
-                modifier = Modifier.weight(PredictColumnWeight),
-                contentAlignment = Alignment.Center
-            ) {
-                EntryPredictionBadge(
-                    prediction = prediction,
-                    color = predictionColor,
-                    highlighted = isWinner
-                )
-            }
-            Box(
-                modifier = Modifier.weight(CurrentColumnWeight),
-                contentAlignment = Alignment.Center
-            ) {
-                EntryCurrentColumnCell(
-                    matchStatus = matchStatus,
-                    scoreLabel = currentScoreLabel
-                )
-            }
-            Box(
-                modifier = Modifier.weight(StakeColumnWeight),
-                contentAlignment = Alignment.CenterEnd
-            ) {
-                Text(
-                    text = amountLabel,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = JackpotGold,
-                    maxLines = 1,
-                    textAlign = TextAlign.End
-                )
-            }
-            if (onEditClick != null || onDeleteClick != null) {
-                Box(
-                    modifier = Modifier.weight(MenuColumnWeight),
-                    contentAlignment = Alignment.CenterEnd
-                ) {
+
+                if (!expanded) {
+                    Text(
+                        text = amountLabel,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = JackpotGold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(start = 8.dp, end = 4.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.KeyboardArrowUp,
+                        contentDescription = null,
+                        tint = TextMuted.copy(alpha = 0.75f),
+                        modifier = Modifier
+                            .padding(start = 8.dp, end = 4.dp)
+                            .size(18.dp)
+                    )
+                }
+
+                if (onEditClick != null || onDeleteClick != null) {
                     EntryRowOverflowMenu(
                         onEdit = onEditClick,
                         onDelete = onDeleteClick
                     )
                 }
             }
+
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(animationSpec = expandSizeSpec) +
+                    fadeIn(animationSpec = expandFadeSpec),
+                exit = shrinkVertically(animationSpec = expandSizeSpec) +
+                    fadeOut(animationSpec = expandFadeSpec)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 18.dp, bottom = 12.dp),
+                        color = Divider.copy(alpha = 0.35f),
+                        thickness = 0.5.dp
+                    )
+                    EntryExpandedDetailPanel(
+                        prediction = prediction,
+                        amountLabel = amountLabel,
+                        matchStatus = matchStatus,
+                        currentScoreLabel = currentScoreLabel
+                    )
+                }
+            }
         }
-        }
-        if (showDivider) {
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 12.dp),
-                color = Divider.copy(alpha = 0.55f)
+    }
+}
+
+@Composable
+private fun EntryCollapsedInfoLine(
+    note: String?,
+    prediction: String,
+    isWinner: Boolean,
+    winnerShareAmountLabel: String?,
+    modifier: Modifier = Modifier
+) {
+    val winnerLabel = stringResource(R.string.entry_winner_badge)
+    val separator = " · "
+
+    Text(
+        text = buildAnnotatedString {
+            note?.takeIf { it.isNotBlank() }?.let { noteText ->
+                withStyle(SpanStyle(color = TextMuted)) {
+                    append(noteText)
+                }
+                withStyle(SpanStyle(color = TextMuted)) {
+                    append(separator)
+                }
+            }
+            if (isWinner) {
+                if (winnerShareAmountLabel != null) {
+                    withStyle(
+                        SpanStyle(
+                            color = JackpotGold,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    ) {
+                        append("$winnerLabel $winnerShareAmountLabel")
+                    }
+                } else {
+                    withStyle(
+                        SpanStyle(
+                            color = WinnerGreen,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    ) {
+                        append(winnerLabel)
+                    }
+                }
+                withStyle(SpanStyle(color = TextMuted)) {
+                    append(separator)
+                }
+            }
+            withStyle(
+                SpanStyle(
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+            ) {
+                append(prediction)
+            }
+        },
+        modifier = modifier.padding(top = 3.dp),
+        style = MaterialTheme.typography.labelMedium,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
+}
+
+@Composable
+private fun EntryExpandedDetailPanel(
+    prediction: String,
+    amountLabel: String,
+    matchStatus: MatchStatus,
+    currentScoreLabel: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(EntryDetailPanelShape)
+            .background(MatchCardCompactSurface)
+            .border(1.dp, GlassBorder, EntryDetailPanelShape)
+            .padding(horizontal = 14.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
+    ) {
+        EntryExpandedDetailLine(
+            icon = Icons.Outlined.SportsSoccer,
+            label = stringResource(R.string.entry_card_predict),
+            trailing = {
+                Text(
+                    text = prediction,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        )
+        EntryExpandedSoftDivider()
+        EntryExpandedDetailLine(
+            icon = Icons.Outlined.Schedule,
+            label = stringResource(R.string.entry_card_live),
+            trailing = {
+                EntryLiveValue(
+                    matchStatus = matchStatus,
+                    scoreLabel = currentScoreLabel
+                )
+            }
+        )
+        EntryExpandedSoftDivider()
+        EntryExpandedDetailLine(
+            icon = Icons.Outlined.Paid,
+            label = stringResource(R.string.entry_card_stake),
+            trailing = {
+                Text(
+                    text = amountLabel,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = JackpotGold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun EntryExpandedSoftDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(vertical = 10.dp),
+        color = Divider.copy(alpha = 0.22f),
+        thickness = 0.5.dp
+    )
+}
+
+@Composable
+private fun EntryExpandedDetailLine(
+    icon: ImageVector,
+    label: String,
+    trailing: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 30.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.weight(1f, fill = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(30.dp)
+                    .clip(CircleShape)
+                    .background(PrimaryBlue.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = PrimaryBlueBright.copy(alpha = 0.85f),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = TextSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
+        Box(
+            modifier = Modifier
+                .width(88.dp)
+                .padding(start = 8.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            trailing()
+        }
+    }
+}
+
+@Composable
+private fun EntryLiveValue(
+    matchStatus: MatchStatus,
+    scoreLabel: String
+) {
+    when (matchStatus) {
+        MatchStatus.NOT_STARTED -> {
+            Text(
+                text = stringResource(R.string.status_not_started),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = TextMuted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        MatchStatus.LIVE -> {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MatchStatusBadge(
+                    status = matchStatus,
+                    style = MatchStatusBadgeStyle.Compact
+                )
+                Text(
+                    text = scoreLabel,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = DangerRed,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        MatchStatus.FINISHED -> {
+            Text(
+                text = scoreLabel,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun EntryPremiumAvatar(
+    initials: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .shadow(
+                elevation = 3.dp,
+                shape = CircleShape,
+                ambientColor = PrimaryBlue.copy(alpha = 0.18f),
+                spotColor = PrimaryBlue.copy(alpha = 0.24f)
+            )
+            .size(EntryAvatarSize)
+            .clip(CircleShape)
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(
+                        PrimaryBlue.copy(alpha = 0.48f),
+                        PrimaryBlue.copy(alpha = 0.24f),
+                        DarkNavy.copy(alpha = 0.72f)
+                    )
+                )
+            )
+            .border(1.dp, PrimaryBlueBright.copy(alpha = 0.4f), CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = initials,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary,
+            fontSize = 13.sp,
+            letterSpacing = 0.5.sp
+        )
     }
 }
 
@@ -458,63 +766,6 @@ private fun EntryRowOverflowMenu(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun EntryPredictionBadge(
-    prediction: String,
-    color: androidx.compose.ui.graphics.Color,
-    highlighted: Boolean = false,
-    modifier: Modifier = Modifier
-) {
-    val borderColor = if (highlighted) {
-        JackpotGold.copy(alpha = 0.32f)
-    } else {
-        Divider.copy(alpha = 0.45f)
-    }
-
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(MatchCardCompactSurface)
-            .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = prediction,
-            style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.Bold,
-            color = color,
-            maxLines = 1
-        )
-    }
-}
-
-@Composable
-private fun EntryCurrentColumnCell(
-    matchStatus: MatchStatus,
-    scoreLabel: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        MatchStatusBadge(
-            status = matchStatus,
-            style = MatchStatusBadgeStyle.Compact
-        )
-        Text(
-            text = scoreLabel,
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.SemiBold,
-            color = TextPrimary,
-            maxLines = 1,
-            textAlign = TextAlign.Center
-        )
     }
 }
 

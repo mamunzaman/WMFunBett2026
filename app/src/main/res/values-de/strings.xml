@@ -101,6 +101,9 @@
     <string name="entry_table_predict">Prognose</string>
     <string name="entry_table_current">Aktuell</string>
     <string name="entry_table_stake">Einsatz</string>
+    <string name="entry_card_predict">Tipp</string>
+    <string name="entry_card_live">Live</string>
+    <string name="entry_card_stake">Einsatz</string>
     <string name="entry_table_status_ft">Ende</string>
     <string name="entry_table_score_dash">-</string>
     <string name="entry_winner_badge">Gewinner</string>

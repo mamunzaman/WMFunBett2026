@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Groups
@@ -25,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +56,8 @@ import com.example.wmfunbett2026.ui.components.EditEntrySheet
 import com.example.wmfunbett2026.ui.components.EntryBlockedInfoSheet
 import com.example.wmfunbett2026.ui.components.EntryClosedInfoCard
 import com.example.wmfunbett2026.ui.components.EntryRowActionSheet
-import com.example.wmfunbett2026.ui.components.TippGroupEntryTable
+import com.example.wmfunbett2026.ui.components.EntryWinnerSummaryRow
+import com.example.wmfunbett2026.ui.components.TippGroupEntryListItem
 import com.example.wmfunbett2026.ui.components.FormBottomSheet
 import com.example.wmfunbett2026.ui.components.GlassPrimaryActionButton
 import androidx.compose.material3.TextButton
@@ -105,6 +108,7 @@ fun TippGroupDetailScreen(
     var selectedEntryIds by remember { mutableStateOf(setOf<String>()) }
     var showBulkDeleteConfirm by remember { mutableStateOf(false) }
     var selectedPersonName by remember { mutableStateOf<String?>(null) }
+    var expandedEntryId by rememberSaveable { mutableStateOf<String?>(null) }
 
     LaunchedEffect(tippGroupId, gameId) {
         showDeleteGroupDialog = false
@@ -118,6 +122,13 @@ fun TippGroupDetailScreen(
         selectedEntryIds = emptySet()
         showBulkDeleteConfirm = false
         selectedPersonName = null
+        expandedEntryId = null
+    }
+
+    LaunchedEffect(selectionMode) {
+        if (selectionMode) {
+            expandedEntryId = null
+        }
     }
 
     val game = FunBettRepository.getGameInDay(dayId, gameId)
@@ -216,6 +227,7 @@ fun TippGroupDetailScreen(
                         onCancel = {
                             selectionMode = false
                             selectedEntryIds = emptySet()
+                            expandedEntryId = null
                         },
                         onDeleteSelected = {
                             if (selectedEntryIds.isNotEmpty()) {
@@ -234,32 +246,43 @@ fun TippGroupDetailScreen(
                     )
                 }
             } else {
-                item(key = "entries_table") {
-                    TippGroupEntryTable(
+                val entrySettlement = settlement ?: TippGroupSettlementSummary(
+                    status = TippGroupSettlementStatus.PENDING,
+                    totalCollected = 0.0,
+                    winnerCount = 0,
+                    sharePerWinner = 0.0
+                )
+                if (winnerNames.isNotEmpty()) {
+                    item(key = "winner_summary") {
+                        EntryWinnerSummaryRow(winnerCount = winnerNames.size)
+                    }
+                }
+                items(
+                    items = entries,
+                    key = { it.id }
+                ) { entry ->
+                    TippGroupEntryListItem(
                         game = game,
-                        entries = entries,
+                        entry = entry,
                         winningEntryIds = winningEntryIds,
-                        winnerNames = winnerNames,
-                        settlement = settlement ?: TippGroupSettlementSummary(
-                            status = TippGroupSettlementStatus.PENDING,
-                            totalCollected = 0.0,
-                            winnerCount = 0,
-                            sharePerWinner = 0.0
-                        ),
-                        onEntryClick = { entry -> selectedPersonName = entry.friendName },
-                        onEditEntry = { entry -> editingEntry = entry },
-                        onDeleteEntry = { entry -> deletingEntry = entry },
+                        settlement = entrySettlement,
+                        onEditEntry = { editingEntry = it },
+                        onDeleteEntry = { deletingEntry = it },
                         selectionMode = selectionMode,
                         selectedEntryIds = selectedEntryIds,
-                        onToggleEntrySelection = { entry ->
-                            selectedEntryIds = if (entry.id in selectedEntryIds) {
-                                selectedEntryIds - entry.id
+                        expanded = expandedEntryId == entry.id,
+                        onExpandedChange = { shouldExpand ->
+                            expandedEntryId = if (shouldExpand) entry.id else null
+                        },
+                        onToggleEntrySelection = { toggledEntry ->
+                            selectedEntryIds = if (toggledEntry.id in selectedEntryIds) {
+                                selectedEntryIds - toggledEntry.id
                             } else {
-                                selectedEntryIds + entry.id
+                                selectedEntryIds + toggledEntry.id
                             }
                         },
-                        onEntryLongPress = { entry ->
-                            entryActionTarget = entry
+                        onEntryLongPress = { pressedEntry ->
+                            entryActionTarget = pressedEntry
                             showEntryActionSheet = true
                         }
                     )
@@ -328,6 +351,7 @@ fun TippGroupDetailScreen(
             onSelectMultiple = {
                 selectionMode = true
                 selectedEntryIds = setOf(target.id)
+                expandedEntryId = null
             }
         )
     }

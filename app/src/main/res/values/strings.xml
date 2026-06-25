@@ -101,6 +101,9 @@
     <string name="entry_table_predict">Predict</string>
     <string name="entry_table_current">Current</string>
     <string name="entry_table_stake">Stake</string>
+    <string name="entry_card_predict">Predict</string>
+    <string name="entry_card_live">Live</string>
+    <string name="entry_card_stake">Stake</string>
     <string name="entry_table_status_ft">FT</string>
     <string name="entry_table_score_dash">-</string>
     <string name="entry_winner_badge">Winner</string>
