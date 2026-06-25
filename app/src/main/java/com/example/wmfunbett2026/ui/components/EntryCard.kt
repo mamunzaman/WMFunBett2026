@@ -34,9 +34,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Paid
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.SportsSoccer
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenu
@@ -438,10 +435,11 @@ fun EntryCard(
                         thickness = 0.5.dp
                     )
                     EntryExpandedDetailPanel(
-                        prediction = prediction,
-                        amountLabel = amountLabel,
-                        matchStatus = matchStatus,
-                        currentScoreLabel = currentScoreLabel
+                        predictionScore = formatEntryScoreDisplay(prediction),
+                        currentScore = formatEntryScoreDisplay(currentScoreLabel),
+                        statusLabel = entryMatchStatusLabel(matchStatus),
+                        stakeLabel = amountLabel,
+                        winnerShareAmountLabel = winnerShareAmountLabel
                     )
                 }
             }
@@ -512,10 +510,11 @@ private fun EntryCollapsedInfoLine(
 
 @Composable
 private fun EntryExpandedDetailPanel(
-    prediction: String,
-    amountLabel: String,
-    matchStatus: MatchStatus,
-    currentScoreLabel: String,
+    predictionScore: String,
+    currentScore: String,
+    statusLabel: String,
+    stakeLabel: String,
+    winnerShareAmountLabel: String?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -524,160 +523,127 @@ private fun EntryExpandedDetailPanel(
             .clip(EntryDetailPanelShape)
             .background(MatchCardCompactSurface)
             .border(1.dp, GlassBorder, EntryDetailPanelShape)
-            .padding(horizontal = 14.dp, vertical = 14.dp),
-        verticalArrangement = Arrangement.spacedBy(0.dp)
-    ) {
-        EntryExpandedDetailLine(
-            icon = Icons.Outlined.SportsSoccer,
-            label = stringResource(R.string.entry_card_predict),
-            trailing = {
-                Text(
-                    text = prediction,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        )
-        EntryExpandedSoftDivider()
-        EntryExpandedDetailLine(
-            icon = Icons.Outlined.Schedule,
-            label = stringResource(R.string.entry_card_live),
-            trailing = {
-                EntryLiveValue(
-                    matchStatus = matchStatus,
-                    scoreLabel = currentScoreLabel
-                )
-            }
-        )
-        EntryExpandedSoftDivider()
-        EntryExpandedDetailLine(
-            icon = Icons.Outlined.Paid,
-            label = stringResource(R.string.entry_card_stake),
-            trailing = {
-                Text(
-                    text = amountLabel,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = JackpotGold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        )
-    }
-}
-
-@Composable
-private fun EntryExpandedSoftDivider() {
-    HorizontalDivider(
-        modifier = Modifier.padding(vertical = 10.dp),
-        color = Divider.copy(alpha = 0.22f),
-        thickness = 0.5.dp
-    )
-}
-
-@Composable
-private fun EntryExpandedDetailLine(
-    icon: ImageVector,
-    label: String,
-    trailing: @Composable () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = 30.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.weight(1f, fill = false)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(30.dp)
-                    .clip(CircleShape)
-                    .background(PrimaryBlue.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = PrimaryBlueBright.copy(alpha = 0.85f),
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold,
-                color = TextSecondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+            EntryDetailScoreColumn(
+                label = stringResource(R.string.prediction),
+                score = predictionScore,
+                modifier = Modifier.weight(1f)
+            )
+            EntryDetailScoreColumn(
+                label = stringResource(R.string.entry_table_current),
+                score = currentScore,
+                statusLabel = statusLabel,
+                modifier = Modifier.weight(1f)
             )
         }
-        Box(
-            modifier = Modifier
-                .width(88.dp)
-                .padding(start = 8.dp),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            trailing()
+
+        HorizontalDivider(
+            color = Divider.copy(alpha = 0.22f),
+            thickness = 0.5.dp
+        )
+
+        EntryDetailMoneyRow(
+            label = stringResource(R.string.entry_card_stake),
+            amount = stakeLabel
+        )
+
+        winnerShareAmountLabel?.let { shareAmount ->
+            EntryDetailMoneyRow(
+                label = stringResource(R.string.entry_detail_winner_share),
+                amount = shareAmount
+            )
         }
     }
 }
 
 @Composable
-private fun EntryLiveValue(
-    matchStatus: MatchStatus,
-    scoreLabel: String
+private fun EntryDetailScoreColumn(
+    label: String,
+    score: String,
+    modifier: Modifier = Modifier,
+    statusLabel: String? = null
 ) {
-    when (matchStatus) {
-        MatchStatus.NOT_STARTED -> {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = TextMuted,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = score,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        statusLabel?.let {
             Text(
-                text = stringResource(R.string.status_not_started),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
+                text = it,
+                style = MaterialTheme.typography.labelSmall,
                 color = TextMuted,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
-        MatchStatus.LIVE -> {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                MatchStatusBadge(
-                    status = matchStatus,
-                    style = MatchStatusBadgeStyle.Compact
-                )
-                Text(
-                    text = scoreLabel,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = DangerRed,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-        MatchStatus.FINISHED -> {
-            Text(
-                text = scoreLabel,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
     }
+}
+
+@Composable
+private fun EntryDetailMoneyRow(
+    label: String,
+    amount: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = TextMuted,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = amount,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = JackpotGold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun entryMatchStatusLabel(matchStatus: MatchStatus): String {
+    return when (matchStatus) {
+        MatchStatus.NOT_STARTED -> stringResource(R.string.status_not_started)
+        MatchStatus.LIVE -> stringResource(R.string.status_live)
+        MatchStatus.FINISHED -> stringResource(R.string.status_finished)
+    }
+}
+
+private fun formatEntryScoreDisplay(score: String): String {
+    val trimmed = score.trim()
+    if (':' in trimmed) {
+        return trimmed.replace(":", " : ")
+    }
+    return trimmed
 }
 
 @Composable
