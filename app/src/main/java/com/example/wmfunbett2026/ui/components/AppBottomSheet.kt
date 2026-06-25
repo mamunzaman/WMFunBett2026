@@ -1,5 +1,6 @@
 package com.example.wmfunbett2026.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -17,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -31,8 +31,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
-import com.example.wmfunbett2026.ui.designsystem.buttons.AppPrimaryButton
-import com.example.wmfunbett2026.ui.designsystem.buttons.AppSecondaryButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppIconButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppBottomSheetPrimaryButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppBottomSheetSecondaryButton
+import com.example.wmfunbett2026.ui.designsystem.layout.BottomSheetFooterBottomPadding
+import com.example.wmfunbett2026.ui.designsystem.layout.BottomSheetFooterButtonSpacing
+import com.example.wmfunbett2026.ui.designsystem.layout.BottomSheetFooterHorizontalPadding
+import com.example.wmfunbett2026.ui.designsystem.layout.BottomSheetFooterTopPadding
 import com.example.wmfunbett2026.ui.theme.FormSheetTheme
 import com.example.wmfunbett2026.ui.theme.SheetSurface
 import com.example.wmfunbett2026.ui.theme.TextPrimary
@@ -84,16 +89,28 @@ fun AppBottomSheetContainer(
                         .padding(bottom = 8.dp),
                     content = content
                 )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp),
-                    content = footer
-                )
-                Spacer(modifier = Modifier.height(16.dp))
+                AppBottomSheetFooter(content = footer)
             }
         }
     }
+}
+
+@Composable
+fun AppBottomSheetFooter(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = BottomSheetFooterHorizontalPadding)
+            .padding(
+                top = BottomSheetFooterTopPadding,
+                bottom = BottomSheetFooterBottomPadding
+            ),
+        verticalArrangement = Arrangement.spacedBy(BottomSheetFooterButtonSpacing),
+        content = content
+    )
 }
 
 @Composable
@@ -115,13 +132,13 @@ fun AppBottomSheetHeader(
             fontWeight = FontWeight.Bold,
             color = TextPrimary
         )
-        IconButton(onClick = onCloseClick) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = stringResource(R.string.close),
-                tint = TextSecondary
-            )
-        }
+        AppIconButton(
+            icon = Icons.Default.Close,
+            contentDescription = stringResource(R.string.close),
+            onClick = onCloseClick,
+            filled = false,
+            iconTint = TextSecondary
+        )
     }
 }
 
@@ -132,7 +149,7 @@ fun SheetPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    AppPrimaryButton(
+    AppBottomSheetPrimaryButton(
         text = label,
         onClick = onClick,
         modifier = modifier,
@@ -146,10 +163,10 @@ fun SheetTextCancelButton(
     modifier: Modifier = Modifier,
     label: String = stringResource(R.string.cancel)
 ) {
-    AppSecondaryButton(
+    AppBottomSheetSecondaryButton(
         text = label,
         onClick = onClick,
-        modifier = modifier.padding(vertical = 4.dp)
+        modifier = modifier
     )
 }
 

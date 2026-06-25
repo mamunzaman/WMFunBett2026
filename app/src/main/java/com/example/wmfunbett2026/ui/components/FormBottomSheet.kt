@@ -3,9 +3,7 @@ package com.example.wmfunbett2026.ui.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -27,8 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.wmfunbett2026.R
-import com.example.wmfunbett2026.ui.designsystem.buttons.AppPrimaryButton
-import com.example.wmfunbett2026.ui.designsystem.buttons.AppSecondaryButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppBottomSheetPrimaryButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppBottomSheetSecondaryButton
 import com.example.wmfunbett2026.ui.theme.FormSheetTheme
 import com.example.wmfunbett2026.ui.theme.SheetSurface
 import com.example.wmfunbett2026.ui.theme.TextPrimary
@@ -99,21 +97,19 @@ fun FormBottomSheet(
                         .padding(horizontal = 24.dp, vertical = 12.dp),
                     content = content
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                AppPrimaryButton(
-                    text = primaryActionLabel,
-                    onClick = onPrimaryAction,
-                    enabled = primaryActionEnabled,
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-                if (showCancel) {
-                    AppSecondaryButton(
-                        text = stringResource(R.string.cancel),
-                        onClick = onDismiss,
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp)
+                AppBottomSheetFooter {
+                    AppBottomSheetPrimaryButton(
+                        text = primaryActionLabel,
+                        onClick = onPrimaryAction,
+                        enabled = primaryActionEnabled
                     )
+                    if (showCancel) {
+                        AppBottomSheetSecondaryButton(
+                            text = stringResource(R.string.cancel),
+                            onClick = onDismiss
+                        )
+                    }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }

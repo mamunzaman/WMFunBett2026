@@ -7,17 +7,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
+import com.example.wmfunbett2026.ui.designsystem.buttons.AppStepperIconButton
+import com.example.wmfunbett2026.ui.designsystem.buttons.StepperDirection
+import com.example.wmfunbett2026.ui.designsystem.layout.ScoreControlHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -139,14 +137,14 @@ private fun ScoreEmptyDisplayBox(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .height(ScoreControlHeight)
             .clip(RoundedCornerShape(12.dp))
             .background(SurfaceVariant.copy(alpha = 0.45f))
-            .border(1.dp, Divider.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
-            .padding(vertical = 10.dp),
+            .border(1.dp, Divider.copy(alpha = 0.35f), RoundedCornerShape(12.dp)),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "-",
+            text = "–",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             color = TextSecondary,
@@ -191,25 +189,19 @@ private fun ScoreStepperBox(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(ScoreControlHeight)
             .clip(RoundedCornerShape(12.dp))
             .background(SurfaceVariant.copy(alpha = 0.65f))
             .border(1.dp, Divider.copy(alpha = 0.45f), RoundedCornerShape(12.dp))
-            .padding(horizontal = 2.dp, vertical = 2.dp),
+            .padding(horizontal = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        IconButton(
-            onClick = { onScoreChange(adjustScore(score, -1)) },
-            modifier = Modifier.size(36.dp),
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = TextSecondary
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Default.Remove,
-                contentDescription = stringResource(R.string.decrease_score_for_team, teamName)
-            )
-        }
+        AppStepperIconButton(
+            direction = StepperDirection.Decrement,
+            contentDescription = stringResource(R.string.decrease_score_for_team, teamName),
+            onClick = { onScoreChange(adjustScore(score, -1)) }
+        )
         Text(
             text = score.ifEmpty { "0" },
             modifier = Modifier.widthIn(min = 28.dp),
@@ -218,18 +210,11 @@ private fun ScoreStepperBox(
             color = TextPrimary,
             textAlign = TextAlign.Center
         )
-        IconButton(
-            onClick = { onScoreChange(adjustScore(score, 1)) },
-            modifier = Modifier.size(36.dp),
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = PrimaryBlue
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = stringResource(R.string.increase_score_for_team, teamName)
-            )
-        }
+        AppStepperIconButton(
+            direction = StepperDirection.Increment,
+            contentDescription = stringResource(R.string.increase_score_for_team, teamName),
+            onClick = { onScoreChange(adjustScore(score, 1)) }
+        )
     }
 }
 
